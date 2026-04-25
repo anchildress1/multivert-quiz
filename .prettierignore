@@ -1,0 +1,10 @@
+.svelte-kit/
+build/
+dist/
+coverage/
+.lighthouseci/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+node_modules/
+.wrangler/
