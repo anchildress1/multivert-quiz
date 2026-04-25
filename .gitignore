@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# SvelteKit / Vite build output
+.svelte-kit/
+build/
+dist/
+.vite/
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test / coverage
+coverage/
+.nyc_output/
+playwright-report/
+playwright/.cache/
+test-results/
+.lighthouseci/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Volta
+.volta/
+
+# Lefthook local overrides
+lefthook-local.yml
+
+# Sonar
+.scannerwork/
+
+# Misc
+*.tgz
+*.tsbuildinfo
