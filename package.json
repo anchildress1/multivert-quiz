@@ -37,7 +37,7 @@
     "e2e": "playwright test",
     "e2e:install": "playwright install --with-deps chromium",
     "perf": "lhci autorun",
-    "secret-scan": "git diff --staged | gitleaks detect --pipe --no-banner --redact --staged 2>/dev/null || true"
+    "secret-scan": "gitleaks git --pre-commit --staged --redact"
   },
   "devDependencies": {
     "@checkmarkdevtools/commitlint-plugin-rai": "^0.1.6",
