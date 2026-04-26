@@ -4,8 +4,26 @@ vi.mock('$app/environment', () => ({ browser: true }));
 
 const { questions } = await import('../questions');
 const { createAnswersStore, questionsByDimension } = await import('./answers.svelte');
+import type { Dimension, Question } from '../questions';
 
 const STORAGE_KEY = 'multivert.answers.v1';
+
+const pickQuestion = (idx: number): Question => {
+	const q = questions[idx];
+	if (!q) throw new Error(`question bank does not have an entry at index ${idx}`);
+	return q;
+};
+
+const firstWhere = (pred: (q: Question) => boolean): Question => {
+	const q = questions.find(pred);
+	if (!q) throw new Error('no question matched the predicate');
+	return q;
+};
+
+const requireString = (value: string | null): string => {
+	if (value === null) throw new Error('localStorage key was unexpectedly null');
+	return value;
+};
 
 const setEvery = (
 	store: ReturnType<typeof createAnswersStore>,
@@ -19,23 +37,22 @@ const setEvery = (
 
 describe('createAnswersStore', () => {
 	beforeEach(() => {
-		vi.stubGlobal('window', {
-			localStorage: {
-				_store: new Map<string, string>(),
-				getItem(key: string) {
-					return this._store.get(key) ?? null;
-				},
-				setItem(key: string, value: string) {
-					this._store.set(key, value);
-				},
-				removeItem(key: string) {
-					this._store.delete(key);
-				},
-				clear() {
-					this._store.clear();
-				}
+		const inner = new Map<string, string>();
+		const fakeStorage: Storage = {
+			get length() {
+				return inner.size;
+			},
+			clear: () => inner.clear(),
+			getItem: (key) => inner.get(key) ?? null,
+			key: (index) => Array.from(inner.keys())[index] ?? null,
+			removeItem: (key) => {
+				inner.delete(key);
+			},
+			setItem: (key, value) => {
+				inner.set(key, value);
 			}
-		});
+		};
+		vi.stubGlobal('localStorage', fakeStorage);
 	});
 
 	afterEach(() => {
@@ -59,7 +76,7 @@ describe('createAnswersStore', () => {
 
 	it('counts only answered entries (in-progress does not count)', () => {
 		const store = createAnswersStore();
-		const first = questions[0]!;
+		const first = pickQuestion(0);
 		store.setAnswer(first.id, { value: 0.5, state: 'in-progress' });
 		expect(store.totalAnswered).toBe(0);
 		store.setAnswer(first.id, { value: 0.5, state: 'answered' });
@@ -72,13 +89,14 @@ describe('createAnswersStore', () => {
 		expect(store.allAnswered).toBe(true);
 		const result = store.result;
 		expect(result).not.toBeNull();
-		expect(result!.fits).toHaveLength(5);
-		expect(result!.dominant).toMatch(/introvert|extrovert|ambivert|otrovert|omnivert/);
+		if (result === null) return;
+		expect(result.fits).toHaveLength(5);
+		expect(result.dominant).toMatch(/introvert|extrovert|ambivert|otrovert|omnivert/);
 	});
 
 	it('groups answered counts by dimension', () => {
 		const store = createAnswersStore();
-		const firstE = questions.find((q) => q.dimension === 'extraversion')!;
+		const firstE = firstWhere((q) => q.dimension === 'extraversion');
 		store.setAnswer(firstE.id, { value: 1, state: 'answered' });
 		const counts = store.answeredByDimension;
 		expect(counts.extraversion.answered).toBe(1);
@@ -91,17 +109,16 @@ describe('createAnswersStore', () => {
 
 	it('persists every change to localStorage', () => {
 		const store = createAnswersStore();
-		const id = questions[0]!.id;
+		const id = pickQuestion(0).id;
 		store.setAnswer(id, { value: 0.42, state: 'answered' });
-		const raw = window.localStorage.getItem(STORAGE_KEY);
-		expect(raw).toBeTruthy();
-		const parsed = JSON.parse(raw!);
+		const raw = requireString(globalThis.localStorage.getItem(STORAGE_KEY));
+		const parsed: Record<string, { value: number; state: string }> = JSON.parse(raw);
 		expect(parsed[id]).toEqual({ value: 0.42, state: 'answered' });
 	});
 
 	it('hydrates from localStorage on construction', () => {
-		const id = questions[0]!.id;
-		window.localStorage.setItem(
+		const id = pickQuestion(0).id;
+		globalThis.localStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: -0.7, state: 'answered' } })
 		);
@@ -111,37 +128,40 @@ describe('createAnswersStore', () => {
 	});
 
 	it('clamps hydrated values to [-1, 1] and ignores non-finite numbers', () => {
-		const [a, b, c] = questions;
-		window.localStorage.setItem(
+		const a = pickQuestion(0);
+		const b = pickQuestion(1);
+		const c = pickQuestion(2);
+		globalThis.localStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({
-				[a!.id]: { value: 5, state: 'answered' },
-				[b!.id]: { value: -3, state: 'answered' },
-				[c!.id]: { value: Number.NaN, state: 'answered' }
+				[a.id]: { value: 5, state: 'answered' },
+				[b.id]: { value: -3, state: 'answered' },
+				[c.id]: { value: Number.NaN, state: 'answered' }
 			})
 		);
 		const store = createAnswersStore();
-		expect(store.answers[a!.id]!.value).toBe(1);
-		expect(store.answers[b!.id]!.value).toBe(-1);
-		expect(store.answers[c!.id]!.value).toBeNull();
+		expect(store.answers[a.id]?.value).toBe(1);
+		expect(store.answers[b.id]?.value).toBe(-1);
+		expect(store.answers[c.id]?.value).toBeNull();
 	});
 
 	it('falls back to seed when stored payload is malformed JSON', () => {
-		window.localStorage.setItem(STORAGE_KEY, '{not-json');
+		globalThis.localStorage.setItem(STORAGE_KEY, '{not-json');
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
-		expect(store.answers[questions[0]!.id]).toEqual({ value: null, state: 'unset' });
+		const first = pickQuestion(0);
+		expect(store.answers[first.id]).toEqual({ value: null, state: 'unset' });
 	});
 
 	it('falls back to seed when stored payload is not an object', () => {
-		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
+		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
 	});
 
 	it('coerces unknown state strings to "unset" when hydrating', () => {
-		const id = questions[0]!.id;
-		window.localStorage.setItem(
+		const id = pickQuestion(0).id;
+		globalThis.localStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: 0.3, state: 'bogus' } })
 		);
@@ -150,7 +170,7 @@ describe('createAnswersStore', () => {
 	});
 
 	it('ignores unknown question ids in the stored payload', () => {
-		window.localStorage.setItem(
+		globalThis.localStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ 'not-a-real-id': { value: 0.5, state: 'answered' } })
 		);
@@ -164,8 +184,10 @@ describe('createAnswersStore', () => {
 		expect(store.totalAnswered).toBe(questions.length);
 		store.reset();
 		expect(store.totalAnswered).toBe(0);
-		const raw = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!);
-		expect(raw[questions[0]!.id]).toEqual({ value: null, state: 'unset' });
+		const raw = requireString(globalThis.localStorage.getItem(STORAGE_KEY));
+		const parsed: Record<string, { value: number | null; state: string }> = JSON.parse(raw);
+		const first = pickQuestion(0);
+		expect(parsed[first.id]).toEqual({ value: null, state: 'unset' });
 	});
 });
 
@@ -183,17 +205,16 @@ describe('questionsByDimension', () => {
 			...grouped.group_size,
 			...grouped.swings
 		].map((q) => q.id);
+
+		const order: Record<Dimension, number> = {
+			extraversion: 0,
+			belonging: 1,
+			group_size: 2,
+			swings: 3
+		};
 		const dimensionOrder = questions
 			.slice()
-			.sort((a, b) => {
-				const order: Record<string, number> = {
-					extraversion: 0,
-					belonging: 1,
-					group_size: 2,
-					swings: 3
-				};
-				return order[a.dimension]! - order[b.dimension]!;
-			})
+			.sort((a, b) => order[a.dimension] - order[b.dimension])
 			.map((q) => q.id);
 		expect(flatIds).toEqual(dimensionOrder);
 	});
