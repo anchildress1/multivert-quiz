@@ -106,7 +106,7 @@
 
 @theme {
 	--font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
-	--font-sans: 'Geist', 'Söhne', -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-sans: 'Geist Variable', 'Geist', 'Söhne', -apple-system, BlinkMacSystemFont, sans-serif;
 	--font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 }
 

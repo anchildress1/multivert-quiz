@@ -43,9 +43,12 @@
   },
   "devDependencies": {
     "@checkmarkdevtools/commitlint-plugin-rai": "^0.1.6",
-    "@eslint/js": "^10.0.1",
     "@commitlint/cli": "^20.5.2",
     "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^10.0.1",
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.59.1",
     "@sveltejs/adapter-cloudflare": "^7.2.8",
