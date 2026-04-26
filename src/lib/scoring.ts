@@ -77,6 +77,7 @@ const MAX_DISTANCE = 2;
 const clampUnit = (value: number): number => Math.max(-1, Math.min(1, value));
 
 const mean = (values: readonly number[]): number => {
+	/* v8 ignore next — guarded upstream by computeDimensions */
 	if (values.length === 0) return 0;
 	let sum = 0;
 	for (const v of values) sum += v;
@@ -84,6 +85,7 @@ const mean = (values: readonly number[]): number => {
 };
 
 const variance = (values: readonly number[]): number => {
+	/* v8 ignore next — guarded upstream by computeDimensions */
 	if (values.length === 0) return 0;
 	const mu = mean(values);
 	let acc = 0;
@@ -162,6 +164,7 @@ export const scoreQuiz = (items: readonly AnsweredItem[]): QuizResult => {
 	}));
 
 	const [head, ...rest] = fits;
+	/* v8 ignore next — ARCHETYPES is a 5-element const tuple, so head is always defined */
 	if (!head) throw new Error('scoreQuiz produced no archetype fits');
 	const dominant = rest.reduce(
 		(best, current) => (current.fit > best.fit ? current : best),
