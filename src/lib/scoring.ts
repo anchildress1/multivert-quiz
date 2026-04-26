@@ -161,8 +161,11 @@ export const scoreQuiz = (items: readonly AnsweredItem[]): QuizResult => {
 		)
 	}));
 
-	const dominant = fits.reduce((best, current) =>
-		current.fit > best.fit ? current : best
+	const [head, ...rest] = fits;
+	if (!head) throw new Error('scoreQuiz produced no archetype fits');
+	const dominant = rest.reduce(
+		(best, current) => (current.fit > best.fit ? current : best),
+		head
 	).archetype;
 
 	return { dimensions, fits, dominant };
