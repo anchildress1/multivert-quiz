@@ -279,7 +279,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 's-02',
-		text: "There's no mildly social setting on me — I'm either all-in or off-grid.",
+		text: 'I swing between all-in and off-grid — never a mild middle.',
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'
