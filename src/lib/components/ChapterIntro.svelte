@@ -12,10 +12,9 @@
 	const { id, numeral, title, archetype, count }: Props = $props();
 </script>
 
-<section
-	{id}
+<div
 	class="chapter"
-	style:background="var(--vert-{archetype}-soft)"
+	data-archetype={archetype}
 	style:--accent="var(--vert-{archetype}-mid)"
 	style:--accent-ink="var(--vert-{archetype}-ink)"
 >
@@ -25,25 +24,30 @@
 		<p class="chapter__kicker">
 			Chapter {numeral} · {count} statements
 		</p>
-		<h2 class="chapter__title">
+		<h2 {id} class="chapter__title">
 			<em>{title}</em>
 		</h2>
 	</div>
-	<div class="chapter__edge" aria-hidden="true"></div>
-</section>
+</div>
 
 <style>
 	.chapter {
-		position: relative;
-		min-height: 70vh;
+		position: sticky;
+		top: 0;
+		height: 100dvh;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: clamp(64px, 12vh, 160px) 24px;
 		isolation: isolate;
 		overflow: hidden;
-		scroll-margin-top: 88px;
 		color: var(--ink);
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.chapter__inner {
+		pointer-events: auto;
 	}
 
 	.chapter__numeral {
@@ -100,21 +104,5 @@
 	.chapter__title em {
 		font-style: italic;
 		color: var(--accent-ink);
-	}
-
-	.chapter__edge {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			transparent,
-			var(--accent) 30%,
-			var(--accent) 70%,
-			transparent
-		);
-		opacity: 0.5;
 	}
 </style>

@@ -47,16 +47,30 @@
 
 <style>
 	.row {
+		position: relative;
+		z-index: 1;
 		max-width: 760px;
 		margin: 0 auto;
-		padding: 56px 24px;
+		padding: 64px 24px;
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
 		gap: 32px;
 		scroll-margin-top: 96px;
-		transition: opacity 0.3s ease;
-		border-top: 1px solid var(--ink-08);
+		min-height: 100dvh;
+		justify-content: center;
+		background: transparent;
+	}
+
+	.row::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: color-mix(in oklab, var(--paper) 76%, transparent);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		border-block: 1px solid var(--ink-08);
+		z-index: -1;
 	}
 
 	.row__meta {

@@ -189,33 +189,38 @@
 
 <main class="quiz">
 	{#each chapters as chapter, ci (chapter.id)}
-		<ChapterIntro
+		<section
 			id={chapter.id}
-			numeral={chapter.numeral}
-			title={chapter.title}
-			archetype={chapter.archetype}
-			count={grouped[chapter.dimension].length}
-		/>
+			class="chapter-wrap"
+			aria-labelledby="{chapter.id}-title"
+			data-archetype={chapter.archetype}
+			style:background="var(--vert-{chapter.archetype}-soft)"
+		>
+			<ChapterIntro
+				id="{chapter.id}-title"
+				numeral={chapter.numeral}
+				title={chapter.title}
+				archetype={chapter.archetype}
+				count={grouped[chapter.dimension].length}
+			/>
 
-		<section class="quiz__chapter" aria-labelledby="{chapter.id}-heading" data-chapter={chapter.id}>
-			<h3 id="{chapter.id}-heading" class="quiz__sr-only">
-				Chapter {chapter.numeral}: {chapter.title}
-			</h3>
-			{#each grouped[chapter.dimension] as q, qi (q.id)}
-				{@const globalIndex =
-					chapters.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
-				{@const accent = accentRotation[globalIndex % accentRotation.length]!}
-				{@const entry = store.answers[q.id] ?? { value: null, state: 'unset' }}
-				<QuestionRow
-					question={q}
-					index={globalIndex}
-					total={store.total}
-					{accent}
-					value={entry.value}
-					state={entry.state}
-					onchange={(next) => store.setAnswer(q.id, next)}
-				/>
-			{/each}
+			<div class="chapter-wrap__rows">
+				{#each grouped[chapter.dimension] as q, qi (q.id)}
+					{@const globalIndex =
+						chapters.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
+					{@const accent = accentRotation[globalIndex % accentRotation.length]!}
+					{@const entry = store.answers[q.id] ?? { value: null, state: 'unset' }}
+					<QuestionRow
+						question={q}
+						index={globalIndex}
+						total={store.total}
+						{accent}
+						value={entry.value}
+						state={entry.state}
+						onchange={(next) => store.setAnswer(q.id, next)}
+					/>
+				{/each}
+			</div>
 		</section>
 	{/each}
 
@@ -486,18 +491,18 @@
 		background: var(--paper);
 	}
 
-	.quiz__chapter {
-		padding: 24px 0 64px;
+	.chapter-wrap {
+		position: relative;
+		isolation: isolate;
+		scroll-margin-top: 64px;
+		color: var(--ink);
 	}
 
-	.quiz__sr-only {
-		position: absolute;
-		clip: rect(1px, 1px, 1px, 1px);
-		clip-path: inset(50%);
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		white-space: nowrap;
+	.chapter-wrap__rows {
+		position: relative;
+		z-index: 1;
+		margin-top: -100dvh;
+		padding-top: 100dvh;
 	}
 
 	.submit {
