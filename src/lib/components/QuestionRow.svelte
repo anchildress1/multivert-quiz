@@ -65,11 +65,15 @@
 	.row::before {
 		content: '';
 		position: absolute;
-		inset: 0;
-		background: color-mix(in oklab, var(--paper) 76%, transparent);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		border-block: 1px solid var(--ink-08);
+		inset: 16px clamp(8px, 4vw, 64px);
+		background: color-mix(in oklab, var(--paper) 96%, transparent);
+		backdrop-filter: blur(20px) saturate(1.05);
+		-webkit-backdrop-filter: blur(20px) saturate(1.05);
+		border: 1px solid var(--ink-08);
+		border-radius: var(--card-radius);
+		box-shadow:
+			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+			0 24px 48px -16px color-mix(in oklab, var(--ink) 12%, transparent);
 		z-index: -1;
 	}
 

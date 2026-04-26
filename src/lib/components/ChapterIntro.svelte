@@ -58,11 +58,11 @@
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(360px, 48vw, 720px);
+		font-size: clamp(280px, 38vw, 560px);
 		line-height: 0.8;
 		letter-spacing: -0.06em;
 		color: var(--accent-ink);
-		opacity: 0.08;
+		opacity: 0.05;
 		pointer-events: none;
 		user-select: none;
 		z-index: 0;
@@ -94,7 +94,7 @@
 	.chapter__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(56px, 11vw, 132px);
+		font-size: clamp(44px, 7.5vw, 96px);
 		line-height: 0.96;
 		letter-spacing: -0.03em;
 		margin: 0;
