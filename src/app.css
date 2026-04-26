@@ -1,10 +1,143 @@
 @import 'tailwindcss';
 
+/* ── Editorial Paper · light + dark ──────────────────────────────────────
+   Foundation tokens are exposed as CSS custom properties so Svelte
+   components can reference them via Tailwind arbitrary values
+   (e.g. `bg-[var(--paper)]`). Vert hue palette is computed in oklch()
+   from a per-archetype hue token + global lightness/chroma anchors.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme='light'] {
+	--paper: #f5f1ea;
+	--paper-dk: #ebe5d9;
+	--surface: #faf7f1;
+	--ink: #1c1a17;
+	--ink-70: rgba(28, 26, 23, 0.7);
+	--ink-50: rgba(28, 26, 23, 0.5);
+	--ink-30: rgba(28, 26, 23, 0.3);
+	--ink-12: rgba(28, 26, 23, 0.12);
+	--ink-08: rgba(28, 26, 23, 0.08);
+	--rule: rgba(28, 26, 23, 0.18);
+
+	--vert-mid-l: 0.62;
+	--vert-mid-c: 0.16;
+	--vert-soft-l: 0.95;
+	--vert-soft-c: 0.04;
+	--vert-ink-l: 0.32;
+	--vert-ink-c: 0.1;
+
+	color-scheme: light;
+}
+
+[data-theme='dark'] {
+	--paper: #1a1815;
+	--paper-dk: #23201c;
+	--surface: #221f1b;
+	--ink: #f3ede1;
+	--ink-70: rgba(243, 237, 225, 0.74);
+	--ink-50: rgba(243, 237, 225, 0.52);
+	--ink-30: rgba(243, 237, 225, 0.32);
+	--ink-12: rgba(243, 237, 225, 0.14);
+	--ink-08: rgba(243, 237, 225, 0.09);
+	--rule: rgba(243, 237, 225, 0.22);
+
+	--vert-mid-l: 0.74;
+	--vert-mid-c: 0.16;
+	--vert-soft-l: 0.3;
+	--vert-soft-c: 0.06;
+	--vert-ink-l: 0.86;
+	--vert-ink-c: 0.1;
+
+	color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--paper: #1a1815;
+		--paper-dk: #23201c;
+		--surface: #221f1b;
+		--ink: #f3ede1;
+		--ink-70: rgba(243, 237, 225, 0.74);
+		--ink-50: rgba(243, 237, 225, 0.52);
+		--ink-30: rgba(243, 237, 225, 0.32);
+		--ink-12: rgba(243, 237, 225, 0.14);
+		--ink-08: rgba(243, 237, 225, 0.09);
+		--rule: rgba(243, 237, 225, 0.22);
+
+		--vert-mid-l: 0.74;
+		--vert-mid-c: 0.16;
+		--vert-soft-l: 0.3;
+		--vert-soft-c: 0.06;
+		--vert-ink-l: 0.86;
+		--vert-ink-c: 0.1;
+
+		color-scheme: dark;
+	}
+}
+
+:root {
+	/* Editorial Paper hue palette */
+	--hue-introvert: 248;
+	--hue-extrovert: 38;
+	--hue-ambivert: 172;
+	--hue-omnivert: 296;
+	--hue-otrovert: 8;
+
+	--vert-introvert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-introvert));
+	--vert-introvert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-introvert));
+	--vert-introvert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-introvert));
+	--vert-extrovert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-extrovert));
+	--vert-extrovert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-extrovert));
+	--vert-extrovert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-extrovert));
+	--vert-ambivert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-ambivert));
+	--vert-ambivert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-ambivert));
+	--vert-ambivert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-ambivert));
+	--vert-omnivert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-omnivert));
+	--vert-omnivert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-omnivert));
+	--vert-omnivert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-omnivert));
+	--vert-otrovert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-otrovert));
+	--vert-otrovert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-otrovert));
+	--vert-otrovert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-otrovert));
+
+	--button-radius: 14px;
+	--card-radius: 18px;
+}
+
 @theme {
-	--font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+	--font-sans: 'Geist', 'Söhne', -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 }
 
 html,
 body {
 	height: 100%;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--font-sans);
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
+.font-display-italic {
+	font-family: var(--font-display);
+	font-style: italic;
+	letter-spacing: -0.02em;
+}
+
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--ink-50);
 }
