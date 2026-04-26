@@ -307,7 +307,7 @@ export const questions: Question[] = [
 	}
 ];
 
-// ─── Sanity counts (compile-time sized check via const assertion) ────────
+// ─── Sanity counts (runtime sanity check; values are computed lazily) ───
 export const QUESTION_COUNT_BY_DIMENSION = {
 	extraversion: questions.filter((q) => q.dimension === 'extraversion').length,
 	belonging: questions.filter((q) => q.dimension === 'belonging').length,

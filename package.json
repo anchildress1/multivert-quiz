@@ -36,7 +36,9 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:install": "playwright install --with-deps chromium",
-    "perf": "lhci autorun",
+    "perf": "pnpm perf:mobile && pnpm perf:desktop",
+    "perf:mobile": "lhci autorun --config=.lighthouserc.mobile.json",
+    "perf:desktop": "lhci autorun --config=.lighthouserc.desktop.json",
     "secret-scan": "gitleaks git --pre-commit --staged --redact"
   },
   "devDependencies": {

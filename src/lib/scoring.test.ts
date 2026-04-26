@@ -154,14 +154,9 @@ describe('scoreQuiz', () => {
 		const archetypes: Archetype[] = ['extrovert', 'introvert', 'ambivert', 'otrovert', 'omnivert'];
 		for (const archetype of archetypes) {
 			const ideal = ARCHETYPE_IDEALS[archetype];
-			// Construct a flat extraversion sample so derived swings doesn't drift the user
-			// vector away from omnivert's high-swings ideal.
-			const items = fullSet({
-				extraversion: ideal.extraversion,
-				belonging: ideal.belonging,
-				group_size: ideal.group_size,
-				swings: archetype === 'omnivert' ? ideal.swings : ideal.swings
-			});
+			// Flat extraversion answers (variance = 0) so the derived-variance signal
+			// doesn't perturb the swings dimension away from each archetype's ideal.
+			const items = fullSet(ideal);
 			const result = scoreQuiz(items);
 			const matching = result.fits.find((fit) => fit.archetype === archetype);
 			expect(matching).toBeDefined();

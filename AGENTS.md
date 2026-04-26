@@ -45,7 +45,7 @@ it.
 - All warnings are errors. ESLint, svelte-check, Vite, Prettier — zero output on a clean tree.
 - Coverage thresholds: **85%** lines/functions/statements, **80%** branches (Vitest).
 - Lighthouse: **90** mobile / **100** desktop perf, **95** a11y/SEO/best-practices.
-- Tests live alongside source as `*.test.ts` (or `*.test.svelte.ts` for component tests).
+- Tests live alongside source as `*.test.ts` (or `*.svelte.test.ts` for component tests).
 - E2E specs in `e2e/`. Smoke spec must always pass before a release tag.
 - Tests cover positive, negative, error, and edge cases. Use `*.skip` only with a TODO.
 
