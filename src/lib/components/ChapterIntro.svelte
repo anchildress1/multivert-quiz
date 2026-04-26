@@ -5,13 +5,11 @@
 		id: string;
 		numeral: 'I' | 'II' | 'III' | 'IV';
 		title: string;
-		dek: string;
 		archetype: Archetype;
 		count: number;
-		dimension: string;
 	}
 
-	const { id, numeral, title, dek, archetype, count, dimension }: Props = $props();
+	const { id, numeral, title, archetype, count }: Props = $props();
 </script>
 
 <section
@@ -25,12 +23,11 @@
 	<div class="chapter__inner">
 		<div class="chapter__rule" aria-hidden="true"></div>
 		<p class="chapter__kicker">
-			Chapter {numeral} · {count} statements · {dimension}
+			Chapter {numeral} · {count} statements
 		</p>
 		<h2 class="chapter__title">
-			On <em>{title}</em>
+			<em>{title}</em>
 		</h2>
-		<p class="chapter__dek">{dek}</p>
 	</div>
 	<div class="chapter__edge" aria-hidden="true"></div>
 </section>
@@ -103,17 +100,6 @@
 	.chapter__title em {
 		font-style: italic;
 		color: var(--accent-ink);
-	}
-
-	.chapter__dek {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: clamp(20px, 2.4vw, 28px);
-		line-height: 1.4;
-		color: var(--ink-70);
-		margin: 28px auto 0;
-		max-width: 560px;
-		text-wrap: pretty;
 	}
 
 	.chapter__edge {

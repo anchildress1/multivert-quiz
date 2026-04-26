@@ -21,9 +21,7 @@ test.describe('landing + scroll quiz', () => {
 			await expect(page.locator(`#${id}`)).toBeAttached();
 		}
 		for (const title of ['Energy', 'Belonging', 'Crowds', 'Swings']) {
-			await expect(
-				page.getByRole('heading', { level: 2, name: new RegExp(`^On ${title}`) })
-			).toBeAttached();
+			await expect(page.getByRole('heading', { level: 2, name: title })).toBeAttached();
 		}
 	});
 

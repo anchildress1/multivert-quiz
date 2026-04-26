@@ -27,9 +27,7 @@
 		dimension: Dimension;
 		numeral: 'I' | 'II' | 'III' | 'IV';
 		title: string;
-		dek: string;
 		archetype: Archetype;
-		dimensionLabel: string;
 	}
 
 	const chapters: Chapter[] = [
@@ -38,36 +36,28 @@
 			dimension: 'extraversion',
 			numeral: 'I',
 			title: 'Energy',
-			dek: 'Where you charge from. Inward, outward, or somewhere on the dial between them.',
-			archetype: 'introvert',
-			dimensionLabel: 'extraversion'
+			archetype: 'introvert'
 		},
 		{
 			id: 'chapter-belonging',
 			dimension: 'belonging',
 			numeral: 'II',
 			title: 'Belonging',
-			dek: 'How you fit into groups — or how you don’t. The newcomer dimension lives here.',
-			archetype: 'otrovert',
-			dimensionLabel: 'belonging'
+			archetype: 'otrovert'
 		},
 		{
 			id: 'chapter-crowds',
 			dimension: 'group_size',
 			numeral: 'III',
 			title: 'Crowds',
-			dek: 'Big rooms, small rooms. Five quick reads on the size you’d pick.',
-			archetype: 'extrovert',
-			dimensionLabel: 'group size'
+			archetype: 'extrovert'
 		},
 		{
 			id: 'chapter-swings',
 			dimension: 'swings',
 			numeral: 'IV',
 			title: 'Swings',
-			dek: 'Steady waters or shifting tides. The variance signal lives here.',
-			archetype: 'omnivert',
-			dimensionLabel: 'situational variance'
+			archetype: 'omnivert'
 		}
 	];
 
@@ -203,15 +193,13 @@
 			id={chapter.id}
 			numeral={chapter.numeral}
 			title={chapter.title}
-			dek={chapter.dek}
 			archetype={chapter.archetype}
 			count={grouped[chapter.dimension].length}
-			dimension={chapter.dimensionLabel}
 		/>
 
 		<section class="quiz__chapter" aria-labelledby="{chapter.id}-heading" data-chapter={chapter.id}>
 			<h3 id="{chapter.id}-heading" class="quiz__sr-only">
-				Questions on {chapter.dimensionLabel}
+				Chapter {chapter.numeral}: {chapter.title}
 			</h3>
 			{#each grouped[chapter.dimension] as q, qi (q.id)}
 				{@const globalIndex =
