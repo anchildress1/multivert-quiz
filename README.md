@@ -37,5 +37,5 @@ See the [`Makefile`](./Makefile) for the full target list.
 
 [Polyform Shield 1.0.0](./LICENSE) — Copyright © 2026 Ashley Childress.
 
-Personal, professional, and commercial *use* is permitted; *monetization* (sale,
+Personal, professional, and commercial _use_ is permitted; _monetization_ (sale,
 paid SaaS, rebranded resale) requires prior written permission.

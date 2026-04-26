@@ -1,0 +1,47 @@
+# Lefthook — git hook runner. Docs: https://lefthook.dev/configuration/
+# Local-only overrides go in lefthook-local.yml (gitignored).
+
+pre-commit:
+  parallel: false
+  jobs:
+    - name: format
+      glob: '*.{js,ts,svelte,css,md,json,yml,yaml,html}'
+      run: pnpm exec prettier --write {staged_files} && git add {staged_files}
+
+    - name: lint
+      glob: '*.{js,ts,svelte}'
+      run: pnpm exec eslint --fix {staged_files} && git add {staged_files}
+
+    - name: actionlint
+      glob: '.github/workflows/*.{yml,yaml}'
+      run: |
+        if command -v actionlint >/dev/null 2>&1; then
+          actionlint {staged_files}
+        else
+          echo "actionlint not installed — skipping. brew install actionlint to enable." >&2
+        fi
+
+    - name: scan-secrets
+      run: |
+        if command -v gitleaks >/dev/null 2>&1; then
+          gitleaks git --pre-commit --staged --redact
+        else
+          echo "gitleaks not installed — skipping. brew install gitleaks to enable." >&2
+        fi
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: typecheck
+      run: pnpm check
+
+    - name: test
+      run: pnpm test
+
+    - name: build
+      run: pnpm build
