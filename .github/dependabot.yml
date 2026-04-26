@@ -1,0 +1,75 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/Chicago'
+    open-pull-requests-limit: 5
+    versioning-strategy: 'increase'
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'npm'
+    groups:
+      svelte-stack:
+        patterns:
+          - 'svelte'
+          - 'svelte-*'
+          - '@sveltejs/*'
+          - 'vite'
+          - 'vitest'
+          - '@vitest/*'
+          - '@vitejs/*'
+      tailwind:
+        patterns:
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+      lint-format:
+        patterns:
+          - 'eslint'
+          - 'eslint-*'
+          - '@eslint/*'
+          - 'typescript-eslint'
+          - 'prettier'
+          - 'prettier-*'
+          - 'globals'
+      testing:
+        patterns:
+          - '@playwright/*'
+          - 'playwright'
+          - '@lhci/*'
+      tooling:
+        patterns:
+          - 'lefthook'
+          - 'wrangler'
+          - 'typescript'
+          - '@types/*'
+      commitlint:
+        patterns:
+          - '@commitlint/*'
+          - '@checkmarkdevtools/*'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/Chicago'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'ci(deps)'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    groups:
+      gha:
+        patterns:
+          - '*'
