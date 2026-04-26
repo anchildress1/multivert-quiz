@@ -72,6 +72,9 @@ score computation.
 - Production branch: `main`
 - Deploy is GHA-driven via `cloudflare/wrangler-action`. Repo secrets:
   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+- The deploy workflow runs **only on `release: published`** events (and
+  `workflow_dispatch`), not on every push. Releases are cut by Release
+  Please, so `main` only deploys when a release PR is merged.
 
 ## Security
 
