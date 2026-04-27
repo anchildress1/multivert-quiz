@@ -72,6 +72,52 @@
 	 *     are likely scrolling back to fine-tune rather than progressing), or
 	 *   - the user has prefers-reduced-motion (we respect their pacing).
 	 */
+	/**
+	 * Forward-progress lock: the user can scroll up freely to revise earlier
+	 * answers but cannot scroll past the first unanswered question. If they
+	 * try, snap them back to it AND bump `nudgeAt` so the row pulses to draw
+	 * the user's eye to the question they need to answer.
+	 */
+	const firstUnansweredId = $derived.by(() => {
+		const found = questions.find((q) => store.answers[q.id]?.state !== 'answered');
+		return found?.id ?? null;
+	});
+
+	let nudgeTargetId = $state<string | null>(null);
+	let nudgeAt = $state(0);
+
+	$effect(() => {
+		if (!browser) return;
+		if (firstUnansweredId === null) return; // all answered → no lock
+		const targetId = firstUnansweredId;
+
+		let isLocking = false;
+		const onScroll = () => {
+			if (isLocking) return;
+			const el = document.getElementById(`q-${targetId}`);
+			if (!el) return;
+			const rect = el.getBoundingClientRect();
+			const headerH = 72;
+			// Only bounce when the user has clearly tried to scroll past — the
+			// unanswered question's bottom has crossed above the sticky header.
+			if (rect.bottom < headerH) {
+				isLocking = true;
+				const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+				el.scrollIntoView({
+					behavior: reduceMotion ? 'auto' : 'smooth',
+					block: 'start'
+				});
+				nudgeTargetId = targetId;
+				nudgeAt = Date.now();
+				setTimeout(() => {
+					isLocking = false;
+				}, 700);
+			}
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	});
+
 	function handleAnswerCommit(qId: string) {
 		if (!browser) return;
 		const idx = questions.findIndex((q) => q.id === qId);
@@ -172,21 +218,24 @@
 </header>
 
 <main class="quiz">
+	{#if activeChapter}
+		{@const head = activeChapter}
+		<ChapterIntro
+			id="active-chapter-head"
+			numeral={head.numeral}
+			title={head.title}
+			archetype={head.archetype}
+			count={grouped[head.dimension].length}
+		/>
+	{/if}
+
 	{#each CHAPTERS as chapter, ci (chapter.id)}
 		<section
 			id={chapter.id}
 			class="chapter-wrap"
-			aria-labelledby="{chapter.id}-title"
+			aria-label="Chapter {chapter.numeral} — {chapter.title}"
 			data-archetype={chapter.archetype}
 		>
-			<ChapterIntro
-				id="{chapter.id}-title"
-				numeral={chapter.numeral}
-				title={chapter.title}
-				archetype={chapter.archetype}
-				count={grouped[chapter.dimension].length}
-			/>
-
 			{#each grouped[chapter.dimension] as q, qi (q.id)}
 				{@const globalIndex =
 					CHAPTERS.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
@@ -198,7 +247,8 @@
 					total={store.total}
 					{accent}
 					value={entry.value}
-					state={entry.state}
+					phase={entry.state}
+					nudgeAt={nudgeTargetId === q.id ? nudgeAt : 0}
 					onchange={(next) => {
 						store.setAnswer(q.id, next);
 						if (next.state === 'answered') handleAnswerCommit(q.id);

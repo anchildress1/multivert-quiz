@@ -11,7 +11,7 @@
 		labelledBy?: string;
 		accent?: Archetype;
 		value?: number | null;
-		state?: SliderState;
+		phase?: SliderState;
 		onchange?: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
 	}
 
@@ -21,7 +21,7 @@
 		labelledBy,
 		accent = 'otrovert',
 		value = null,
-		state = 'unset',
+		phase = 'unset',
 		onchange
 	}: Props = $props();
 
@@ -34,26 +34,60 @@
 	const fillFromMid = $derived(Math.abs(fillPercent - 50));
 	const fillStart = $derived(Math.min(50, fillPercent));
 
+	// Tracks whether the user has interacted in this mounted instance. Used so
+	// the click handler can commit a neutral (0) answer that the native
+	// `change` event would otherwise swallow — clicking exactly at the
+	// already-rendered thumb position doesn't change the input value, so
+	// `input` / `change` never fire and the answer would otherwise be stuck
+	// at `unset` for any user who genuinely meant to pick neutral.
+	// Plain `let` (no $state) — only read inside event handlers, never in
+	// the template, so reactivity isn't needed and avoids the runtime
+	// collision between the `state` prop name and the `$state` rune.
+	let hasInteracted = false;
+
 	function handleInput(event: Event) {
+		hasInteracted = true;
 		const target = event.target as HTMLInputElement;
 		const next = Number(target.value);
 		onchange?.({ value: next, state: 'in-progress' });
 	}
 
 	function handleChange(event: Event) {
+		hasInteracted = true;
 		const target = event.target as HTMLInputElement;
 		const next = Number(target.value);
 		onchange?.({ value: next, state: 'answered' });
 	}
 
 	function handleFocus() {
-		if (state === 'unset' && value !== null) {
+		if (phase === 'unset' && value !== null) {
 			onchange?.({ value, state: 'in-progress' });
 		}
 	}
+
+	function handleClick(event: MouseEvent) {
+		// Skip if the user has already moved the slider in this session — input/
+		// change have done the right thing. Only fires for the no-op-value path.
+		if (hasInteracted) return;
+		hasInteracted = true;
+		const target = event.currentTarget as HTMLInputElement;
+		onchange?.({ value: Number(target.value), state: 'answered' });
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		// Same problem on the keyboard: pressing Enter or Space on the focused
+		// thumb without changing the value should still commit. Arrow keys
+		// already mutate the value so they go through input/change.
+		if (event.key !== 'Enter' && event.key !== ' ') return;
+		if (hasInteracted) return;
+		event.preventDefault();
+		hasInteracted = true;
+		const target = event.currentTarget as HTMLInputElement;
+		onchange?.({ value: Number(target.value), state: 'answered' });
+	}
 </script>
 
-<div class="slider" data-state={state} style:--accent="var(--vert-{accent}-mid)">
+<div class="slider" data-state={phase} style:--accent="var(--vert-{accent}-mid)">
 	{#if !labelledBy && label}
 		<label class="slider__sr" for={id}>{label}</label>
 	{/if}
@@ -61,12 +95,12 @@
 	<div class="slider__track" aria-hidden="true">
 		<div class="slider__rail"></div>
 		<div class="slider__center"></div>
-		{#if state !== 'unset'}
+		{#if phase !== 'unset'}
 			<div
 				class="slider__fill"
 				style:left="{fillStart}%"
 				style:width="{fillFromMid}%"
-				style:background={state === 'answered' ? 'var(--accent)' : 'var(--ink-70)'}
+				style:background={phase === 'answered' ? 'var(--accent)' : 'var(--ink-70)'}
 			></div>
 		{/if}
 		<div class="slider__ticks">
@@ -74,15 +108,15 @@
 				<span class="slider__tick"></span>
 			{/each}
 		</div>
-		{#if state !== 'unset'}
+		{#if phase !== 'unset'}
 			<div
 				class="slider__thumb"
 				style:left="{fillPercent}%"
-				style:border-color={state === 'answered' ? 'var(--accent)' : 'var(--ink)'}
+				style:border-color={phase === 'answered' ? 'var(--accent)' : 'var(--ink)'}
 			>
 				<span
 					class="slider__dot"
-					style:background={state === 'answered' ? 'var(--accent)' : 'var(--ink)'}
+					style:background={phase === 'answered' ? 'var(--accent)' : 'var(--ink)'}
 				></span>
 			</div>
 		{/if}
@@ -104,6 +138,8 @@
 		oninput={handleInput}
 		onchange={handleChange}
 		onfocus={handleFocus}
+		onclick={handleClick}
+		onkeydown={handleKeydown}
 	/>
 
 	<div class="slider__legend">
@@ -112,7 +148,7 @@
 		<span>exactly like me</span>
 	</div>
 
-	{#if state === 'unset'}
+	{#if phase === 'unset'}
 		<p class="slider__hint">tap or drag to answer</p>
 	{/if}
 </div>

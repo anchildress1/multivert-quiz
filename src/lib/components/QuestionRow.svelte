@@ -9,24 +9,52 @@
 		total: number;
 		accent: Archetype;
 		value: number | null;
-		state: SliderState;
+		phase: SliderState;
 		onchange: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
+		/** Timestamp that increments each time the parent wants to nudge this row
+		 *  (e.g., user tried to scroll past it without answering). Re-triggers
+		 *  the pulse animation on every change. */
+		nudgeAt?: number;
 	}
 
-	const { question, index, total, accent, value, state, onchange }: Props = $props();
+	const { question, index, total, accent, value, phase, onchange, nudgeAt = 0 }: Props = $props();
+
+	let pulseActive = $state(false);
+
+	$effect(() => {
+		// Read the timestamp so the effect re-runs each time the parent bumps
+		// it, even if the row was already pulsing.
+		void nudgeAt;
+		if (nudgeAt === 0) return;
+		pulseActive = false;
+		// Force a microtask gap so the class removal lands before re-adding it,
+		// otherwise back-to-back nudges wouldn't restart the animation.
+		const start = requestAnimationFrame(() => {
+			pulseActive = true;
+		});
+		const end = setTimeout(() => {
+			pulseActive = false;
+		}, 720);
+		return () => {
+			cancelAnimationFrame(start);
+			clearTimeout(end);
+		};
+	});
 
 	const padded = $derived(String(index + 1).padStart(2, '0'));
 	const statusLabel = $derived(
-		state === 'answered' ? '✓ answered' : state === 'in-progress' ? 'in progress' : 'unanswered'
+		phase === 'answered' ? '✓ answered' : phase === 'in-progress' ? 'in progress' : 'unanswered'
 	);
 </script>
 
 <article
 	class="row"
-	data-state={state}
+	class:row--pulse={pulseActive}
+	data-state={phase}
 	id="q-{question.id}"
 	style:--accent="var(--vert-{accent}-mid)"
 	style:--accent-ink="var(--vert-{accent}-ink)"
+	style:--accent-soft="var(--vert-{accent}-soft)"
 >
 	<div class="row__card">
 		<header class="row__meta">
@@ -47,7 +75,7 @@
 				labelledBy="statement-{question.id}"
 				{accent}
 				{value}
-				{state}
+				{phase}
 				{onchange}
 			/>
 		</div>
@@ -83,6 +111,72 @@
 		box-shadow:
 			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
 			0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent);
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.row--pulse .row__card {
+		animation:
+			row-pulse 720ms cubic-bezier(0.32, 0.72, 0, 1) both,
+			row-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+		border-color: var(--accent);
+	}
+
+	@keyframes row-pulse {
+		0% {
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 0 color-mix(in oklab, var(--accent) 60%, transparent);
+		}
+		35% {
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 12px color-mix(in oklab, var(--accent) 22%, transparent);
+		}
+		100% {
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 0 transparent;
+		}
+	}
+
+	@keyframes row-shake {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		20% {
+			transform: translateX(-5px);
+		}
+		40% {
+			transform: translateX(5px);
+		}
+		60% {
+			transform: translateX(-3px);
+		}
+		80% {
+			transform: translateX(3px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.row--pulse .row__card {
+			animation: row-pulse-soft 480ms ease-out both;
+			transform: none;
+		}
+		@keyframes row-pulse-soft {
+			0%,
+			100% {
+				border-color: var(--ink-08);
+			}
+			50% {
+				border-color: var(--accent);
+			}
+		}
 	}
 
 	.row__meta {

@@ -9,9 +9,11 @@
 
 :root,
 [data-theme='light'] {
-	--paper: #f5f1ea;
-	--paper-dk: #ebe5d9;
-	--surface: #faf7f1;
+	/* Modern off-white, neutral-warm. Replaces the classic-lace #f5f1ea
+	   from the POC — same family, less yellowed, more contemporary. */
+	--paper: #f8f7f4;
+	--paper-dk: #ecebe6;
+	--surface: #fcfbf8;
 	--ink: #1c1a17;
 	--ink-70: rgba(28, 26, 23, 0.7);
 	--ink-50: rgba(28, 26, 23, 0.5);
@@ -120,9 +122,11 @@ body {
 
 /* Page-level snap: questions inside the quiz snap one-per-viewport via
    `scroll-snap-align` on `.row`. `proximity` is intentionally gentler than
-   `mandatory` so the hero, chapter headers, submit, and result sections
-   don't trap the user mid-scroll. `scroll-padding-top` reserves space for
-   the sticky chapter header so a snapped question sits below it. */
+   `mandatory` — `mandatory` would force the page to land on a snap target
+   on initial load, jumping past the hero. The forward-progress lock in
+   the route's $effect handles the harder constraint (don't scroll past
+   an unanswered question). `scroll-padding-top` reserves space for the
+   sticky chapter header so a snapped question sits below it. */
 html {
 	scroll-snap-type: y proximity;
 	scroll-padding-top: var(--chapter-head-h, 72px);
