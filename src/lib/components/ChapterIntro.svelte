@@ -32,22 +32,15 @@
 
 <style>
 	.chapter {
-		position: sticky;
-		top: 0;
-		height: 100dvh;
+		position: relative;
+		min-height: clamp(280px, 50dvh, 520px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: clamp(64px, 12vh, 160px) 24px;
+		padding: clamp(48px, 8vh, 96px) 24px clamp(32px, 4vh, 56px);
 		isolation: isolate;
 		overflow: hidden;
 		color: var(--ink);
-		z-index: 0;
-		pointer-events: none;
-	}
-
-	.chapter__inner {
-		pointer-events: auto;
 	}
 
 	.chapter__numeral {
@@ -58,11 +51,11 @@
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(280px, 38vw, 560px);
+		font-size: clamp(200px, 32vw, 400px);
 		line-height: 0.8;
 		letter-spacing: -0.06em;
 		color: var(--accent-ink);
-		opacity: 0.05;
+		opacity: 0.07;
 		pointer-events: none;
 		user-select: none;
 		z-index: 0;
@@ -94,7 +87,7 @@
 	.chapter__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(44px, 7.5vw, 96px);
+		font-size: clamp(40px, 6.5vw, 80px);
 		line-height: 0.96;
 		letter-spacing: -0.03em;
 		margin: 0;

@@ -160,7 +160,8 @@ describe('scoreQuiz', () => {
 			const result = scoreQuiz(items);
 			const matching = result.fits.find((fit) => fit.archetype === archetype);
 			expect(matching).toBeDefined();
-			expect(matching!.fit).toBeGreaterThan(95);
+			if (!matching) throw new Error(`fit row missing for ${archetype}`);
+			expect(matching.fit).toBeGreaterThan(95);
 			expect(result.dominant).toBe(archetype);
 		}
 	});

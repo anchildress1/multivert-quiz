@@ -20,17 +20,31 @@
  *   6. Headline = the archetype with the highest fit %.
  */
 
-export type Dimension = 'extraversion' | 'belonging' | 'group_size' | 'swings';
+import {
+	ARCHETYPES,
+	ARCHETYPE_IDEALS,
+	ARCHETYPE_WEIGHTS,
+	DIMENSIONS,
+	type Archetype,
+	type Dimension,
+	type DimensionVector
+} from './archetypes';
 
-export type Archetype = 'extrovert' | 'introvert' | 'ambivert' | 'otrovert' | 'omnivert';
+export {
+	ARCHETYPES,
+	ARCHETYPE_IDEALS,
+	ARCHETYPE_WEIGHTS,
+	DIMENSIONS,
+	type Archetype,
+	type Dimension,
+	type DimensionVector
+};
 
 export interface AnsweredItem {
 	dimension: Dimension;
 	value: number;
 	reverse: boolean;
 }
-
-export type DimensionVector = Record<Dimension, number>;
 
 export interface ArchetypeFit {
 	archetype: Archetype;
@@ -42,34 +56,6 @@ export interface QuizResult {
 	fits: ArchetypeFit[];
 	dominant: Archetype;
 }
-
-const DIMENSIONS: readonly Dimension[] = ['extraversion', 'belonging', 'group_size', 'swings'];
-
-/** Locked archetype weight matrix (rows sum to 1). See PRD §P0. */
-export const ARCHETYPE_WEIGHTS: Readonly<Record<Archetype, DimensionVector>> = Object.freeze({
-	extrovert: { extraversion: 0.5, belonging: 0.2, group_size: 0.2, swings: 0.1 },
-	introvert: { extraversion: 0.5, belonging: 0.2, group_size: 0.2, swings: 0.1 },
-	ambivert: { extraversion: 0.55, belonging: 0.15, group_size: 0.2, swings: 0.1 },
-	otrovert: { extraversion: 0.1, belonging: 0.6, group_size: 0.2, swings: 0.1 },
-	omnivert: { extraversion: 0.05, belonging: 0.05, group_size: 0.05, swings: 0.85 }
-});
-
-/** Locked archetype ideal vectors (each dimension ∈ [-1, 1]). See PRD §P0. */
-export const ARCHETYPE_IDEALS: Readonly<Record<Archetype, DimensionVector>> = Object.freeze({
-	extrovert: { extraversion: 0.7, belonging: 0.5, group_size: 0.7, swings: -0.5 },
-	introvert: { extraversion: -0.7, belonging: 0.5, group_size: -0.7, swings: -0.5 },
-	ambivert: { extraversion: 0, belonging: 0.5, group_size: 0, swings: -0.5 },
-	otrovert: { extraversion: 0, belonging: -0.7, group_size: -0.5, swings: -0.5 },
-	omnivert: { extraversion: 0, belonging: 0, group_size: 0, swings: 0.8 }
-});
-
-const ARCHETYPES: readonly Archetype[] = [
-	'extrovert',
-	'introvert',
-	'ambivert',
-	'otrovert',
-	'omnivert'
-];
 
 /** Maximum possible weighted Euclidean distance for any user vs. ideal pair. */
 const MAX_DISTANCE = 2;

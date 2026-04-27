@@ -9,14 +9,14 @@
 			content="Multivert — a 5-type personality quiz with multi-axis scoring."
 		/>
 		<meta name="color-scheme" content="light dark" />
-		<meta name="theme-color" content="#0f172a" />
+		<!-- Browser chrome (address bar tint, etc). Light/dark variants match
+		     the --paper token in src/app.css for visual continuity. -->
+		<meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
 		<title>Multivert — what vert are you?</title>
 		%sveltekit.head%
 	</head>
-	<body
-		data-sveltekit-preload-data="hover"
-		class="min-h-dvh bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-50"
-	>
+	<body data-sveltekit-preload-data="hover" class="antialiased">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

@@ -26,15 +26,23 @@
 				<span class="meter__chapter-name meter__chapter-name--quiet">begin scrolling</span>
 			{/if}
 		</div>
-		<div class="meter__progress" aria-label="Quiz progress">
-			<span class="meter__count">
+		<div
+			class="meter__progress"
+			role="progressbar"
+			aria-label="Quiz progress"
+			aria-valuemin={0}
+			aria-valuemax={total}
+			aria-valuenow={answered}
+			aria-valuetext="{answered} of {total} answered ({pct}%)"
+		>
+			<span class="meter__count" aria-hidden="true">
 				<strong>{answered}</strong>
 				<span class="meter__total"> / {total}</span>
 			</span>
 			<span class="meter__bar" aria-hidden="true">
 				<span class="meter__fill" style:width="{pct}%"></span>
 			</span>
-			<span class="meter__pct">{pct}%</span>
+			<span class="meter__pct" aria-hidden="true">{pct}%</span>
 		</div>
 	</div>
 </div>

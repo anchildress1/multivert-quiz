@@ -5,16 +5,20 @@
 
 	interface Props {
 		id: string;
-		label: string;
+		/** Either provide a label string (rendered as a visually hidden <label>),
+		 *  or `labelledBy` pointing at the id of an existing visible element. */
+		label?: string;
+		labelledBy?: string;
 		accent?: Archetype;
 		value?: number | null;
 		state?: SliderState;
-		onchange?: (next: { value: number; state: SliderState }) => void;
+		onchange?: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
 	}
 
 	const {
 		id,
 		label,
+		labelledBy,
 		accent = 'otrovert',
 		value = null,
 		state = 'unset',
@@ -50,7 +54,9 @@
 </script>
 
 <div class="slider" data-state={state} style:--accent="var(--vert-{accent}-mid)">
-	<label class="slider__sr" for={id}>{label}</label>
+	{#if !labelledBy && label}
+		<label class="slider__sr" for={id}>{label}</label>
+	{/if}
 
 	<div class="slider__track" aria-hidden="true">
 		<div class="slider__rail"></div>
@@ -90,7 +96,8 @@
 		max={MAX}
 		step={STEP}
 		value={displayValue}
-		aria-label={label}
+		aria-labelledby={labelledBy}
+		aria-label={labelledBy ? undefined : label}
 		aria-valuemin={MIN}
 		aria-valuemax={MAX}
 		aria-valuenow={value ?? 0}

@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('$app/environment', () => ({ browser: true }));
 
 const { questions } = await import('../questions');
-const { createAnswersStore, questionsByDimension } = await import('./answers.svelte');
+const { createAnswersStore, QUESTIONS_BY_DIMENSION, questionsByDimension } =
+	await import('./answers.svelte');
 import type { Dimension, Question } from '../questions';
 
 const STORAGE_KEY = 'multivert.answers.v1';
@@ -127,7 +128,7 @@ describe('createAnswersStore', () => {
 		expect(store.totalAnswered).toBe(1);
 	});
 
-	it('clamps hydrated values to [-1, 1] and ignores non-finite numbers', () => {
+	it('clamps hydrated values to [-1, 1] and resets non-finite to seeded unset', () => {
 		const a = pickQuestion(0);
 		const b = pickQuestion(1);
 		const c = pickQuestion(2);
@@ -140,9 +141,11 @@ describe('createAnswersStore', () => {
 			})
 		);
 		const store = createAnswersStore();
-		expect(store.answers[a.id]?.value).toBe(1);
-		expect(store.answers[b.id]?.value).toBe(-1);
-		expect(store.answers[c.id]?.value).toBeNull();
+		expect(store.answers[a.id]).toEqual({ state: 'answered', value: 1 });
+		expect(store.answers[b.id]).toEqual({ state: 'answered', value: -1 });
+		// `answered` with NaN is corrupt — reset to the seeded `unset` entry so
+		// the discriminated union's invariant (answered ⇒ value: number) holds.
+		expect(store.answers[c.id]).toEqual({ state: 'unset', value: null });
 	});
 
 	it('falls back to seed when stored payload is malformed JSON', () => {
@@ -159,14 +162,16 @@ describe('createAnswersStore', () => {
 		expect(store.totalAnswered).toBe(0);
 	});
 
-	it('coerces unknown state strings to "unset" when hydrating', () => {
+	it('drops entries with unknown state strings back to seeded unset', () => {
 		const id = pickQuestion(0).id;
 		globalThis.localStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: 0.3, state: 'bogus' } })
 		);
 		const store = createAnswersStore();
-		expect(store.answers[id]).toEqual({ value: 0.3, state: 'unset' });
+		// Unknown state → fall through to the seeded entry. Value is dropped
+		// alongside the state so the discriminated union stays consistent.
+		expect(store.answers[id]).toEqual({ state: 'unset', value: null });
 	});
 
 	it('ignores unknown question ids in the stored payload', () => {
@@ -188,6 +193,17 @@ describe('createAnswersStore', () => {
 		const parsed: Record<string, { value: number | null; state: string }> = JSON.parse(raw);
 		const first = pickQuestion(0);
 		expect(parsed[first.id]).toEqual({ value: null, state: 'unset' });
+	});
+});
+
+describe('QUESTIONS_BY_DIMENSION (constant)', () => {
+	it('matches the legacy questionsByDimension() helper', () => {
+		const constant = QUESTIONS_BY_DIMENSION;
+		const helper = questionsByDimension();
+		expect(constant.extraversion.map((q) => q.id)).toEqual(helper.extraversion.map((q) => q.id));
+		expect(constant.belonging.map((q) => q.id)).toEqual(helper.belonging.map((q) => q.id));
+		expect(constant.group_size.map((q) => q.id)).toEqual(helper.group_size.map((q) => q.id));
+		expect(constant.swings.map((q) => q.id)).toEqual(helper.swings.map((q) => q.id));
 	});
 });
 

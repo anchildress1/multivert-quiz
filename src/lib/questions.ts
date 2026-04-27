@@ -52,7 +52,8 @@
  *   - The Otherness Institute (Kaminski): https://www.othernessinstitute.com/traits-of-otherness/
  */
 
-export type Dimension = 'extraversion' | 'belonging' | 'group_size' | 'swings';
+import type { Dimension } from './archetypes';
+export type { Dimension };
 
 export interface Question {
 	/** Stable ID used in scoring + analytics. Format: <dim>-<nn>. */

@@ -10,7 +10,7 @@
 		accent: Archetype;
 		value: number | null;
 		state: SliderState;
-		onchange: (next: { value: number; state: SliderState }) => void;
+		onchange: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
 	}
 
 	const { question, index, total, accent, value, state, onchange }: Props = $props();
@@ -37,12 +37,19 @@
 			<span class="row__status">{statusLabel}</span>
 		</header>
 
-		<p class="row__statement">
+		<p id="statement-{question.id}" class="row__statement">
 			{question.text}
 		</p>
 
 		<div class="row__slider">
-			<Slider id="slider-{question.id}" label={question.text} {accent} {value} {state} {onchange} />
+			<Slider
+				id="slider-{question.id}"
+				labelledBy="statement-{question.id}"
+				{accent}
+				{value}
+				{state}
+				{onchange}
+			/>
 		</div>
 	</div>
 </article>
@@ -51,11 +58,9 @@
 	.row {
 		position: relative;
 		z-index: 1;
-		min-height: 100dvh;
 		display: flex;
-		align-items: center;
 		justify-content: center;
-		padding: clamp(48px, 9vh, 96px) clamp(16px, 4vw, 64px);
+		padding: clamp(8px, 1.5vh, 16px) clamp(16px, 4vw, 64px);
 		scroll-margin-top: 96px;
 		background: transparent;
 	}
@@ -64,16 +69,16 @@
 		width: min(100%, 720px);
 		display: flex;
 		flex-direction: column;
-		gap: clamp(24px, 3vh, 36px);
-		padding: clamp(28px, 4vw, 48px) clamp(24px, 4vw, 48px);
-		background: color-mix(in oklab, var(--paper) 94%, transparent);
-		backdrop-filter: blur(20px) saturate(1.05);
-		-webkit-backdrop-filter: blur(20px) saturate(1.05);
+		gap: clamp(20px, 2.4vh, 28px);
+		padding: clamp(24px, 3vw, 36px) clamp(24px, 4vw, 40px);
+		background: color-mix(in oklab, var(--paper) 96%, transparent);
+		backdrop-filter: blur(16px) saturate(1.05);
+		-webkit-backdrop-filter: blur(16px) saturate(1.05);
 		border: 1px solid var(--ink-08);
 		border-radius: var(--card-radius);
 		box-shadow:
 			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-			0 24px 48px -16px color-mix(in oklab, var(--ink) 14%, transparent);
+			0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent);
 	}
 
 	.row__meta {
@@ -115,10 +120,10 @@
 
 	.row__statement {
 		font-family: var(--font-display);
-		font-size: clamp(22px, 2.8vw, 32px);
-		line-height: 1.25;
+		font-size: clamp(18px, 2.2vw, 24px);
+		line-height: 1.3;
 		font-weight: 400;
-		letter-spacing: -0.018em;
+		letter-spacing: -0.014em;
 		color: var(--ink);
 		margin: 0;
 		text-wrap: pretty;

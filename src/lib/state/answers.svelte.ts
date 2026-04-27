@@ -1,21 +1,41 @@
 import { browser } from '$app/environment';
-import type { SliderState } from '$lib/components/Slider.svelte';
+import type { Dimension } from '$lib/archetypes';
 import { questions, type Question } from '$lib/questions';
-import { scoreQuiz, type AnsweredItem, type Dimension, type QuizResult } from '$lib/scoring';
+import { scoreQuiz, type AnsweredItem, type QuizResult } from '$lib/scoring';
+
+/**
+ * Reactive answers store.
+ *
+ * SSR contract: this module is safe to import on the server, but the actual
+ * `createAnswersStore` factory should only be invoked in the browser. The
+ * route that hosts the quiz disables SSR (see `src/routes/+page.ts`) so the
+ * factory only runs after hydration. The `if (!browser)` guards in
+ * `readStoredAnswers` and `persist` exist as belt-and-braces.
+ *
+ * Storage versioning: `STORAGE_KEY` includes a `.v1` suffix. If the
+ * `AnswerEntry` shape ever changes, bump the suffix and (optionally) write a
+ * one-shot migration in `readStoredAnswers`.
+ */
 
 const STORAGE_KEY = 'multivert.answers.v1';
 
-export interface AnswerEntry {
-	value: number | null;
-	state: SliderState;
-}
+/**
+ * Discriminated union: an `answered` entry is guaranteed to carry a numeric
+ * value, while `unset` carries `null` and `in-progress` reflects a slider
+ * mid-drag (always numeric, but not yet committed). The compiler enforces
+ * the invariant at every consumer.
+ */
+export type AnswerEntry =
+	| { state: 'unset'; value: null }
+	| { state: 'in-progress'; value: number }
+	| { state: 'answered'; value: number };
 
 type AnswerMap = Record<string, AnswerEntry>;
 
 const seedAnswers = (): AnswerMap => {
 	const seed: AnswerMap = {};
 	for (const q of questions) {
-		seed[q.id] = { value: null, state: 'unset' };
+		seed[q.id] = { state: 'unset', value: null };
 	}
 	return seed;
 };
@@ -30,16 +50,18 @@ const readStoredAnswers = (): AnswerMap | null => {
 		const merged = seedAnswers();
 		for (const [id, entry] of Object.entries(parsed as Record<string, unknown>)) {
 			if (!(id in merged) || !entry || typeof entry !== 'object') continue;
-			const candidate = entry as Partial<AnswerEntry>;
-			const value =
+			const candidate = entry as { value?: unknown; state?: unknown };
+			const numericValue =
 				typeof candidate.value === 'number' && Number.isFinite(candidate.value)
 					? Math.max(-1, Math.min(1, candidate.value))
 					: null;
-			const state: SliderState =
-				candidate.state === 'answered' || candidate.state === 'in-progress'
-					? candidate.state
-					: 'unset';
-			merged[id] = { value, state };
+			if (candidate.state === 'answered' && numericValue !== null) {
+				merged[id] = { state: 'answered', value: numericValue };
+			} else if (candidate.state === 'in-progress' && numericValue !== null) {
+				merged[id] = { state: 'in-progress', value: numericValue };
+			}
+			// All other shapes (including 'answered' with non-finite value, or
+			// any unknown state) fall back to the seeded `unset` entry.
 		}
 		return merged;
 	} catch {
@@ -83,11 +105,17 @@ export const createAnswersStore = () => {
 
 	const result = $derived.by((): QuizResult | null => {
 		if (!allAnswered) return null;
-		const items: AnsweredItem[] = questions.map((q) => ({
-			dimension: q.dimension,
-			value: answers[q.id]!.value!,
-			reverse: q.reverse
-		}));
+		const items: AnsweredItem[] = [];
+		for (const q of questions) {
+			const entry = answers[q.id];
+			/* v8 ignore next 4 — `allAnswered` proves every entry is the answered
+			   variant; the runtime check exists so a corrupt store can't reach
+			   `scoreQuiz` with a partial vector. */
+			if (!entry || entry.state !== 'answered') {
+				return null;
+			}
+			items.push({ dimension: q.dimension, value: entry.value, reverse: q.reverse });
+		}
 		return scoreQuiz(items);
 	});
 
@@ -98,8 +126,8 @@ export const createAnswersStore = () => {
 
 	const reset = (): void => {
 		const fresh = seedAnswers();
-		for (const id of Object.keys(answers)) {
-			answers[id] = fresh[id]!;
+		for (const q of questions) {
+			answers[q.id] = fresh[q.id]!;
 		}
 		persist(answers);
 	};
@@ -130,6 +158,19 @@ export const createAnswersStore = () => {
 
 export type AnswersStore = ReturnType<typeof createAnswersStore>;
 
+/** Pre-grouped questions by dimension. Computed once at module load. */
+export const QUESTIONS_BY_DIMENSION: Readonly<Record<Dimension, readonly Question[]>> = (() => {
+	const grouped: Record<Dimension, Question[]> = {
+		extraversion: [],
+		belonging: [],
+		group_size: [],
+		swings: []
+	};
+	for (const q of questions) grouped[q.dimension].push(q);
+	return Object.freeze(grouped);
+})();
+
+/** @deprecated Prefer the pre-computed `QUESTIONS_BY_DIMENSION` constant. */
 export const questionsByDimension = (): Record<Dimension, Question[]> => {
 	const grouped: Record<Dimension, Question[]> = {
 		extraversion: [],

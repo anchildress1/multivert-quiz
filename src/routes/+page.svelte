@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { ACCENT_ROTATION, CHAPTERS, VERT_NAMES, VERT_ORDER, type Chapter } from '$lib/archetypes';
 	import ChapterIntro from '$lib/components/ChapterIntro.svelte';
 	import FiveDots from '$lib/components/FiveDots.svelte';
 	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
@@ -7,59 +8,11 @@
 	import Tagline from '$lib/components/Tagline.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 	import { questions } from '$lib/questions';
-	import type { Archetype, Dimension } from '$lib/scoring';
-	import { createAnswersStore, questionsByDimension } from '$lib/state/answers.svelte';
-	import { VERT_NAMES, VERT_ORDER } from '$lib/types';
+	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
+	import { APP_VERSION } from '$lib/version';
 
 	const store = createAnswersStore();
-	const grouped = questionsByDimension();
-
-	const accentRotation: readonly Archetype[] = [
-		'otrovert',
-		'introvert',
-		'ambivert',
-		'omnivert',
-		'extrovert'
-	];
-
-	interface Chapter {
-		id: string;
-		dimension: Dimension;
-		numeral: 'I' | 'II' | 'III' | 'IV';
-		title: string;
-		archetype: Archetype;
-	}
-
-	const chapters: Chapter[] = [
-		{
-			id: 'chapter-energy',
-			dimension: 'extraversion',
-			numeral: 'I',
-			title: 'Energy',
-			archetype: 'introvert'
-		},
-		{
-			id: 'chapter-belonging',
-			dimension: 'belonging',
-			numeral: 'II',
-			title: 'Belonging',
-			archetype: 'otrovert'
-		},
-		{
-			id: 'chapter-crowds',
-			dimension: 'group_size',
-			numeral: 'III',
-			title: 'Crowds',
-			archetype: 'extrovert'
-		},
-		{
-			id: 'chapter-swings',
-			dimension: 'swings',
-			numeral: 'IV',
-			title: 'Swings',
-			archetype: 'omnivert'
-		}
-	];
+	const grouped = QUESTIONS_BY_DIMENSION;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let scrollY = $state(0);
@@ -69,9 +22,10 @@
 	$effect(() => {
 		if (!browser) return;
 
-		const chapterTargets = chapters
-			.map((ch) => ({ chapter: ch, el: document.getElementById(ch.id) }))
-			.filter((entry): entry is { chapter: Chapter; el: HTMLElement } => entry.el !== null);
+		const chapterTargets = CHAPTERS.map((ch) => ({
+			chapter: ch,
+			el: document.getElementById(ch.id)
+		})).filter((entry): entry is { chapter: Chapter; el: HTMLElement } => entry.el !== null);
 
 		const chapterObserver = new IntersectionObserver(
 			(entries) => {
@@ -90,17 +44,25 @@
 		return () => chapterObserver.disconnect();
 	});
 
+	const firstChapter = CHAPTERS[0];
+
 	function scrollToFirstChapter(event: MouseEvent) {
-		if (!browser) return;
+		if (!browser || !firstChapter) return;
 		event.preventDefault();
-		const first = document.getElementById(chapters[0]!.id);
-		first?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		document
+			.getElementById(firstChapter.id)
+			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
 	function scrollToSubmit(event: MouseEvent) {
 		if (!browser) return;
 		event.preventDefault();
 		document.getElementById('submit')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	function revealResult() {
+		if (!browser) return;
+		document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 </script>
 
@@ -183,12 +145,12 @@
 
 	<div class="hero__footer">
 		<Tagline size={11} align="left" />
-		<div class="hero__version">v0.1 · proof of concept</div>
+		<div class="hero__version">{APP_VERSION}</div>
 	</div>
 </header>
 
 <main class="quiz">
-	{#each chapters as chapter, ci (chapter.id)}
+	{#each CHAPTERS as chapter, ci (chapter.id)}
 		<section
 			id={chapter.id}
 			class="chapter-wrap"
@@ -207,9 +169,9 @@
 			<div class="chapter-wrap__rows">
 				{#each grouped[chapter.dimension] as q, qi (q.id)}
 					{@const globalIndex =
-						chapters.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
-					{@const accent = accentRotation[globalIndex % accentRotation.length]!}
-					{@const entry = store.answers[q.id] ?? { value: null, state: 'unset' }}
+						CHAPTERS.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
+					{@const accent = ACCENT_ROTATION[globalIndex % ACCENT_ROTATION.length] ?? 'otrovert'}
+					{@const entry = store.answers[q.id] ?? { state: 'unset', value: null }}
 					<QuestionRow
 						question={q}
 						index={globalIndex}
@@ -242,6 +204,7 @@
 				type="button"
 				disabled={!store.allAnswered}
 				aria-disabled={!store.allAnswered}
+				onclick={revealResult}
 			>
 				{#if store.allAnswered}
 					See my five-vert breakdown <span aria-hidden="true">→</span>
@@ -256,9 +219,46 @@
 		</div>
 	</section>
 
+	{#if store.result}
+		{@const result = store.result}
+		<section id="result" class="result" aria-labelledby="result-title">
+			<div class="result__inner">
+				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
+				<h2 id="result-title" class="result__title">
+					You are an <em style:color="var(--vert-{result.dominant}-ink)"
+						>{VERT_NAMES[result.dominant].name}</em
+					>.
+				</h2>
+				<p class="result__lede">{VERT_NAMES[result.dominant].label}</p>
+
+				<ul class="result__bars">
+					{#each VERT_ORDER as vert (vert)}
+						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
+						<li class="result__bar" data-dominant={vert === result.dominant}>
+							<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
+							<span class="result__bar-track" aria-hidden="true">
+								<span
+									class="result__bar-fill"
+									style:width="{fit}%"
+									style:background="var(--vert-{vert}-mid)"
+								></span>
+							</span>
+							<span class="result__bar-pct">{fit.toFixed(1)}%</span>
+						</li>
+					{/each}
+				</ul>
+
+				<p class="result__hint">
+					Each bar is independent — the five percentages do not sum to 100. A strong introverted
+					otrovert can legitimately score high on both axes.
+				</p>
+			</div>
+		</section>
+	{/if}
+
 	<footer class="page-footer">
 		<Tagline size={11} align="left" />
-		<div class="page-footer__version">v0.1 · proof of concept</div>
+		<div class="page-footer__version">{APP_VERSION}</div>
 	</footer>
 </main>
 
@@ -501,8 +501,10 @@
 	.chapter-wrap__rows {
 		position: relative;
 		z-index: 1;
-		margin-top: -100dvh;
-		padding-top: 100dvh;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(12px, 1.6vh, 20px);
+		padding-bottom: clamp(48px, 8vh, 96px);
 	}
 
 	.submit {
@@ -579,6 +581,113 @@
 		font-size: 10px;
 		letter-spacing: 0.05em;
 		color: var(--ink-50);
+	}
+
+	.result {
+		background: var(--paper);
+		padding: clamp(64px, 10vh, 128px) clamp(16px, 4vw, 64px);
+		scroll-margin-top: 72px;
+	}
+
+	.result__inner {
+		max-width: 760px;
+		margin: 0 auto;
+	}
+
+	.result__eyebrow {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--ink-50);
+		margin: 0 0 18px;
+	}
+
+	.result__title {
+		font-family: var(--font-display);
+		font-weight: 400;
+		font-size: clamp(40px, 6vw, 72px);
+		line-height: 1.05;
+		letter-spacing: -0.025em;
+		margin: 0 0 16px;
+		text-wrap: balance;
+	}
+
+	.result__title em {
+		font-style: italic;
+	}
+
+	.result__lede {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(18px, 2.2vw, 22px);
+		color: var(--ink-70);
+		margin: 0 0 48px;
+	}
+
+	.result__bars {
+		list-style: none;
+		margin: 0 0 32px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	.result__bar {
+		display: grid;
+		grid-template-columns: minmax(96px, 120px) 1fr auto;
+		align-items: center;
+		gap: 16px;
+		font-family: var(--font-mono);
+		font-size: 12px;
+	}
+
+	.result__bar[data-dominant='true'] .result__bar-name,
+	.result__bar[data-dominant='true'] .result__bar-pct {
+		font-weight: 500;
+		color: var(--ink);
+	}
+
+	.result__bar-name {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: 18px;
+		color: var(--ink-70);
+	}
+
+	.result__bar-track {
+		height: 8px;
+		border-radius: 999px;
+		background: var(--ink-08);
+		overflow: hidden;
+		position: relative;
+	}
+
+	.result__bar[data-dominant='true'] .result__bar-track {
+		height: 12px;
+	}
+
+	.result__bar-fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		transition: width 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.result__bar-pct {
+		font-variant-numeric: tabular-nums;
+		color: var(--ink-50);
+		min-width: 56px;
+		text-align: right;
+	}
+
+	.result__hint {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		line-height: 1.6;
+		color: var(--ink-50);
+		margin: 0;
 	}
 
 	.page-footer {
