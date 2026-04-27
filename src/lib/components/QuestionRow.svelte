@@ -28,20 +28,22 @@
 	style:--accent="var(--vert-{accent}-mid)"
 	style:--accent-ink="var(--vert-{accent}-ink)"
 >
-	<header class="row__meta">
-		<span class="row__index">
-			{padded}<span class="row__total"> / {total}</span>
-		</span>
-		<span class="row__rule" aria-hidden="true"></span>
-		<span class="row__status">{statusLabel}</span>
-	</header>
+	<div class="row__card">
+		<header class="row__meta">
+			<span class="row__index">
+				{padded}<span class="row__total"> / {total}</span>
+			</span>
+			<span class="row__rule" aria-hidden="true"></span>
+			<span class="row__status">{statusLabel}</span>
+		</header>
 
-	<p class="row__statement">
-		{question.text}
-	</p>
+		<p class="row__statement">
+			{question.text}
+		</p>
 
-	<div class="row__slider">
-		<Slider id="slider-{question.id}" label={question.text} {accent} {value} {state} {onchange} />
+		<div class="row__slider">
+			<Slider id="slider-{question.id}" label={question.text} {accent} {value} {state} {onchange} />
+		</div>
 	</div>
 </article>
 
@@ -49,32 +51,29 @@
 	.row {
 		position: relative;
 		z-index: 1;
-		max-width: 760px;
-		margin: 0 auto;
-		padding: 64px 24px;
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 32px;
-		scroll-margin-top: 96px;
 		min-height: 100dvh;
+		display: flex;
+		align-items: center;
 		justify-content: center;
+		padding: clamp(48px, 9vh, 96px) clamp(16px, 4vw, 64px);
+		scroll-margin-top: 96px;
 		background: transparent;
 	}
 
-	.row::before {
-		content: '';
-		position: absolute;
-		inset: 16px clamp(8px, 4vw, 64px);
-		background: color-mix(in oklab, var(--paper) 96%, transparent);
+	.row__card {
+		width: min(100%, 720px);
+		display: flex;
+		flex-direction: column;
+		gap: clamp(24px, 3vh, 36px);
+		padding: clamp(28px, 4vw, 48px) clamp(24px, 4vw, 48px);
+		background: color-mix(in oklab, var(--paper) 94%, transparent);
 		backdrop-filter: blur(20px) saturate(1.05);
 		-webkit-backdrop-filter: blur(20px) saturate(1.05);
 		border: 1px solid var(--ink-08);
 		border-radius: var(--card-radius);
 		box-shadow:
 			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-			0 24px 48px -16px color-mix(in oklab, var(--ink) 12%, transparent);
-		z-index: -1;
+			0 24px 48px -16px color-mix(in oklab, var(--ink) 14%, transparent);
 	}
 
 	.row__meta {
@@ -116,8 +115,8 @@
 
 	.row__statement {
 		font-family: var(--font-display);
-		font-size: clamp(24px, 3.4vw, 36px);
-		line-height: 1.22;
+		font-size: clamp(22px, 2.8vw, 32px);
+		line-height: 1.25;
 		font-weight: 400;
 		letter-spacing: -0.018em;
 		color: var(--ink);
@@ -129,12 +128,5 @@
 	.row__slider {
 		display: flex;
 		justify-content: center;
-	}
-
-	@media (min-width: 768px) {
-		.row {
-			padding: 80px 24px;
-			gap: 40px;
-		}
 	}
 </style>
