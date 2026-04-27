@@ -12,90 +12,83 @@
 	const { id, numeral, title, archetype, count }: Props = $props();
 </script>
 
-<div
-	class="chapter"
+<header
+	class="chapter-head"
 	data-archetype={archetype}
 	style:--accent="var(--vert-{archetype}-mid)"
 	style:--accent-ink="var(--vert-{archetype}-ink)"
 >
-	<span aria-hidden="true" class="chapter__numeral">{numeral}</span>
-	<div class="chapter__inner">
-		<div class="chapter__rule" aria-hidden="true"></div>
-		<p class="chapter__kicker">
-			Chapter {numeral} · {count} statements
-		</p>
-		<h2 {id} class="chapter__title">
-			<em>{title}</em>
-		</h2>
-	</div>
-</div>
+	<span class="chapter-head__numeral" aria-hidden="true">{numeral}</span>
+	<div class="chapter-head__rule" aria-hidden="true"></div>
+	<h2 {id} class="chapter-head__title">
+		<em>{title}</em>
+	</h2>
+	<span class="chapter-head__count">{count} statements</span>
+</header>
 
 <style>
-	.chapter {
-		position: relative;
-		min-height: clamp(280px, 50dvh, 520px);
-		display: flex;
+	.chapter-head {
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		display: grid;
+		grid-template-columns: auto 1fr auto auto;
 		align-items: center;
-		justify-content: center;
-		padding: clamp(48px, 8vh, 96px) 24px clamp(32px, 4vh, 56px);
-		isolation: isolate;
-		overflow: hidden;
-		color: var(--ink);
+		gap: clamp(12px, 2vw, 20px);
+		padding: 14px clamp(16px, 4vw, 56px);
+		min-height: 72px;
+		background: color-mix(in oklab, var(--paper) 88%, transparent);
+		backdrop-filter: blur(18px) saturate(1.05);
+		-webkit-backdrop-filter: blur(18px) saturate(1.05);
+		border-bottom: 1px solid var(--ink-08);
 	}
 
-	.chapter__numeral {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
+	.chapter-head__numeral {
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(200px, 32vw, 400px);
-		line-height: 0.8;
-		letter-spacing: -0.06em;
+		font-size: clamp(28px, 3vw, 36px);
+		line-height: 1;
 		color: var(--accent-ink);
-		opacity: 0.07;
-		pointer-events: none;
-		user-select: none;
-		z-index: 0;
-	}
-
-	.chapter__inner {
-		position: relative;
-		z-index: 1;
-		max-width: 760px;
+		min-width: 32px;
 		text-align: center;
 	}
 
-	.chapter__rule {
-		width: 80px;
-		height: 2px;
-		margin: 0 auto 28px;
-		background: var(--accent);
+	.chapter-head__rule {
+		height: 1px;
+		background: linear-gradient(to right, var(--accent), transparent 80%);
 	}
 
-	.chapter__kicker {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--accent-ink);
-		margin: 0 0 24px;
-	}
-
-	.chapter__title {
+	.chapter-head__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(40px, 6.5vw, 80px);
-		line-height: 0.96;
-		letter-spacing: -0.03em;
+		font-size: clamp(20px, 2.4vw, 28px);
+		line-height: 1;
+		letter-spacing: -0.02em;
 		margin: 0;
-		text-wrap: balance;
+		color: var(--ink);
+		white-space: nowrap;
 	}
 
-	.chapter__title em {
+	.chapter-head__title em {
 		font-style: italic;
-		color: var(--accent-ink);
+	}
+
+	.chapter-head__count {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--ink-50);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 640px) {
+		.chapter-head__count {
+			display: none;
+		}
+		.chapter-head {
+			grid-template-columns: auto 1fr auto;
+		}
 	}
 </style>

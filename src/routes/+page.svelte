@@ -64,6 +64,28 @@
 		if (!browser) return;
 		document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
+
+	/**
+	 * Auto-advance to the next question once the user commits an answer.
+	 * Skipped when:
+	 *   - the user is revising (the next question is already answered, so they
+	 *     are likely scrolling back to fine-tune rather than progressing), or
+	 *   - the user has prefers-reduced-motion (we respect their pacing).
+	 */
+	function handleAnswerCommit(qId: string) {
+		if (!browser) return;
+		const idx = questions.findIndex((q) => q.id === qId);
+		if (idx < 0 || idx >= questions.length - 1) return;
+		const next = questions[idx + 1];
+		if (!next) return;
+		if (store.answers[next.id]?.state === 'answered') return;
+		const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+		const behavior: ScrollBehavior = reduceMotion ? 'auto' : 'smooth';
+		// Wait for the slider's commit animation to settle before scrolling.
+		setTimeout(() => {
+			document.getElementById(`q-${next.id}`)?.scrollIntoView({ behavior, block: 'start' });
+		}, 450);
+	}
 </script>
 
 <svelte:head>
@@ -156,7 +178,6 @@
 			class="chapter-wrap"
 			aria-labelledby="{chapter.id}-title"
 			data-archetype={chapter.archetype}
-			style:background="var(--vert-{chapter.archetype}-soft)"
 		>
 			<ChapterIntro
 				id="{chapter.id}-title"
@@ -166,23 +187,24 @@
 				count={grouped[chapter.dimension].length}
 			/>
 
-			<div class="chapter-wrap__rows">
-				{#each grouped[chapter.dimension] as q, qi (q.id)}
-					{@const globalIndex =
-						CHAPTERS.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
-					{@const accent = ACCENT_ROTATION[globalIndex % ACCENT_ROTATION.length] ?? 'otrovert'}
-					{@const entry = store.answers[q.id] ?? { state: 'unset', value: null }}
-					<QuestionRow
-						question={q}
-						index={globalIndex}
-						total={store.total}
-						{accent}
-						value={entry.value}
-						state={entry.state}
-						onchange={(next) => store.setAnswer(q.id, next)}
-					/>
-				{/each}
-			</div>
+			{#each grouped[chapter.dimension] as q, qi (q.id)}
+				{@const globalIndex =
+					CHAPTERS.slice(0, ci).reduce((sum, c) => sum + grouped[c.dimension].length, 0) + qi}
+				{@const accent = ACCENT_ROTATION[globalIndex % ACCENT_ROTATION.length] ?? 'otrovert'}
+				{@const entry = store.answers[q.id] ?? { state: 'unset', value: null }}
+				<QuestionRow
+					question={q}
+					index={globalIndex}
+					total={store.total}
+					{accent}
+					value={entry.value}
+					state={entry.state}
+					onchange={(next) => {
+						store.setAnswer(q.id, next);
+						if (next.state === 'answered') handleAnswerCommit(q.id);
+					}}
+				/>
+			{/each}
 		</section>
 	{/each}
 
@@ -494,17 +516,8 @@
 	.chapter-wrap {
 		position: relative;
 		isolation: isolate;
-		scroll-margin-top: 64px;
 		color: var(--ink);
-	}
-
-	.chapter-wrap__rows {
-		position: relative;
-		z-index: 1;
-		display: flex;
-		flex-direction: column;
-		gap: clamp(12px, 1.6vh, 20px);
-		padding-bottom: clamp(48px, 8vh, 96px);
+		background: var(--paper);
 	}
 
 	.submit {

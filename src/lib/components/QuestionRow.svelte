@@ -59,9 +59,13 @@
 		position: relative;
 		z-index: 1;
 		display: flex;
+		align-items: center;
 		justify-content: center;
-		padding: clamp(8px, 1.5vh, 16px) clamp(16px, 4vw, 64px);
-		scroll-margin-top: 96px;
+		padding: clamp(24px, 4vh, 56px) clamp(16px, 4vw, 64px);
+		min-height: calc(100dvh - var(--chapter-head-h, 72px));
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+		scroll-margin-top: var(--chapter-head-h, 72px);
 		background: transparent;
 	}
 
