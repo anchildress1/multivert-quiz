@@ -53,7 +53,7 @@
  */
 
 import type { Dimension } from './archetypes';
-export type { Dimension };
+export type { Dimension } from './archetypes';
 
 export interface Question {
 	/** Stable ID used in scoring + analytics. Format: <dim>-<nn>. */

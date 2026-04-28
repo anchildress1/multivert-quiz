@@ -65,16 +65,13 @@
 	color-scheme: light;
 }
 
-[data-theme='dark'] {
-	color-scheme: dark;
-}
-
 /* Dark-theme oklch anchors. `light-dark()` only accepts colors, so the
    scalar lightness/chroma values still need a media-query branch. The
-   explicit-override branch and the system-preference branch carry an
+   explicit-override block and the system-preference block carry an
    identical declaration — CSS does not let us union a media query with a
    selector, so the duplication of these four lines is forced. */
 [data-theme='dark'] {
+	color-scheme: dark;
 	--vert-mid-l: 0.74;
 	--vert-soft-l: 0.3;
 	--vert-soft-c: 0.06;

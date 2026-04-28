@@ -108,10 +108,10 @@ export const createAnswersStore = () => {
 		const items: AnsweredItem[] = [];
 		for (const q of questions) {
 			const entry = answers[q.id];
-			/* v8 ignore next 4 — `allAnswered` proves every entry is the answered
+			/* v8 ignore next 3 — `allAnswered` proves every entry is the answered
 			   variant; the runtime check exists so a corrupt store can't reach
 			   `scoreQuiz` with a partial vector. */
-			if (!entry || entry.state !== 'answered') {
+			if (entry?.state !== 'answered') {
 				return null;
 			}
 			items.push({ dimension: q.dimension, value: entry.value, reverse: q.reverse });

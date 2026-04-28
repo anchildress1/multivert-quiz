@@ -38,7 +38,7 @@ export {
 	type Archetype,
 	type Dimension,
 	type DimensionVector
-};
+} from './archetypes';
 
 export interface AnsweredItem {
 	dimension: Dimension;
