@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { VERT_ORDER } from '$lib/types';
-	import type { Archetype } from '$lib/scoring';
+	import { VERT_ORDER, type Archetype } from '$lib/archetypes';
 
 	interface Props {
 		size?: number;
