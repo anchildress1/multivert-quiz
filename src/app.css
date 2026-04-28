@@ -5,23 +5,29 @@
    components can reference them via Tailwind arbitrary values
    (e.g. `bg-[var(--paper)]`). Vert hue palette is computed in oklch()
    from a per-archetype hue token + global lightness/chroma anchors.
+
+   Theme resolution: `color-scheme: light dark` lets the browser pick
+   based on the system preference, which `light-dark()` then routes to
+   the right token value. Explicit overrides come from `[data-theme]`.
    ─────────────────────────────────────────────────────────────────────── */
 
-:root,
-[data-theme='light'] {
-	/* Modern off-white, neutral-warm. Replaces the classic-lace #f5f1ea
-	   from the POC — same family, less yellowed, more contemporary. */
-	--paper: #f8f7f4;
-	--paper-dk: #ecebe6;
-	--surface: #fcfbf8;
-	--ink: #1c1a17;
-	--ink-70: rgba(28, 26, 23, 0.7);
-	--ink-50: rgba(28, 26, 23, 0.5);
-	--ink-30: rgba(28, 26, 23, 0.3);
-	--ink-12: rgba(28, 26, 23, 0.12);
-	--ink-08: rgba(28, 26, 23, 0.08);
-	--rule: rgba(28, 26, 23, 0.18);
+:root {
+	color-scheme: light dark;
 
+	--paper: light-dark(#f8f7f4, #1a1815);
+	--paper-dk: light-dark(#ecebe6, #23201c);
+	--surface: light-dark(#fcfbf8, #221f1b);
+	--ink: light-dark(#1c1a17, #f3ede1);
+	--ink-70: light-dark(rgba(28, 26, 23, 0.7), rgba(243, 237, 225, 0.74));
+	--ink-50: light-dark(rgba(28, 26, 23, 0.5), rgba(243, 237, 225, 0.52));
+	--ink-30: light-dark(rgba(28, 26, 23, 0.3), rgba(243, 237, 225, 0.32));
+	--ink-12: light-dark(rgba(28, 26, 23, 0.12), rgba(243, 237, 225, 0.14));
+	--ink-08: light-dark(rgba(28, 26, 23, 0.08), rgba(243, 237, 225, 0.09));
+	--rule: light-dark(rgba(28, 26, 23, 0.18), rgba(243, 237, 225, 0.22));
+
+	/* oklch() lightness/chroma anchors. The chroma values match across
+	   themes; only the lightness scalars shift. `light-dark()` only takes
+	   colors, so the scalars themselves still need a media-query branch. */
 	--vert-mid-l: 0.62;
 	--vert-mid-c: 0.16;
 	--vert-soft-l: 0.95;
@@ -29,57 +35,6 @@
 	--vert-ink-l: 0.32;
 	--vert-ink-c: 0.1;
 
-	color-scheme: light;
-}
-
-[data-theme='dark'] {
-	--paper: #1a1815;
-	--paper-dk: #23201c;
-	--surface: #221f1b;
-	--ink: #f3ede1;
-	--ink-70: rgba(243, 237, 225, 0.74);
-	--ink-50: rgba(243, 237, 225, 0.52);
-	--ink-30: rgba(243, 237, 225, 0.32);
-	--ink-12: rgba(243, 237, 225, 0.14);
-	--ink-08: rgba(243, 237, 225, 0.09);
-	--rule: rgba(243, 237, 225, 0.22);
-
-	--vert-mid-l: 0.74;
-	--vert-mid-c: 0.16;
-	--vert-soft-l: 0.3;
-	--vert-soft-c: 0.06;
-	--vert-ink-l: 0.86;
-	--vert-ink-c: 0.1;
-
-	color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) {
-		--paper: #1a1815;
-		--paper-dk: #23201c;
-		--surface: #221f1b;
-		--ink: #f3ede1;
-		--ink-70: rgba(243, 237, 225, 0.74);
-		--ink-50: rgba(243, 237, 225, 0.52);
-		--ink-30: rgba(243, 237, 225, 0.32);
-		--ink-12: rgba(243, 237, 225, 0.14);
-		--ink-08: rgba(243, 237, 225, 0.09);
-		--rule: rgba(243, 237, 225, 0.22);
-
-		--vert-mid-l: 0.74;
-		--vert-mid-c: 0.16;
-		--vert-soft-l: 0.3;
-		--vert-soft-c: 0.06;
-		--vert-ink-l: 0.86;
-		--vert-ink-c: 0.1;
-
-		color-scheme: dark;
-	}
-}
-
-:root {
-	/* Editorial Paper hue palette */
 	--hue-introvert: 248;
 	--hue-extrovert: 38;
 	--hue-ambivert: 172;
@@ -104,6 +59,35 @@
 
 	--button-radius: 14px;
 	--card-radius: 18px;
+}
+
+[data-theme='light'] {
+	color-scheme: light;
+}
+
+[data-theme='dark'] {
+	color-scheme: dark;
+}
+
+/* Dark-theme oklch anchors. `light-dark()` only accepts colors, so the
+   scalar lightness/chroma values still need a media-query branch. The
+   explicit-override branch and the system-preference branch carry an
+   identical declaration — CSS does not let us union a media query with a
+   selector, so the duplication of these four lines is forced. */
+[data-theme='dark'] {
+	--vert-mid-l: 0.74;
+	--vert-soft-l: 0.3;
+	--vert-soft-c: 0.06;
+	--vert-ink-l: 0.86;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--vert-mid-l: 0.74;
+		--vert-soft-l: 0.3;
+		--vert-soft-c: 0.06;
+		--vert-ink-l: 0.86;
+	}
 }
 
 @theme {
@@ -146,18 +130,4 @@ body {
 .font-display {
 	font-family: var(--font-display);
 	letter-spacing: -0.02em;
-}
-
-.font-display-italic {
-	font-family: var(--font-display);
-	font-style: italic;
-	letter-spacing: -0.02em;
-}
-
-.eyebrow {
-	font-family: var(--font-mono);
-	font-size: 10px;
-	letter-spacing: 0.2em;
-	text-transform: uppercase;
-	color: var(--ink-50);
 }

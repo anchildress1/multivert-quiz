@@ -49,7 +49,6 @@
 	id="q-{question.id}"
 	style:--accent="var(--vert-{accent}-mid)"
 	style:--accent-ink="var(--vert-{accent}-ink)"
-	style:--accent-soft="var(--vert-{accent}-soft)"
 >
 	<div class="row__card">
 		<header class="row__meta">
