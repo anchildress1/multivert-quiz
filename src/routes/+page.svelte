@@ -46,32 +46,19 @@
 
 	const firstChapter = CHAPTERS[0];
 
-	function scrollToFirstChapter(event: MouseEvent) {
-		if (!browser || !firstChapter) return;
-		event.preventDefault();
-		document
-			.getElementById(firstChapter.id)
-			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	}
+	const prefersReducedMotion = (): boolean =>
+		globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-	function scrollToSubmit(event: MouseEvent) {
+	function scrollToId(id: string, event?: Event) {
 		if (!browser) return;
-		event.preventDefault();
-		document.getElementById('submit')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		event?.preventDefault();
+		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
-	function revealResult() {
-		if (!browser) return;
-		document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	}
+	const scrollToFirstChapter = (event: MouseEvent) => {
+		if (firstChapter) scrollToId(firstChapter.id, event);
+	};
 
-	/**
-	 * Auto-advance to the next question once the user commits an answer.
-	 * Skipped when:
-	 *   - the user is revising (the next question is already answered, so they
-	 *     are likely scrolling back to fine-tune rather than progressing), or
-	 *   - the user has prefers-reduced-motion (we respect their pacing).
-	 */
 	/**
 	 * Forward-progress lock: the user can scroll up freely to revise earlier
 	 * answers but cannot scroll past the first unanswered question. If they
@@ -146,9 +133,8 @@
 			const rect = el.getBoundingClientRect();
 			if (rect.bottom < HEADER_H) {
 				isLocking = true;
-				const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 				el.scrollIntoView({
-					behavior: reduceMotion ? 'auto' : 'smooth',
+					behavior: prefersReducedMotion() ? 'auto' : 'smooth',
 					block: 'start'
 				});
 				triggerNudge();
@@ -171,6 +157,11 @@
 		};
 	});
 
+	/**
+	 * Auto-advance to the next question once the user commits an answer.
+	 * Skipped when the next question is already answered (the user is
+	 * revising, not progressing). Reduced-motion users get an instant jump.
+	 */
 	function handleAnswerCommit(qId: string) {
 		if (!browser) return;
 		const idx = questions.findIndex((q) => q.id === qId);
@@ -178,8 +169,7 @@
 		const next = questions[idx + 1];
 		if (!next) return;
 		if (store.answers[next.id]?.state === 'answered') return;
-		const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-		const behavior: ScrollBehavior = reduceMotion ? 'auto' : 'smooth';
+		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
 		// Wait for the slider's commit animation to settle before scrolling.
 		setTimeout(() => {
 			document.getElementById(`q-${next.id}`)?.scrollIntoView({ behavior, block: 'start' });
@@ -200,12 +190,14 @@
 	visible={meterVisible}
 />
 
-<header class="hero" style:font-family="var(--font-sans)">
+<header class="hero">
 	<div class="hero__bar">
 		<Wordmark size={22} />
 		<nav class="hero__nav">
-			<a href="#chapter-energy" onclick={scrollToFirstChapter}>The five verts</a>
-			<a href="#submit" onclick={scrollToSubmit}>Submit</a>
+			<a href="#chapter-energy" onclick={(e) => scrollToId('chapter-energy', e)}>
+				The five verts
+			</a>
+			<a href="#submit" onclick={(e) => scrollToId('submit', e)}>Submit</a>
 			<FiveDots />
 		</nav>
 	</div>
@@ -329,7 +321,7 @@
 				type="button"
 				disabled={!store.allAnswered}
 				aria-disabled={!store.allAnswered}
-				onclick={revealResult}
+				onclick={() => scrollToId('result')}
 			>
 				{#if store.allAnswered}
 					See my five-vert breakdown <span aria-hidden="true">→</span>
