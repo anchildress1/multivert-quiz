@@ -44,11 +44,13 @@ it.
 - TypeScript must remain in `strict` mode. No `// @ts-ignore` without an inline justification.
 - All warnings are errors. ESLint, svelte-check, Vite, Prettier — zero output on a clean tree.
 - Coverage thresholds: **85%** lines/functions/statements, **80%** branches (Vitest).
-- Lighthouse desktop is the hard gate: **100** across performance, accessibility,
-  best-practices, and SEO (`error`-level assertions in `.lighthouserc.desktop.json`).
-  Mobile is reports-only: scores upload to temporary-public-storage on every run,
-  but mobile assertions are `warn`-level so a sub-100 mobile score does not block
-  CI. The aspirational mobile target is also 100/100/100/100.
+- Lighthouse desktop is the local hard gate: **100** across performance,
+  accessibility, best-practices, and SEO (`error`-level assertions in
+  `.lighthouserc.desktop.json`). Mobile is reports-only: scores upload to
+  temporary-public-storage on every run, but mobile assertions are `warn`-level
+  so a sub-100 mobile score does not block. The aspirational mobile target is
+  also 100/100/100/100. Lhci runs via `lefthook` pre-push, **not** in GHA —
+  shared-runner variance makes the 100 floor too flaky for CI.
 - Tests live alongside source as `*.test.ts` (or `*.svelte.test.ts` for component tests).
 - E2E specs in `e2e/`. Smoke spec must always pass before a release tag.
 - Tests cover positive, negative, error, and edge cases. Use `*.skip` only with a TODO.
