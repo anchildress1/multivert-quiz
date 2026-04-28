@@ -45,9 +45,14 @@ pre-push:
     - name: test
       run: pnpm test
 
-    # Build + Lighthouse share a single artifact; chained sequentially so
-    # `pnpm perf` runs against fresh `.svelte-kit/cloudflare/` output.
-    # Lhci is gated here (not in GHA) — runner variance makes the 100/100
-    # floor flaky on shared infrastructure.
-    - name: build-and-perf
+    - name: build
+      run: pnpm build
+
+# Lhci is intentionally NOT in pre-push — runner variance and the strict
+# 100/100/100/100 floor make it too noisy to gate every push. It is also
+# not in GHA (see .github/workflows/ci.yml). Run it manually before
+# release: `lefthook run perf` (or `make perf`).
+perf:
+  commands:
+    lhci:
       run: pnpm build && pnpm perf
