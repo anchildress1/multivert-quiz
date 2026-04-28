@@ -60,119 +60,28 @@
 	};
 
 	/**
-	 * Forward-progress lock: the user can scroll up freely to revise earlier
-	 * answers but cannot scroll past the first unanswered question. If they
-	 * try, snap them back to it AND bump `nudgeAt` so the row pulses to draw
-	 * the user's eye to the question they need to answer.
-	 */
-	const firstUnansweredId = $derived.by(() => {
-		const found = questions.find((q) => store.answers[q.id]?.state !== 'answered');
-		return found?.id ?? null;
-	});
-
-	let nudgeTargetId = $state<string | null>(null);
-	let nudgeAt = $state(0);
-
-	$effect(() => {
-		if (!browser) return;
-		if (firstUnansweredId === null) return; // all answered → lock + nudge disabled
-		const targetId = firstUnansweredId;
-		const HEADER_H = 72;
-
-		let isLocking = false;
-		let lastNudge = 0;
-
-		const triggerNudge = () => {
-			const now = Date.now();
-			// Debounce so a single attempt to scroll past doesn't fire the
-			// pulse twice (wheel events arrive in bursts on most platforms).
-			if (now - lastNudge < 900) return;
-			lastNudge = now;
-			nudgeTargetId = targetId;
-			nudgeAt = now;
-		};
-
-		// True once the unanswered question's top has reached / passed the
-		// sticky chapter header, i.e. one more pixel of forward scroll would
-		// hide the question.
-		const atBoundary = () => {
-			const el = document.getElementById(`q-${targetId}`);
-			if (!el) return false;
-			return el.getBoundingClientRect().top <= HEADER_H + 1;
-		};
-
-		// Preventive: kill the wheel/touch motion before the browser actually
-		// scrolls. preventDefault on a passive listener is a no-op so we
-		// register these as non-passive.
-		const onWheel = (event: WheelEvent) => {
-			if (event.deltaY <= 0) return; // upward (revising) — always allowed
-			if (!atBoundary()) return;
-			event.preventDefault();
-			triggerNudge();
-		};
-
-		let touchStartY = 0;
-		const onTouchStart = (event: TouchEvent) => {
-			touchStartY = event.touches[0]?.clientY ?? 0;
-		};
-		const onTouchMove = (event: TouchEvent) => {
-			const currentY = event.touches[0]?.clientY ?? 0;
-			const deltaY = touchStartY - currentY; // positive = finger moving up = forward scroll
-			if (deltaY <= 0) return;
-			if (!atBoundary()) return;
-			event.preventDefault();
-			triggerNudge();
-		};
-
-		// Reactive fallback: keyboard scrolling, JS-driven scrolling, or any
-		// other path that bypassed the wheel/touch handlers — snap back.
-		const onScroll = () => {
-			if (isLocking) return;
-			const el = document.getElementById(`q-${targetId}`);
-			if (!el) return;
-			const rect = el.getBoundingClientRect();
-			if (rect.bottom < HEADER_H) {
-				isLocking = true;
-				el.scrollIntoView({
-					behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-					block: 'start'
-				});
-				triggerNudge();
-				setTimeout(() => {
-					isLocking = false;
-				}, 800);
-			}
-		};
-
-		window.addEventListener('wheel', onWheel, { passive: false });
-		window.addEventListener('touchstart', onTouchStart, { passive: true });
-		window.addEventListener('touchmove', onTouchMove, { passive: false });
-		window.addEventListener('scroll', onScroll, { passive: true });
-
-		return () => {
-			window.removeEventListener('wheel', onWheel);
-			window.removeEventListener('touchstart', onTouchStart);
-			window.removeEventListener('touchmove', onTouchMove);
-			window.removeEventListener('scroll', onScroll);
-		};
-	});
-
-	/**
-	 * Auto-advance to the next question once the user commits an answer.
-	 * Skipped when the next question is already answered (the user is
-	 * revising, not progressing). Reduced-motion users get an instant jump.
+	 * Auto-advance after a commit. The forward-progress lock itself is
+	 * declarative (see app.css `.row[data-state='unset'] ~ .row`) — content
+	 * past the current question is not laid out, so the user physically
+	 * cannot scroll past it. Auto-advance just nudges the viewport onto the
+	 * row that has just become visible.
+	 *
+	 * Skipped when the immediate next question is already answered (the user
+	 * is revising an earlier answer, not progressing). When the commit was
+	 * the last unanswered question, we scroll to the submit panel instead —
+	 * it has just transitioned into layout for the same reason.
 	 */
 	function handleAnswerCommit(qId: string) {
 		if (!browser) return;
 		const idx = questions.findIndex((q) => q.id === qId);
-		if (idx < 0 || idx >= questions.length - 1) return;
+		if (idx < 0) return;
 		const next = questions[idx + 1];
-		if (!next) return;
-		if (store.answers[next.id]?.state === 'answered') return;
+		if (next && store.answers[next.id]?.state === 'answered') return;
+		const targetId = next ? `q-${next.id}` : 'submit';
 		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
 		// Wait for the slider's commit animation to settle before scrolling.
 		setTimeout(() => {
-			document.getElementById(`q-${next.id}`)?.scrollIntoView({ behavior, block: 'start' });
+			document.getElementById(targetId)?.scrollIntoView({ behavior, block: 'start' });
 		}, 450);
 	}
 </script>
@@ -293,7 +202,6 @@
 					{accent}
 					value={entry.value}
 					phase={entry.state}
-					nudgeAt={nudgeTargetId === q.id ? nudgeAt : 0}
 					onchange={(next) => {
 						store.setAnswer(q.id, next);
 						if (next.state === 'answered') handleAnswerCommit(q.id);

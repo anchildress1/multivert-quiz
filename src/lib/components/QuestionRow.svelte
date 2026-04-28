@@ -11,30 +11,9 @@
 		value: number | null;
 		phase: SliderState;
 		onchange: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
-		/** Timestamp that increments each time the parent wants to nudge this row
-		 *  (e.g., user tried to scroll past it without answering). Re-triggers
-		 *  the pulse animation on every change. */
-		nudgeAt?: number;
 	}
 
-	const { question, index, total, accent, value, phase, onchange, nudgeAt = 0 }: Props = $props();
-
-	let pulseActive = $state(false);
-
-	$effect(() => {
-		// Read the timestamp so the effect re-runs when the parent bumps it.
-		void nudgeAt;
-		if (nudgeAt === 0) return;
-		// Skip if a pulse is already in flight — the parent debounces nudges
-		// to ~900ms, but a second bump that beats the debounce shouldn't
-		// stack a second animation on top of one already playing.
-		if (pulseActive) return;
-		pulseActive = true;
-		const end = setTimeout(() => {
-			pulseActive = false;
-		}, 720);
-		return () => clearTimeout(end);
-	});
+	const { question, index, total, accent, value, phase, onchange }: Props = $props();
 
 	const padded = $derived(String(index + 1).padStart(2, '0'));
 	const statusLabel = $derived(
@@ -44,7 +23,6 @@
 
 <article
 	class="row"
-	class:row--pulse={pulseActive}
 	data-state={phase}
 	id="q-{question.id}"
 	style:--accent="var(--vert-{accent}-mid)"
@@ -108,69 +86,6 @@
 		transition:
 			border-color 0.2s ease,
 			box-shadow 0.2s ease;
-	}
-
-	.row--pulse .row__card {
-		animation:
-			row-pulse 720ms cubic-bezier(0.32, 0.72, 0, 1) both,
-			row-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-		border-color: var(--accent);
-	}
-
-	@keyframes row-pulse {
-		0% {
-			box-shadow:
-				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
-				0 0 0 0 color-mix(in oklab, var(--accent) 60%, transparent);
-		}
-		35% {
-			box-shadow:
-				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
-				0 0 0 12px color-mix(in oklab, var(--accent) 22%, transparent);
-		}
-		100% {
-			box-shadow:
-				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
-				0 0 0 0 transparent;
-		}
-	}
-
-	@keyframes row-shake {
-		0%,
-		100% {
-			transform: translateX(0);
-		}
-		20% {
-			transform: translateX(-5px);
-		}
-		40% {
-			transform: translateX(5px);
-		}
-		60% {
-			transform: translateX(-3px);
-		}
-		80% {
-			transform: translateX(3px);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.row--pulse .row__card {
-			animation: row-pulse-soft 480ms ease-out both;
-			transform: none;
-		}
-		@keyframes row-pulse-soft {
-			0%,
-			100% {
-				border-color: var(--ink-08);
-			}
-			50% {
-				border-color: var(--accent);
-			}
-		}
 	}
 
 	.row__meta {

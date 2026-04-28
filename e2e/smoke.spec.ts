@@ -124,11 +124,62 @@ test.describe('landing + scroll quiz — structure', () => {
 		await expect(page.locator('.meter')).toBeAttached();
 	});
 
-	test('submit CTA is disabled until all questions are answered', async ({ page }) => {
+	test('submit CTA is disabled and out of layout until all questions are answered', async ({
+		page
+	}) => {
 		await page.goto('/');
 		const submitBtn = page.locator('.submit__cta');
+		// Still disabled and still carries the holding-pattern copy for AT users.
 		await expect(submitBtn).toBeDisabled();
 		await expect(submitBtn).toContainText(/more to go/i);
+		// Forward-progress lock keeps the submit panel out of layout (display:
+		// none) until the last gating question is committed, so a sighted user
+		// physically cannot scroll to it.
+		await expect(submitBtn).not.toBeVisible();
+	});
+});
+
+test.describe('landing + scroll quiz — forward-progress lock', () => {
+	test('only the active question is in layout; later rows reveal as the user answers', async ({
+		page
+	}) => {
+		await page.goto('/');
+		// Initial state: Q1 is laid out, Q2+ are display:none, later chapters hidden.
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await expect(page.locator('article#q-e-02')).toBeHidden();
+		await expect(page.locator('section#chapter-belonging')).toBeHidden();
+		await expect(page.locator('section#submit')).toBeHidden();
+
+		// Commit Q1 → Q2 enters layout, but later chapters and submit remain hidden.
+		await dispatchSliderCommit(page, 'e-01', 0.5);
+		await expect(page.locator('article#q-e-02')).toBeVisible();
+		await expect(page.locator('article#q-e-03')).toBeHidden();
+		await expect(page.locator('section#chapter-belonging')).toBeHidden();
+		await expect(page.locator('section#submit')).toBeHidden();
+	});
+
+	test('mid-drag revision of an earlier answer does not re-collapse later content', async ({
+		page
+	}) => {
+		// Once a row leaves `unset` it stays revealed, so dragging an answered
+		// row's slider mid-revision must not hide the rows below.
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('article#q-s-05')).toBeVisible();
+
+		// Bump Q3 into in-progress (mid-drag) without committing.
+		await page.evaluate(() => {
+			const slider = document.querySelector<HTMLInputElement>('#q-e-03 input[type="range"]');
+			if (!slider) throw new Error('slider for e-03 not found');
+			slider.value = '0.4';
+			slider.dispatchEvent(new Event('input', { bubbles: true }));
+		});
+		await expect(page.locator('article#q-e-03')).toHaveAttribute('data-state', 'in-progress');
+
+		// Q4 and the final row both stay visible — the gate is not re-engaged.
+		await expect(page.locator('article#q-e-04')).toBeVisible();
+		await expect(page.locator('article#q-s-05')).toBeVisible();
+		await expect(page.locator('section#submit')).toBeVisible();
 	});
 });
 

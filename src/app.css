@@ -107,13 +107,40 @@ body {
 /* Page-level snap: questions inside the quiz snap one-per-viewport via
    `scroll-snap-align` on `.row`. `proximity` is intentionally gentler than
    `mandatory` — `mandatory` would force the page to land on a snap target
-   on initial load, jumping past the hero. The forward-progress lock in
-   the route's $effect handles the harder constraint (don't scroll past
-   an unanswered question). `scroll-padding-top` reserves space for the
-   sticky chapter header so a snapped question sits below it. */
+   on initial load, jumping past the hero. The forward-progress lock is
+   handled declaratively further down (.row[data-state='unset'] ~ .row).
+   `scroll-padding-top` reserves space for the sticky chapter header so a
+   snapped question sits below it. */
 html {
 	scroll-snap-type: y proximity;
 	scroll-padding-top: var(--chapter-head-h, 72px);
+}
+
+/* ── Forward-progress lock (declarative) ──────────────────────────────
+   The user must engage the current question before subsequent content
+   reveals. "Engage" means leaving the `unset` state — the answers store
+   transitions `unset → in-progress → answered` and never returns to
+   `unset` for the same question, so once a row is touched it stays
+   revealed. That makes mid-drag revision of an earlier answer safe:
+   later content does not re-collapse just because the user is moving
+   a slider on an already-answered row.
+
+   Hidden content is removed from layout entirely (`display: none`), so
+   the page literally cannot scroll past the active question. No JS
+   wheel/touch listeners, no fights with scroll-snap momentum, no
+   bounce-back. The browser's native scroll model does the work.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Within a chapter: hide every row that follows the first untouched row. */
+.chapter-wrap .row[data-state='unset'] ~ .row {
+	display: none;
+}
+
+/* Across chapters: hide every chapter that follows one with an untouched row,
+   and the submit panel when any chapter is still gating. */
+.chapter-wrap:has(.row[data-state='unset']) ~ .chapter-wrap,
+.chapter-wrap:has(.row[data-state='unset']) ~ #submit {
+	display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
