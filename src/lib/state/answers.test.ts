@@ -3,8 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('$app/environment', () => ({ browser: true }));
 
 const { questions } = await import('../questions');
-const { createAnswersStore, QUESTIONS_BY_DIMENSION, questionsByDimension } =
-	await import('./answers.svelte');
+const { createAnswersStore, QUESTIONS_BY_DIMENSION } = await import('./answers.svelte');
 import type { Dimension, Question } from '../questions';
 
 const STORAGE_KEY = 'multivert.answers.v1';
@@ -287,20 +286,9 @@ describe('createAnswersStore', () => {
 	});
 });
 
-describe('QUESTIONS_BY_DIMENSION (constant)', () => {
-	it('matches the legacy questionsByDimension() helper', () => {
-		const constant = QUESTIONS_BY_DIMENSION;
-		const helper = questionsByDimension();
-		expect(constant.extraversion.map((q) => q.id)).toEqual(helper.extraversion.map((q) => q.id));
-		expect(constant.belonging.map((q) => q.id)).toEqual(helper.belonging.map((q) => q.id));
-		expect(constant.group_size.map((q) => q.id)).toEqual(helper.group_size.map((q) => q.id));
-		expect(constant.swings.map((q) => q.id)).toEqual(helper.swings.map((q) => q.id));
-	});
-});
-
-describe('questionsByDimension', () => {
+describe('QUESTIONS_BY_DIMENSION', () => {
 	it('groups questions by their dimension and preserves source order', () => {
-		const grouped = questionsByDimension();
+		const grouped = QUESTIONS_BY_DIMENSION;
 		expect(grouped.extraversion).toHaveLength(10);
 		expect(grouped.belonging).toHaveLength(10);
 		expect(grouped.group_size).toHaveLength(5);
@@ -324,5 +312,9 @@ describe('questionsByDimension', () => {
 			.sort((a, b) => order[a.dimension] - order[b.dimension])
 			.map((q) => q.id);
 		expect(flatIds).toEqual(dimensionOrder);
+	});
+
+	it('is frozen so consumers cannot mutate the shared registry', () => {
+		expect(Object.isFrozen(QUESTIONS_BY_DIMENSION)).toBe(true);
 	});
 });

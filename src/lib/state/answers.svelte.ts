@@ -169,15 +169,3 @@ export const QUESTIONS_BY_DIMENSION: Readonly<Record<Dimension, readonly Questio
 	for (const q of questions) grouped[q.dimension].push(q);
 	return Object.freeze(grouped);
 })();
-
-/** @deprecated Prefer the pre-computed `QUESTIONS_BY_DIMENSION` constant. */
-export const questionsByDimension = (): Record<Dimension, Question[]> => {
-	const grouped: Record<Dimension, Question[]> = {
-		extraversion: [],
-		belonging: [],
-		group_size: [],
-		swings: []
-	};
-	for (const q of questions) grouped[q.dimension].push(q);
-	return grouped;
-};
