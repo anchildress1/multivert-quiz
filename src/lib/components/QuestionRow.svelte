@@ -22,23 +22,18 @@
 	let pulseActive = $state(false);
 
 	$effect(() => {
-		// Read the timestamp so the effect re-runs each time the parent bumps
-		// it, even if the row was already pulsing.
+		// Read the timestamp so the effect re-runs when the parent bumps it.
 		void nudgeAt;
 		if (nudgeAt === 0) return;
-		pulseActive = false;
-		// Force a microtask gap so the class removal lands before re-adding it,
-		// otherwise back-to-back nudges wouldn't restart the animation.
-		const start = requestAnimationFrame(() => {
-			pulseActive = true;
-		});
+		// Skip if a pulse is already in flight — the parent debounces nudges
+		// to ~900ms, but a second bump that beats the debounce shouldn't
+		// stack a second animation on top of one already playing.
+		if (pulseActive) return;
+		pulseActive = true;
 		const end = setTimeout(() => {
 			pulseActive = false;
 		}, 720);
-		return () => {
-			cancelAnimationFrame(start);
-			clearTimeout(end);
-		};
+		return () => clearTimeout(end);
 	});
 
 	const padded = $derived(String(index + 1).padStart(2, '0'));

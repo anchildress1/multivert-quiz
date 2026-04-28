@@ -88,34 +88,87 @@
 
 	$effect(() => {
 		if (!browser) return;
-		if (firstUnansweredId === null) return; // all answered → no lock
+		if (firstUnansweredId === null) return; // all answered → lock + nudge disabled
 		const targetId = firstUnansweredId;
+		const HEADER_H = 72;
 
 		let isLocking = false;
+		let lastNudge = 0;
+
+		const triggerNudge = () => {
+			const now = Date.now();
+			// Debounce so a single attempt to scroll past doesn't fire the
+			// pulse twice (wheel events arrive in bursts on most platforms).
+			if (now - lastNudge < 900) return;
+			lastNudge = now;
+			nudgeTargetId = targetId;
+			nudgeAt = now;
+		};
+
+		// True once the unanswered question's top has reached / passed the
+		// sticky chapter header, i.e. one more pixel of forward scroll would
+		// hide the question.
+		const atBoundary = () => {
+			const el = document.getElementById(`q-${targetId}`);
+			if (!el) return false;
+			return el.getBoundingClientRect().top <= HEADER_H + 1;
+		};
+
+		// Preventive: kill the wheel/touch motion before the browser actually
+		// scrolls. preventDefault on a passive listener is a no-op so we
+		// register these as non-passive.
+		const onWheel = (event: WheelEvent) => {
+			if (event.deltaY <= 0) return; // upward (revising) — always allowed
+			if (!atBoundary()) return;
+			event.preventDefault();
+			triggerNudge();
+		};
+
+		let touchStartY = 0;
+		const onTouchStart = (event: TouchEvent) => {
+			touchStartY = event.touches[0]?.clientY ?? 0;
+		};
+		const onTouchMove = (event: TouchEvent) => {
+			const currentY = event.touches[0]?.clientY ?? 0;
+			const deltaY = touchStartY - currentY; // positive = finger moving up = forward scroll
+			if (deltaY <= 0) return;
+			if (!atBoundary()) return;
+			event.preventDefault();
+			triggerNudge();
+		};
+
+		// Reactive fallback: keyboard scrolling, JS-driven scrolling, or any
+		// other path that bypassed the wheel/touch handlers — snap back.
 		const onScroll = () => {
 			if (isLocking) return;
 			const el = document.getElementById(`q-${targetId}`);
 			if (!el) return;
 			const rect = el.getBoundingClientRect();
-			const headerH = 72;
-			// Only bounce when the user has clearly tried to scroll past — the
-			// unanswered question's bottom has crossed above the sticky header.
-			if (rect.bottom < headerH) {
+			if (rect.bottom < HEADER_H) {
 				isLocking = true;
 				const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 				el.scrollIntoView({
 					behavior: reduceMotion ? 'auto' : 'smooth',
 					block: 'start'
 				});
-				nudgeTargetId = targetId;
-				nudgeAt = Date.now();
+				triggerNudge();
 				setTimeout(() => {
 					isLocking = false;
-				}, 700);
+				}, 800);
 			}
 		};
+
+		window.addEventListener('wheel', onWheel, { passive: false });
+		window.addEventListener('touchstart', onTouchStart, { passive: true });
+		window.addEventListener('touchmove', onTouchMove, { passive: false });
 		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => window.removeEventListener('scroll', onScroll);
+
+		return () => {
+			window.removeEventListener('wheel', onWheel);
+			window.removeEventListener('touchstart', onTouchStart);
+			window.removeEventListener('touchmove', onTouchMove);
+			window.removeEventListener('scroll', onScroll);
+		};
 	});
 
 	function handleAnswerCommit(qId: string) {
