@@ -60,6 +60,72 @@
 	};
 
 	/**
+	 * Forward-progress feedback. The lock itself is layout-only (CSS
+	 * `.row[data-state='unset'] ~ .row` removes later content from layout),
+	 * so the user physically cannot scroll past the gating row. But a silent
+	 * dead end is bad UX — modern browsers don't all rubber-band on
+	 * desktop, and a forward wheel-tick that does nothing reads as broken.
+	 *
+	 * Listeners are passive (no preventDefault) — we only observe intent
+	 * and bump `nudgeAt`, which the gating row picks up to play a soft
+	 * rubber-band animation + emit a haptic tap on devices that support it.
+	 * The browser's native scroll model is never interfered with.
+	 */
+	let nudgeAt = $state(0);
+
+	$effect(() => {
+		if (!browser) return;
+		const NUDGE_DEBOUNCE_MS = 700;
+		let lastNudge = 0;
+		let touchStartY = 0;
+
+		const atDocumentBottom = () => {
+			const max = document.documentElement.scrollHeight - window.innerHeight;
+			return window.scrollY >= max - 2;
+		};
+
+		const fire = () => {
+			const now = Date.now();
+			if (now - lastNudge < NUDGE_DEBOUNCE_MS) return;
+			lastNudge = now;
+			nudgeAt = now;
+			// Honour reduced-motion AND respect platforms where vibrate is a
+			// no-op or unsupported (iOS, desktop). The optional chain handles
+			// both the unsupported and the consent-revoked cases.
+			if (!prefersReducedMotion()) navigator.vibrate?.(8);
+		};
+
+		const onWheel = (event: WheelEvent) => {
+			if (event.deltaY > 0 && atDocumentBottom()) fire();
+		};
+
+		const onTouchStart = (event: TouchEvent) => {
+			touchStartY = event.touches[0]?.clientY ?? 0;
+		};
+
+		const onTouchMove = (event: TouchEvent) => {
+			const currentY = event.touches[0]?.clientY ?? 0;
+			// Positive delta = finger swept up (i.e., trying to scroll forward).
+			// 8px is the noise threshold — below that, tiny finger jitter
+			// during a tap on the slider would fire false positives.
+			if (touchStartY - currentY > 8 && atDocumentBottom()) fire();
+		};
+
+		window.addEventListener('wheel', onWheel, { passive: true });
+		window.addEventListener('touchstart', onTouchStart, { passive: true });
+		window.addEventListener('touchmove', onTouchMove, { passive: true });
+		// Hydration signal so E2E specs can wait until the listener is armed.
+		document.body.dataset.nudgeListener = 'on';
+
+		return () => {
+			window.removeEventListener('wheel', onWheel);
+			window.removeEventListener('touchstart', onTouchStart);
+			window.removeEventListener('touchmove', onTouchMove);
+			delete document.body.dataset.nudgeListener;
+		};
+	});
+
+	/**
 	 * Auto-advance after a commit. The forward-progress lock itself is
 	 * declarative (see app.css `.row[data-state='unset'] ~ .row`) — content
 	 * past the current question is not laid out, so the user physically
@@ -202,6 +268,7 @@
 					{accent}
 					value={entry.value}
 					phase={entry.state}
+					nudgeAt={entry.state === 'unset' ? nudgeAt : 0}
 					onchange={(next) => {
 						store.setAnswer(q.id, next);
 						if (next.state === 'answered') handleAnswerCommit(q.id);

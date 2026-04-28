@@ -11,18 +11,52 @@
 		value: number | null;
 		phase: SliderState;
 		onchange: (next: { value: number; state: 'in-progress' | 'answered' }) => void;
+		/**
+		 * Monotonically increasing timestamp the route bumps each time the user
+		 * tries to scroll forward past the document floor (i.e., past this
+		 * gating row). The row plays a brief rubber-band animation in response.
+		 * 0 means "no nudge" and disables the effect — passed only to the row
+		 * whose phase is `unset`, so revising answered rows never pulses.
+		 */
+		nudgeAt?: number;
 	}
 
-	const { question, index, total, accent, value, phase, onchange }: Props = $props();
+	const { question, index, total, accent, value, phase, onchange, nudgeAt = 0 }: Props = $props();
 
 	const padded = $derived(String(index + 1).padStart(2, '0'));
 	const statusLabel = $derived(
 		phase === 'answered' ? '✓ answered' : phase === 'in-progress' ? 'in progress' : 'unanswered'
 	);
+
+	let pulseActive = $state(false);
+
+	$effect(() => {
+		void nudgeAt; // sole dependency — re-runs every time the parent bumps it
+		if (nudgeAt === 0) return;
+
+		// Force the CSS animation to restart on every nudge by flipping the
+		// class off, then back on next frame. Without the off-frame, repeated
+		// nudges would re-apply an already-applied class and the keyframes
+		// would not replay. Reading `pulseActive` here would make it a
+		// reactivity dependency and cause the effect to re-run from its own
+		// write — so we deliberately only WRITE it, never read it.
+		pulseActive = false;
+		const raf = requestAnimationFrame(() => {
+			pulseActive = true;
+		});
+		const end = setTimeout(() => {
+			pulseActive = false;
+		}, 620);
+		return () => {
+			cancelAnimationFrame(raf);
+			clearTimeout(end);
+		};
+	});
 </script>
 
 <article
 	class="row"
+	class:row--nudged={pulseActive}
 	data-state={phase}
 	id="q-{question.id}"
 	style:--accent="var(--vert-{accent}-mid)"
@@ -86,6 +120,78 @@
 		transition:
 			border-color 0.2s ease,
 			box-shadow 0.2s ease;
+	}
+
+	/* Forward-progress feedback. The card mimics a damped rubber-band: the
+	   user pushed against the document floor, so the card briefly leans
+	   into the push and settles. Layered with an accent halo on the card
+	   border so the eye lands on the question that is actually gating. */
+	.row--nudged .row__card {
+		animation:
+			row-rubber-band 620ms cubic-bezier(0.32, 0.72, 0, 1) both,
+			row-halo 620ms ease-out both;
+	}
+
+	@keyframes row-rubber-band {
+		0% {
+			transform: translateY(0);
+		}
+		22% {
+			transform: translateY(10px);
+		}
+		44% {
+			transform: translateY(-2px);
+		}
+		64% {
+			transform: translateY(4px);
+		}
+		82% {
+			transform: translateY(-1px);
+		}
+		100% {
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes row-halo {
+		0% {
+			border-color: var(--ink-08);
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 0 color-mix(in oklab, var(--accent) 40%, transparent);
+		}
+		36% {
+			border-color: var(--accent);
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 8px color-mix(in oklab, var(--accent) 18%, transparent);
+		}
+		100% {
+			border-color: var(--ink-08);
+			box-shadow:
+				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
+				0 0 0 0 transparent;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.row--nudged .row__card {
+			/* Drop the bounce; keep the halo so the cue is still legible. */
+			animation: row-halo-soft 480ms ease-out both;
+			transform: none;
+		}
+		@keyframes row-halo-soft {
+			0%,
+			100% {
+				border-color: var(--ink-08);
+			}
+			50% {
+				border-color: var(--accent);
+			}
+		}
 	}
 
 	.row__meta {

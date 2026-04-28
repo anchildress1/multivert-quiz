@@ -90,6 +90,25 @@ const dispatchSliderClick = (page: Page, questionId: string) =>
 		slider.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 	}, questionId);
 
+const waitForNudgeArmed = (page: Page) =>
+	page.waitForFunction(() => document.body.dataset.nudgeListener === 'on');
+
+const dispatchForwardWheel = (page: Page) =>
+	page.evaluate(() => {
+		window.scrollTo({
+			top: document.documentElement.scrollHeight,
+			behavior: 'instant' as ScrollBehavior
+		});
+		window.dispatchEvent(
+			new WheelEvent('wheel', {
+				deltaY: 60,
+				deltaMode: 0,
+				bubbles: true,
+				cancelable: true
+			})
+		);
+	});
+
 /* --------------------------------------------------------------------- */
 
 test.describe('landing + scroll quiz — structure', () => {
@@ -158,6 +177,80 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		await expect(page.locator('section#submit')).toBeHidden();
 	});
 
+	test('forward-scroll attempt at the document floor pulses the gating row', async ({ page }) => {
+		await page.goto('/');
+		// Wait for hydration — the wheel listener is attached inside an
+		// $effect that only runs after the gating row mounts.
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await waitForNudgeArmed(page);
+		await dispatchForwardWheel(page);
+		await expect(page.locator('article#q-e-01.row--nudged')).toBeAttached();
+		// The pulse class strips itself after the animation completes.
+		await expect
+			.poll(() => page.locator('article#q-e-01.row--nudged').count(), { timeout: 2000 })
+			.toBe(0);
+	});
+
+	test('subsequent forward-scroll attempts re-pulse (the effect does not get stuck)', async ({
+		page
+	}) => {
+		// Regression: the previous implementation read `pulseActive` inside
+		// the effect's guard, making it a reactivity dependency. The effect
+		// re-ran from its own write, the cleanup cancelled the timer that
+		// would have reset `pulseActive`, and the row got stuck — every
+		// nudge after the first was a no-op. This test pins the fix.
+		await page.goto('/');
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await waitForNudgeArmed(page);
+
+		// First nudge.
+		await dispatchForwardWheel(page);
+		await expect(page.locator('article#q-e-01.row--nudged')).toBeAttached();
+		await expect
+			.poll(() => page.locator('article#q-e-01.row--nudged').count(), { timeout: 2000 })
+			.toBe(0);
+
+		// Second nudge — must pulse again, not silently no-op. Wait past the
+		// 700ms in-route debounce before firing.
+		await page.waitForTimeout(750);
+		await dispatchForwardWheel(page);
+		await expect(page.locator('article#q-e-01.row--nudged')).toBeAttached();
+		await expect
+			.poll(() => page.locator('article#q-e-01.row--nudged').count(), { timeout: 2000 })
+			.toBe(0);
+
+		// Third nudge — for good measure.
+		await page.waitForTimeout(750);
+		await dispatchForwardWheel(page);
+		await expect(page.locator('article#q-e-01.row--nudged')).toBeAttached();
+	});
+
+	test('forward-scroll attempt mid-document does NOT pulse (only triggers at the floor)', async ({
+		page
+	}) => {
+		// With every question answered the layout extends past Q1, so a wheel
+		// event at the top of the page is normal scrolling, not an attempt to
+		// push past a wall. The pulse must stay quiet.
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await waitForNudgeArmed(page);
+		await page.evaluate(() => {
+			window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+			window.dispatchEvent(
+				new WheelEvent('wheel', {
+					deltaY: 60,
+					deltaMode: 0,
+					bubbles: true,
+					cancelable: true
+				})
+			);
+		});
+		// Tiny settle window — confirm no row picked up the nudge class.
+		await page.waitForTimeout(120);
+		await expect(page.locator('article.row--nudged')).toHaveCount(0);
+	});
+
 	test('mid-drag revision of an earlier answer does not re-collapse later content', async ({
 		page
 	}) => {
@@ -203,8 +296,17 @@ test.describe('landing + scroll quiz — navigation', () => {
 		// Seed all answered so the forward-progress lock is disabled.
 		await seedAllAnswered(page);
 		await page.goto('/');
+		// Wait for hydration. The chapter IntersectionObserver attaches in the
+		// same render pass as the nudge listener, so the latter's signal is a
+		// reliable proxy that observation is wired up.
+		await waitForNudgeArmed(page);
 		await scrollToElement(page, 'chapter-belonging', 400);
-		await expect(page.locator('#active-chapter-head')).toHaveCount(1);
+		// IntersectionObserver fires async — its callback is queued for the
+		// next frame, and on a busy worker the first poll may run before the
+		// frame lands. Use expect.poll so we keep retrying past short stalls.
+		await expect
+			.poll(() => page.locator('#active-chapter-head').count(), { timeout: 8000 })
+			.toBe(1);
 		await expect(page.locator('#active-chapter-head')).toContainText(/Belonging/i);
 	});
 });
