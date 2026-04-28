@@ -39,10 +39,9 @@
 	// `change` event would otherwise swallow — clicking exactly at the
 	// already-rendered thumb position doesn't change the input value, so
 	// `input` / `change` never fire and the answer would otherwise be stuck
-	// at `unset` for any user who genuinely meant to pick neutral.
-	// Plain `let` (no $state) — only read inside event handlers, never in
-	// the template, so reactivity isn't needed and avoids the runtime
-	// collision between the `state` prop name and the `$state` rune.
+	// at `unset` for any user who genuinely meant to pick neutral. Plain `let`
+	// (no `$state`) because it is only read inside event handlers, never in
+	// the template — reactivity isn't needed.
 	let hasInteracted = false;
 
 	function handleInput(event: Event) {
