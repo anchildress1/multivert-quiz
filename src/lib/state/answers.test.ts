@@ -183,6 +183,97 @@ describe('createAnswersStore', () => {
 		expect(store.totalAnswered).toBe(0);
 	});
 
+	it('hydrates an in-progress entry as in-progress (not answered)', () => {
+		const id = pickQuestion(0).id;
+		globalThis.localStorage.setItem(
+			STORAGE_KEY,
+			JSON.stringify({ [id]: { value: 0.25, state: 'in-progress' } })
+		);
+		const store = createAnswersStore();
+		expect(store.answers[id]).toEqual({ state: 'in-progress', value: 0.25 });
+		// in-progress doesn't count toward the answered tally.
+		expect(store.totalAnswered).toBe(0);
+		expect(store.allAnswered).toBe(false);
+	});
+
+	it('drops an in-progress hydration with non-finite value back to seeded unset', () => {
+		const id = pickQuestion(0).id;
+		globalThis.localStorage.setItem(
+			STORAGE_KEY,
+			JSON.stringify({ [id]: { value: Number.POSITIVE_INFINITY, state: 'in-progress' } })
+		);
+		const store = createAnswersStore();
+		expect(store.answers[id]).toEqual({ state: 'unset', value: null });
+	});
+
+	it('setAnswer overwrites a previous answer for the same question id', () => {
+		const store = createAnswersStore();
+		const id = pickQuestion(0).id;
+		store.setAnswer(id, { state: 'answered', value: 0.5 });
+		store.setAnswer(id, { state: 'answered', value: -0.3 });
+		expect(store.answers[id]).toEqual({ state: 'answered', value: -0.3 });
+		expect(store.totalAnswered).toBe(1);
+	});
+
+	it('setAnswer transition unset → in-progress → answered is reflected in counts', () => {
+		const store = createAnswersStore();
+		const id = pickQuestion(0).id;
+		expect(store.answers[id]?.state).toBe('unset');
+		store.setAnswer(id, { state: 'in-progress', value: 0.1 });
+		expect(store.totalAnswered).toBe(0);
+		store.setAnswer(id, { state: 'answered', value: 0.1 });
+		expect(store.totalAnswered).toBe(1);
+	});
+
+	it('answeredByDimension increments the correct dimension when each is partially answered', () => {
+		const store = createAnswersStore();
+		const oneFromEach: Dimension[] = ['extraversion', 'belonging', 'group_size', 'swings'];
+		for (const dim of oneFromEach) {
+			const q = firstWhere((qq) => qq.dimension === dim);
+			store.setAnswer(q.id, { state: 'answered', value: 0.2 });
+		}
+		const counts = store.answeredByDimension;
+		expect(counts.extraversion.answered).toBe(1);
+		expect(counts.belonging.answered).toBe(1);
+		expect(counts.group_size.answered).toBe(1);
+		expect(counts.swings.answered).toBe(1);
+	});
+
+	it('result stays null when localStorage hydration leaves at least one entry unset', () => {
+		// Hydrate 29 of 30 questions.
+		const map: Record<string, { state: string; value: number }> = {};
+		for (const q of questions.slice(0, 29)) {
+			map[q.id] = { state: 'answered', value: 0 };
+		}
+		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+		const store = createAnswersStore();
+		expect(store.totalAnswered).toBe(29);
+		expect(store.allAnswered).toBe(false);
+		expect(store.result).toBeNull();
+	});
+
+	it('persist() silently no-ops when localStorage.setItem throws (quota / private mode)', () => {
+		// Replace setItem with a throwing implementation. setAnswer should not
+		// raise; the in-memory state should still update.
+		const throwing: Storage = {
+			get length() {
+				return 0;
+			},
+			clear: () => {},
+			getItem: () => null,
+			key: () => null,
+			removeItem: () => {},
+			setItem: () => {
+				throw new Error('QuotaExceeded');
+			}
+		};
+		vi.stubGlobal('localStorage', throwing);
+		const store = createAnswersStore();
+		const id = pickQuestion(0).id;
+		expect(() => store.setAnswer(id, { state: 'answered', value: 0.5 })).not.toThrow();
+		expect(store.answers[id]).toEqual({ state: 'answered', value: 0.5 });
+	});
+
 	it('reset() clears all answers and persists the cleared state', () => {
 		const store = createAnswersStore();
 		setEvery(store, 0.4);
