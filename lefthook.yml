@@ -6,11 +6,13 @@ pre-commit:
   jobs:
     - name: format
       glob: '*.{js,ts,svelte,css,md,json,yml,yaml,html}'
-      run: pnpm exec prettier --write {staged_files} && git add {staged_files}
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
 
     - name: lint
       glob: '*.{js,ts,svelte}'
-      run: pnpm exec eslint --fix {staged_files} && git add {staged_files}
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
 
     - name: actionlint
       glob: '.github/workflows/*.{yml,yaml}'
