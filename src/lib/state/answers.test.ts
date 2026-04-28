@@ -67,6 +67,11 @@ describe('createAnswersStore', () => {
 		}
 	});
 
+	it('exposes total as the size of the question bank', () => {
+		const store = createAnswersStore();
+		expect(store.total).toBe(questions.length);
+	});
+
 	it('reports zero answered initially', () => {
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
@@ -159,6 +164,19 @@ describe('createAnswersStore', () => {
 		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
+	});
+
+	it.each([
+		{ label: 'null', payload: 'null' },
+		{ label: 'number', payload: '42' },
+		{ label: 'string', payload: '"a string"' },
+		{ label: 'boolean', payload: 'true' }
+	])('falls back to seed when stored payload is a primitive ($label)', ({ payload }) => {
+		globalThis.localStorage.setItem(STORAGE_KEY, payload);
+		const store = createAnswersStore();
+		expect(store.totalAnswered).toBe(0);
+		const first = pickQuestion(0);
+		expect(store.answers[first.id]).toEqual({ state: 'unset', value: null });
 	});
 
 	it('drops entries with unknown state strings back to seeded unset', () => {
