@@ -64,8 +64,12 @@ const readStoredAnswers = (): AnswerMap | null => {
 			// any unknown state) fall back to the seeded `unset` entry.
 		}
 		return merged;
-	} catch {
-		return null;
+	} catch (err) {
+		if (err instanceof DOMException || err instanceof SyntaxError) {
+			console.warn('[answers] Could not read stored answers:', (err as Error).name);
+			return null;
+		}
+		throw err;
 	}
 };
 
@@ -73,8 +77,9 @@ const persist = (state: AnswerMap): void => {
 	if (!browser) return;
 	try {
 		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-	} catch {
-		/* v8 ignore next — storage quota / private mode silently no-ops */
+	} catch (err) {
+		/* v8 ignore next — quota / private-mode restriction; answers are session-only */
+		console.warn('[answers] persist failed — answers are session-only:', (err as Error).name);
 	}
 };
 
@@ -116,7 +121,12 @@ export const createAnswersStore = () => {
 			}
 			items.push({ dimension: q.dimension, value: entry.value, reverse: q.reverse });
 		}
-		return scoreQuiz(items);
+		try {
+			return scoreQuiz(items);
+		} catch (err) {
+			console.error('[scoring] scoreQuiz threw unexpectedly:', err);
+			return null;
+		}
 	});
 
 	const setAnswer = (id: string, next: AnswerEntry): void => {
