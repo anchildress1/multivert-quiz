@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { ACCENT_ROTATION, CHAPTERS, VERT_NAMES, VERT_ORDER, type Chapter } from '$lib/archetypes';
+	import {
+		ACCENT_ROTATION,
+		CHAPTERS,
+		DIMENSION_META,
+		VERT_NAMES,
+		VERT_ORDER,
+		type Chapter
+	} from '$lib/archetypes';
 	import ChapterIntro from '$lib/components/ChapterIntro.svelte';
 	import FiveDots from '$lib/components/FiveDots.svelte';
 	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
@@ -161,6 +168,27 @@
 
 <svelte:head>
 	<title>Multivert — what vert are you?</title>
+	<meta
+		name="description"
+		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end. Answers stay on your device."
+	/>
+	<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Multivert — what vert are you?" />
+	<meta
+		property="og:description"
+		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end."
+	/>
+	<meta property="og:site_name" content="Multivert" />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Multivert — what vert are you?" />
+	<meta
+		name="twitter:description"
+		content="A five-sided personality quiz. 30 questions, one slider, a five-way breakdown at the end."
+	/>
 </svelte:head>
 
 <svelte:window bind:scrollY />
@@ -210,14 +238,9 @@
 					Begin <span aria-hidden="true">↓</span>
 				</button>
 				<p class="hero__cta-meta">
-					{questions.length} questions · about 6 minutes · scroll-paced · no signup
+					{questions.length} questions · ~6 minutes · scroll-paced · answers stay on your device
 				</p>
 			</div>
-
-			<p class="hero__hint">
-				This is a single page — answers save as you scroll, and a quiet meter pins to the top once
-				you start.
-			</p>
 		</div>
 
 		<aside class="hero__card">
@@ -237,11 +260,6 @@
 			</ul>
 		</aside>
 	</div>
-
-	<div class="hero__footer">
-		<Tagline size={11} align="left" />
-		<div class="hero__version">{APP_VERSION}</div>
-	</div>
 </header>
 
 <main class="quiz">
@@ -253,6 +271,7 @@
 			title={head.title}
 			archetype={head.archetype}
 			count={grouped[head.dimension].length}
+			description={DIMENSION_META[head.dimension].description}
 		/>
 	{/if}
 
@@ -320,25 +339,36 @@
 
 	{#if store.result}
 		{@const result = store.result}
-		<section id="result" class="result" aria-labelledby="result-title">
+		<section
+			id="result"
+			class="result"
+			aria-labelledby="result-title"
+			data-dominant={result.dominant}
+			style:--dominant-soft="var(--vert-{result.dominant}-soft)"
+			style:--dominant-mid="var(--vert-{result.dominant}-mid)"
+			style:--dominant-ink="var(--vert-{result.dominant}-ink)"
+		>
 			<div class="result__inner">
 				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
 				<h2 id="result-title" class="result__title">
-					You are an <em style:color="var(--vert-{result.dominant}-ink)"
-						>{VERT_NAMES[result.dominant].name}</em
-					>.
+					You are an <em>{VERT_NAMES[result.dominant].name}</em>.
 				</h2>
 				<p class="result__lede">{VERT_NAMES[result.dominant].label}</p>
+				<p class="result__prose">{VERT_NAMES[result.dominant].prose}</p>
 
 				<ul class="result__bars">
-					{#each VERT_ORDER as vert (vert)}
+					{#each VERT_ORDER as vert, i (vert)}
 						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
-						<li class="result__bar" data-dominant={vert === result.dominant}>
+						<li
+							class="result__bar"
+							data-dominant={vert === result.dominant}
+							style:--bar-delay="{i * 90}ms"
+						>
 							<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
 							<span class="result__bar-track" aria-hidden="true">
 								<span
 									class="result__bar-fill"
-									style:width="{fit}%"
+									style:--bar-width="{fit}%"
 									style:background="var(--vert-{vert}-mid)"
 								></span>
 							</span>
@@ -354,9 +384,11 @@
 
 				<div class="result__actions">
 					<button class="result__retake" type="button" onclick={handleRetake}>
-						Retake the quiz <span aria-hidden="true">↺</span>
+						<em>Start over.</em><span class="result__retake-glyph" aria-hidden="true">↺</span>
 					</button>
-					<p class="result__retake-meta">Clears your answers on this device and starts over.</p>
+					<p class="result__retake-meta">
+						Clears your answers on this device and rolls the page back to the top.
+					</p>
 				</div>
 			</div>
 		</section>
@@ -492,20 +524,19 @@
 		transform: translateY(0);
 	}
 
-	.hero__cta-meta {
-		font-size: 13px;
-		color: var(--ink-70);
-		margin: 0;
+	.hero__cta:focus-visible {
+		outline: 2px solid var(--paper);
+		outline-offset: 3px;
+		box-shadow: 0 0 0 4px var(--ink);
 	}
 
-	.hero__hint {
-		margin-top: 28px;
-		max-width: 540px;
+	.hero__cta-meta {
 		font-family: var(--font-mono);
-		font-size: 11px;
-		line-height: 1.6;
-		letter-spacing: 0.04em;
+		font-size: 12px;
+		line-height: 1.55;
+		letter-spacing: 0.02em;
 		color: var(--ink-70);
+		margin: 0;
 	}
 
 	.hero__card {
@@ -554,6 +585,7 @@
 
 	.hero__card-name {
 		font-family: var(--font-display);
+		font-style: italic;
 		font-size: 22px;
 		letter-spacing: -0.02em;
 	}
@@ -564,31 +596,14 @@
 		line-height: 1.4;
 	}
 
-	.hero__footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-end;
-		padding: 24px;
-		border-top: 1px solid var(--ink-08);
-	}
-
-	.hero__version {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		color: var(--ink-70);
-	}
-
 	@media (min-width: 960px) {
 		.hero__grid {
 			grid-template-columns: 1fr minmax(0, 480px);
 			gap: 80px;
-			padding: 96px 56px 64px;
+			padding: 96px 56px 96px;
 			align-items: start;
 		}
 		.hero__bar {
-			padding: 24px 56px;
-		}
-		.hero__footer {
 			padding: 24px 56px;
 		}
 	}
@@ -672,6 +687,12 @@
 		transform: translateY(-1px);
 	}
 
+	.submit__cta:focus-visible {
+		outline: 2px solid var(--paper);
+		outline-offset: 3px;
+		box-shadow: 0 0 0 4px var(--ink);
+	}
+
 	.submit__hint {
 		margin: 24px 0 0;
 		font-family: var(--font-mono);
@@ -681,9 +702,30 @@
 	}
 
 	.result {
+		position: relative;
+		isolation: isolate;
 		background: var(--paper);
 		padding: clamp(64px, 10vh, 128px) clamp(16px, 4vw, 64px);
 		scroll-margin-top: 72px;
+		overflow: hidden;
+	}
+
+	/* Soft archetype-tinted wash anchored top-left, fading to nothing.
+	   Bound to `--dominant-soft` (set inline from result.dominant) so the
+	   atmosphere matches the user's headline result. */
+	.result::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			radial-gradient(
+				ellipse 70% 60% at 12% 8%,
+				color-mix(in oklab, var(--dominant-soft, var(--paper)) 75%, transparent) 0%,
+				transparent 70%
+			),
+			var(--paper);
+		pointer-events: none;
 	}
 
 	.result__inner {
@@ -697,34 +739,44 @@
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin: 0 0 18px;
+		margin: 0 0 20px;
 	}
 
 	.result__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(40px, 6vw, 72px);
-		line-height: 1.05;
-		letter-spacing: -0.025em;
-		margin: 0 0 16px;
+		font-size: clamp(48px, 8vw, 96px);
+		line-height: 1;
+		letter-spacing: -0.03em;
+		margin: 0 0 18px;
 		text-wrap: balance;
 	}
 
 	.result__title em {
 		font-style: italic;
+		color: var(--dominant-ink, var(--ink));
 	}
 
 	.result__lede {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(18px, 2.2vw, 22px);
+		font-size: clamp(20px, 2.4vw, 26px);
+		color: var(--ink);
+		margin: 0 0 24px;
+	}
+
+	.result__prose {
+		max-width: 56ch;
+		font-size: 16px;
+		line-height: 1.6;
 		color: var(--ink-70);
-		margin: 0 0 48px;
+		margin: 0 0 56px;
+		text-wrap: pretty;
 	}
 
 	.result__bars {
 		list-style: none;
-		margin: 0 0 32px;
+		margin: 0 0 36px;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
@@ -738,6 +790,8 @@
 		gap: 16px;
 		font-family: var(--font-mono);
 		font-size: 12px;
+		opacity: 0;
+		animation: result-bar-in 520ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--bar-delay, 0ms) both;
 	}
 
 	.result__bar[data-dominant='true'] .result__bar-name,
@@ -768,8 +822,41 @@
 	.result__bar-fill {
 		display: block;
 		height: 100%;
+		width: 0;
 		border-radius: 999px;
-		transition: width 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+		animation: result-bar-fill 720ms cubic-bezier(0.2, 0.7, 0.3, 1)
+			calc(var(--bar-delay, 0ms) + 120ms) both;
+	}
+
+	@keyframes result-bar-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@keyframes result-bar-fill {
+		from {
+			width: 0;
+		}
+		to {
+			width: var(--bar-width, 0%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.result__bar {
+			opacity: 1;
+			animation: none;
+		}
+		.result__bar-fill {
+			width: var(--bar-width, 0%);
+			animation: none;
+		}
 	}
 
 	.result__bar-pct {
@@ -788,46 +875,65 @@
 	}
 
 	.result__actions {
-		margin-top: 48px;
+		margin-top: 56px;
+		padding-top: 32px;
+		border-top: 1px solid var(--ink-08);
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
-		gap: 16px 20px;
+		align-items: baseline;
+		gap: 12px 28px;
 	}
 
+	/* Editorial typographic retake — italic display serif rather than a
+	   utility button. Sits at the bottom as a quiet "turn the page" gesture
+	   rather than another bold CTA competing with the dominant headline. */
 	.result__retake {
 		display: inline-flex;
-		align-items: center;
-		gap: 12px;
-		height: 52px;
-		padding: 0 24px;
-		background: var(--paper);
+		align-items: baseline;
+		gap: 10px;
+		padding: 0;
+		background: transparent;
 		color: var(--ink);
-		border: 1px solid var(--rule);
-		border-radius: var(--button-radius);
-		font-family: var(--font-sans);
-		font-size: 15px;
-		font-weight: 500;
-		letter-spacing: -0.005em;
+		border: none;
+		border-bottom: 1px solid var(--ink-30);
+		border-radius: 0;
+		font-family: var(--font-display);
+		font-size: clamp(20px, 2.4vw, 28px);
+		line-height: 1.1;
+		letter-spacing: -0.015em;
 		cursor: pointer;
+		padding-bottom: 4px;
 		transition:
-			transform 0.2s ease,
-			background 0.2s ease,
-			border-color 0.2s ease;
+			border-color 0.2s ease,
+			color 0.2s ease,
+			gap 0.2s ease;
+	}
+
+	.result__retake em {
+		font-style: italic;
+	}
+
+	.result__retake-glyph {
+		font-family: var(--font-sans);
+		font-size: 18px;
+		font-style: normal;
+		color: var(--ink-70);
+		transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
 	}
 
 	.result__retake:hover {
-		transform: translateY(-1px);
-		border-color: var(--ink);
+		border-bottom-color: var(--dominant-mid, var(--ink));
+		gap: 14px;
 	}
 
-	.result__retake:active {
-		transform: translateY(0);
+	.result__retake:hover .result__retake-glyph {
+		transform: rotate(-180deg);
+		color: var(--dominant-mid, var(--ink));
 	}
 
 	.result__retake:focus-visible {
 		outline: 2px solid var(--ink);
-		outline-offset: 3px;
+		outline-offset: 6px;
 	}
 
 	.result__retake-meta {

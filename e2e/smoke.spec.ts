@@ -347,6 +347,16 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(page.locator('#result')).toBeAttached();
 		await expect(page.locator('#result-title')).toContainText(/^You are an/i);
 		await expect(page.locator('.result__bar')).toHaveCount(5);
+		// The archetype prose paragraph is the new content layer below the lede —
+		// confirm it's rendered with substantive copy so we don't silently ship
+		// a missing/empty entry from VERT_NAMES.
+		await expect(page.locator('.result__prose')).toBeAttached();
+		const proseText = (await page.locator('.result__prose').textContent()) ?? '';
+		expect(proseText.trim().length).toBeGreaterThanOrEqual(40);
+		// The result section carries data-dominant matching the headline archetype,
+		// which the radial accent wash binds to via inline custom properties.
+		const dominant = await page.locator('#result').getAttribute('data-dominant');
+		expect(dominant).toMatch(/^(introvert|extrovert|ambivert|omnivert|otrovert)$/);
 	});
 
 	test('retake clears every answer, hides the result, and clears localStorage', async ({
@@ -355,6 +365,9 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await seedAllAnswered(page);
 		await page.goto('/');
 		await expect(page.locator('#result')).toBeAttached();
+		// The retake button uses the editorial "Start over." label — anchor the
+		// e2e to that copy so a future label tweak is caught alongside the visual.
+		await expect(page.locator('.result__retake')).toContainText(/start over/i);
 
 		await page.locator('.result__retake').click();
 

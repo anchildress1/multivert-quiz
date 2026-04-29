@@ -93,10 +93,12 @@
 		position: relative;
 		z-index: 1;
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: center;
-		padding: clamp(24px, 4vh, 56px) clamp(16px, 4vw, 64px);
-		min-height: calc(100dvh - var(--chapter-head-h, 72px));
+		padding: clamp(40px, 8vh, 96px) clamp(16px, 4vw, 64px) clamp(32px, 6vh, 72px);
+		/* Tall enough for scroll-snap to feel deliberate; short enough that the
+		   card hugs the chapter head instead of floating in a void. */
+		min-height: calc(80dvh - var(--chapter-head-h, 72px));
 		scroll-snap-align: start;
 		scroll-snap-stop: always;
 		scroll-margin-top: var(--chapter-head-h, 72px);
@@ -114,7 +116,12 @@
 		-webkit-backdrop-filter: blur(16px) saturate(1.05);
 		border: 1px solid var(--ink-08);
 		border-radius: var(--card-radius);
+		/* Inset accent stripe lives on the card's left edge — gives every
+		   question quiet chapter-of-origin context without competing with the
+		   active-state halo on the border. The rotating accent token already
+		   lives on `--accent` so this requires no per-row plumbing. */
 		box-shadow:
+			inset 3px 0 0 color-mix(in oklab, var(--accent) 60%, transparent),
 			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
 			0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent);
 		transition:
@@ -157,6 +164,7 @@
 		0% {
 			border-color: var(--ink-08);
 			box-shadow:
+				inset 3px 0 0 color-mix(in oklab, var(--accent) 60%, transparent),
 				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
 				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
 				0 0 0 0 color-mix(in oklab, var(--accent) 40%, transparent);
@@ -164,6 +172,7 @@
 		36% {
 			border-color: var(--accent);
 			box-shadow:
+				inset 3px 0 0 var(--accent),
 				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
 				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
 				0 0 0 8px color-mix(in oklab, var(--accent) 18%, transparent);
@@ -171,6 +180,7 @@
 		100% {
 			border-color: var(--ink-08);
 			box-shadow:
+				inset 3px 0 0 color-mix(in oklab, var(--accent) 60%, transparent),
 				0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
 				0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent),
 				0 0 0 0 transparent;

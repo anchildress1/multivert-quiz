@@ -34,16 +34,68 @@ export const ARCHETYPES: readonly Archetype[] = [
 ];
 
 export interface VertMeta {
+	/** Capitalised display name (`Introvert`). */
 	name: string;
+	/** One-line tagline used in the hero reference card and result lede. */
 	label: string;
+	/** 1-3 sentence prose description rendered on the result page. */
+	prose: string;
 }
 
 export const VERT_NAMES: Readonly<Record<Archetype, VertMeta>> = Object.freeze({
-	introvert: { name: 'Introvert', label: 'inward, charged by quiet' },
-	extrovert: { name: 'Extrovert', label: 'outward, charged by people' },
-	ambivert: { name: 'Ambivert', label: 'context-flexible, mid-range' },
-	omnivert: { name: 'Omnivert', label: 'oscillates between extremes' },
-	otrovert: { name: 'Otrovert', label: 'belongs without belonging' }
+	introvert: {
+		name: 'Introvert',
+		label: 'inward, charged by quiet',
+		prose:
+			'Recharges in quiet. Social rooms cost something to be in, and solitude is not an empty default — it is where the work of being yourself actually happens.'
+	},
+	extrovert: {
+		name: 'Extrovert',
+		label: 'outward, charged by people',
+		prose:
+			'Charged by people. The energy goes up in a crowded room, and a quiet weekend reads as a small debt to be paid back at the next gathering.'
+	},
+	ambivert: {
+		name: 'Ambivert',
+		label: 'context-flexible, mid-range',
+		prose:
+			'Reads the room and matches it. Equally at home talking and listening, equally drained by too much of either — your rhythm is the average, not the extreme.'
+	},
+	omnivert: {
+		name: 'Omnivert',
+		label: 'oscillates between extremes',
+		prose:
+			'Either fully on or fully off. No gentle middle gear — the same week can hold a hosted dinner and a do-not-disturb day, and both are equally you.'
+	},
+	otrovert: {
+		name: 'Otrovert',
+		label: 'belongs without belonging',
+		prose:
+			'A 2025 construct from psychiatrist Rami Kaminski. Comfortable in groups when there is a defined role; observer-not-member without one. You belong without belonging.'
+	}
+});
+
+export interface DimensionMeta {
+	/** Italic display blurb shown under each chapter title. */
+	description: string;
+}
+
+export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object.freeze({
+	extraversion: {
+		description:
+			'How casual, unstructured social settings actually feel — the kind without a defined role.'
+	},
+	belonging: {
+		description:
+			'Whether you carry a "we" with you, or whether you watch from just outside the circle.'
+	},
+	group_size: {
+		description:
+			'Whether energy comes from one deep conversation or twenty new faces in the same hour.'
+	},
+	swings: {
+		description: 'How dramatically the same person, same plan, same week can flip.'
+	}
 });
 
 /** Display order in the hero card and FiveDots. */

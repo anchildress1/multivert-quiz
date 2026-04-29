@@ -153,12 +153,15 @@
 		text-align: right;
 	}
 
+	/* Narrow screens: drop the brand (the user just scrolled past it in the
+	   hero) and keep the chapter context, which is the actual wayfinding. */
 	@media (max-width: 720px) {
-		.meter__chapter {
+		.meter__brand {
 			display: none;
 		}
 		.meter__inner {
-			grid-template-columns: auto 1fr;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 16px;
 		}
 	}
 </style>

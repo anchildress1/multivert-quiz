@@ -6,6 +6,7 @@ import {
 	ARCHETYPE_WEIGHTS,
 	CHAPTERS,
 	DIMENSIONS,
+	DIMENSION_META,
 	VERT_NAMES,
 	VERT_ORDER,
 	type Archetype,
@@ -41,11 +42,27 @@ describe('archetypes registry — invariants', () => {
 		expect(VERT_ORDER).toEqual(ARCHETYPES);
 	});
 
-	it.each(ARCHETYPE_LITERALS)('VERT_NAMES has a name + label entry for %s', (archetype) => {
-		const meta = VERT_NAMES[archetype];
+	it.each(ARCHETYPE_LITERALS)(
+		'VERT_NAMES has a capitalised name + non-empty label + prose entry for %s',
+		(archetype) => {
+			const meta = VERT_NAMES[archetype];
+			expect(meta).toBeDefined();
+			expect(meta.name).toMatch(/^[A-Z][a-z]+$/);
+			expect(meta.label.length).toBeGreaterThan(0);
+			// Prose is the result-page description; must be substantive (≥40 chars)
+			// so we don't accidentally ship a placeholder string.
+			expect(meta.prose.length).toBeGreaterThanOrEqual(40);
+		}
+	);
+
+	it.each(DIMENSION_LITERALS)('DIMENSION_META has a non-empty description for %s', (dimension) => {
+		const meta = DIMENSION_META[dimension];
 		expect(meta).toBeDefined();
-		expect(meta.name).toMatch(/^[A-Z][a-z]+$/);
-		expect(meta.label.length).toBeGreaterThan(0);
+		expect(meta.description.length).toBeGreaterThanOrEqual(20);
+	});
+
+	it('DIMENSION_META is frozen', () => {
+		expect(Object.isFrozen(DIMENSION_META)).toBe(true);
 	});
 
 	it.each(ARCHETYPE_LITERALS)(
