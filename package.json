@@ -16,7 +16,12 @@
       "lefthook",
       "sharp",
       "workerd"
-    ]
+    ],
+    "overrides": {
+      "cookie@<0.7.0": "0.7.2",
+      "tmp@<=0.2.3": "0.2.5",
+      "uuid@<14.0.0": "14.0.0"
+    }
   },
   "volta": {
     "node": "24.13.0",

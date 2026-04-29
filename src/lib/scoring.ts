@@ -1,29 +1,50 @@
 /**
  * Multivert — Scoring Engine
  *
- * Deterministic scoring per the locked specification in docs/PRD.md. AI must
- * never enter the scoring path; AI is permitted only to colour result-paragraph
- * tone elsewhere. Any change to the weight matrix or ideal vectors must be
- * paired with a PRD revision.
+ * Deterministic per-archetype axis projection. AI must never enter the
+ * scoring path; AI is permitted only to colour result-paragraph tone
+ * elsewhere. Any change to the scoring rules below must be paired with a
+ * PRD revision.
  *
- * Pipeline:
- *   1. Apply reverse-score sign-flip to flagged items.
- *   2. Compute per-dimension means.
- *   3. Compute the variance of the (sign-flipped) extraversion items and add
- *      it to the swings dimension as a derived signal — a high variance
- *      across the extraversion axis is a legitimate omnivert tell that
- *      doesn't consume question slots.
- *   4. For each archetype, compute the weighted Euclidean distance between
- *      the user dimension vector and the archetype's ideal vector.
- *   5. Map distance → 0–100% fit per archetype on its own scale (NOT
- *      cross-normalized; archetypes can co-score high).
- *   6. Headline = the archetype with the highest fit %.
+ * Model
+ * -----
+ * Each archetype scores against a small subset of axes, not the full 5-d
+ * vector:
+ *
+ *   - Introvert / Ambivert / Extrovert live on the *extraversion* axis at
+ *     -1, 0, +1. A user vector is projected onto each of those three points
+ *     linearly. Group-size is a secondary correlate (small ↔ large mirrors
+ *     intro ↔ extro).
+ *   - Otrovert is a one-sided projection along the *belonging* axis (toward
+ *     -1 = "high otherness"). Independent of every other axis: an otrovert
+ *     can also be intro / extro / ambi.
+ *   - Omnivert is driven by explicit positive swings answers (self-reported
+ *     oscillation across time / situation). Neutral or negative swings are
+ *     treated as absence of omnivert evidence on this one-sided axis.
+ *
+ * Pipeline
+ * --------
+ *   1. Apply reverse-score sign-flip to flagged items, clamp to [-1, 1].
+ *   2. Compute per-dimension means for the four question dimensions.
+ *   3. Project per-archetype per the formulas below; clamp each to [0, 1]
+ *      and scale to a 0–100% fit score.
+ *   4. Headline = the archetype with the highest fit %.
+ *
+ * Properties
+ * ----------
+ *   - All-zeros user vector → 100% Ambivert, 50% Introvert, 50% Extrovert,
+ *     0% Otrovert, 0% Omnivert. The 50% scores reflect midpoints on a
+ *     two-poled axis (Intro ↔ Extro share the extraversion line). The 0%
+ *     scores reflect one-sided axes (no evidence yet of otherness or
+ *     contradiction).
+ *   - Each archetype's max-typed answer pattern → 100% on that archetype.
+ *   - Bars are independent (no softmax / cross-normalization). Co-scoring
+ *     is preserved: an introverted otrovert legitimately scores high on
+ *     both because they live on different axes.
  */
 
 import {
 	ARCHETYPES,
-	ARCHETYPE_IDEALS,
-	ARCHETYPE_WEIGHTS,
 	DIMENSIONS,
 	type Archetype,
 	type Dimension,
@@ -32,8 +53,6 @@ import {
 
 export {
 	ARCHETYPES,
-	ARCHETYPE_IDEALS,
-	ARCHETYPE_WEIGHTS,
 	DIMENSIONS,
 	type Archetype,
 	type Dimension,
@@ -57,10 +76,17 @@ export interface QuizResult {
 	dominant: Archetype;
 }
 
-/** Maximum possible weighted Euclidean distance for any user vs. ideal pair. */
-const MAX_DISTANCE = 2;
+/**
+ * Tunable mix constants. Locked in PRD §P0.
+ * EXTRA_PRIMARY_WEIGHT applies to the extraversion-axis projection for
+ * intro / extro / ambi; the remaining 1 - EXTRA_PRIMARY_WEIGHT goes to the
+ * group-size correlate. They must sum to 1.
+ */
+export const EXTRA_PRIMARY_WEIGHT = 0.7;
+export const SIZE_SECONDARY_WEIGHT = 1 - EXTRA_PRIMARY_WEIGHT;
 
 const clampUnit = (value: number): number => Math.max(-1, Math.min(1, value));
+const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
 const mean = (values: readonly number[]): number => {
 	/* v8 ignore next — guarded upstream by computeDimensions */
@@ -70,22 +96,14 @@ const mean = (values: readonly number[]): number => {
 	return sum / values.length;
 };
 
-const variance = (values: readonly number[]): number => {
-	/* v8 ignore next — guarded upstream by computeDimensions */
-	if (values.length === 0) return 0;
-	const mu = mean(values);
-	let acc = 0;
-	for (const v of values) acc += (v - mu) ** 2;
-	return acc / values.length;
-};
-
 /** Apply reverse-score sign-flip and clamp to [-1, 1]. */
 const normalize = (item: AnsweredItem): number =>
 	clampUnit(item.reverse ? -item.value : item.value);
 
 /**
- * Compute the four-dimensional user vector from the answered question bank.
- * Throws if any P0 dimension is missing — partial submissions are not scored.
+ * Compute the four-dimension user vector from the answered question bank.
+ * Throws if any of the four question dimensions is missing — partial
+ * submissions are not scored.
  */
 export const computeDimensions = (items: readonly AnsweredItem[]): DimensionVector => {
 	const buckets: Record<Dimension, number[]> = {
@@ -105,37 +123,55 @@ export const computeDimensions = (items: readonly AnsweredItem[]): DimensionVect
 		}
 	}
 
-	const swingsBase = mean(buckets.swings);
-	const extraversionVariance = variance(buckets.extraversion);
-	// Variance ∈ [0, 1] given inputs ∈ [-1, 1]; bias toward the swings pole.
-	const swingsAdjusted = clampUnit(swingsBase + extraversionVariance);
-
 	return {
 		extraversion: mean(buckets.extraversion),
 		belonging: mean(buckets.belonging),
 		group_size: mean(buckets.group_size),
-		swings: swingsAdjusted
+		swings: mean(buckets.swings)
 	};
 };
 
-/** Weighted Euclidean distance between user vector and archetype ideal. */
-export const weightedDistance = (
-	user: DimensionVector,
-	ideal: DimensionVector,
-	weights: DimensionVector
-): number => {
-	let acc = 0;
-	for (const dim of DIMENSIONS) {
-		const diff = user[dim] - ideal[dim];
-		acc += weights[dim] * diff * diff;
+/**
+ * Per-archetype fit, in [0, 100]. Independent of every other archetype's
+ * score — bars do not cross-normalize.
+ */
+export const archetypeFit = (user: DimensionVector, archetype: Archetype): number => {
+	switch (archetype) {
+		case 'introvert': {
+			const extraPole = (1 - user.extraversion) / 2;
+			const sizePole = (1 - user.group_size) / 2;
+			const raw = EXTRA_PRIMARY_WEIGHT * extraPole + SIZE_SECONDARY_WEIGHT * sizePole;
+			return clamp01(raw) * 100;
+		}
+		case 'extrovert': {
+			const extraPole = (1 + user.extraversion) / 2;
+			const sizePole = (1 + user.group_size) / 2;
+			const raw = EXTRA_PRIMARY_WEIGHT * extraPole + SIZE_SECONDARY_WEIGHT * sizePole;
+			return clamp01(raw) * 100;
+		}
+		case 'ambivert': {
+			const extraCentre = 1 - Math.abs(user.extraversion);
+			const sizeCentre = 1 - Math.abs(user.group_size);
+			const raw = EXTRA_PRIMARY_WEIGHT * extraCentre + SIZE_SECONDARY_WEIGHT * sizeCentre;
+			return clamp01(raw) * 100;
+		}
+		case 'otrovert': {
+			// One-sided ramp: only negative belonging produces non-zero otrovert.
+			// belong = +1 (full group identification) → 0%; belong = 0 (no
+			// otherness signal) → 0%; belong = -1 (full otherness) → 100%.
+			// There is no opposite-named archetype on this axis, so a neutral
+			// belonging answer is "absence of otrovert evidence," not "halfway
+			// to otrovert."
+			return clamp01(-user.belonging) * 100;
+		}
+		case 'omnivert': {
+			// One-sided ramp: only positive swings produce non-zero omnivert.
+			// In a one-shot quiz, these items directly ask about time/situation
+			// oscillation; cross-item extraversion disagreement is not treated as
+			// state variability.
+			return clamp01(user.swings) * 100;
+		}
 	}
-	return Math.sqrt(acc);
-};
-
-/** Map a weighted distance to a 0–100% fit score (higher = closer match). */
-export const distanceToFit = (distance: number): number => {
-	const clamped = Math.max(0, Math.min(MAX_DISTANCE, distance));
-	return ((MAX_DISTANCE - clamped) / MAX_DISTANCE) * 100;
 };
 
 /** End-to-end scoring entry point. */
@@ -144,9 +180,7 @@ export const scoreQuiz = (items: readonly AnsweredItem[]): QuizResult => {
 
 	const fits: ArchetypeFit[] = ARCHETYPES.map((archetype) => ({
 		archetype,
-		fit: distanceToFit(
-			weightedDistance(dimensions, ARCHETYPE_IDEALS[archetype], ARCHETYPE_WEIGHTS[archetype])
-		)
+		fit: archetypeFit(dimensions, archetype)
 	}));
 
 	const [head, ...rest] = fits;

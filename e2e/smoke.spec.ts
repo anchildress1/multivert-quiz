@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { questions } from '../src/lib/questions';
 
 /**
  * E2E suite for the single-page quiz. Designed to be CI-friendly on slow
@@ -15,48 +16,14 @@ import { expect, test, type Page } from '@playwright/test';
  * -------
  */
 
-const QUESTION_IDS = [
-	'e-01',
-	'e-02',
-	'e-03',
-	'e-04',
-	'e-05',
-	'e-06',
-	'e-07',
-	'e-08',
-	'e-09',
-	'e-10',
-	'b-01',
-	'b-02',
-	'b-03',
-	'b-04',
-	'b-05',
-	'b-06',
-	'b-07',
-	'b-08',
-	'b-09',
-	'b-10',
-	'g-01',
-	'g-02',
-	'g-03',
-	'g-04',
-	'g-05',
-	's-01',
-	's-02',
-	's-03',
-	's-04',
-	's-05'
-] as const;
+const QUESTION_IDS = questions.map((question) => question.id);
 
 const seedAllAnswered = (page: Page) =>
-	page.addInitScript(
-		(ids: readonly string[]) => {
-			const map: Record<string, { state: string; value: number }> = {};
-			for (const id of ids) map[id] = { state: 'answered', value: 0 };
-			sessionStorage.setItem('multivert.answers.v1', JSON.stringify(map));
-		},
-		QUESTION_IDS as unknown as string[]
-	);
+	page.addInitScript((ids: readonly string[]) => {
+		const map: Record<string, { state: string; value: number }> = {};
+		for (const id of ids) map[id] = { state: 'answered', value: 0 };
+		sessionStorage.setItem('multivert.answers.v1', JSON.stringify(map));
+	}, QUESTION_IDS);
 
 const scrollToElement = (page: Page, id: string, offset = 0) =>
 	page.evaluate(
@@ -132,10 +99,10 @@ test.describe('landing + scroll quiz — structure', () => {
 		expect(chapterLabels).toBe(4);
 	});
 
-	test('renders all 30 questions with native range sliders', async ({ page }) => {
+	test('renders all questions with native range sliders', async ({ page }) => {
 		await page.goto('/');
-		await expect(page.locator('article.row')).toHaveCount(30);
-		await expect(page.locator('input[type="range"]')).toHaveCount(30);
+		await expect(page.locator('article.row')).toHaveCount(questions.length);
+		await expect(page.locator('input[type="range"]')).toHaveCount(questions.length);
 	});
 
 	test('progress meter is mounted', async ({ page }) => {
@@ -335,9 +302,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(persisted).toEqual({ state: 'answered', value: 0 });
 	});
 
-	test('answering all 30 questions enables the submit CTA and surfaces a result', async ({
-		page
-	}) => {
+	test('answering all questions enables the submit CTA and surfaces a result', async ({ page }) => {
 		await seedAllAnswered(page);
 		await page.goto('/');
 		const submitBtn = page.locator('.submit__cta');

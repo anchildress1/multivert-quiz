@@ -20,11 +20,41 @@
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
+	const questionCount = questions.length;
+	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — ${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
+	let resultActive = $state(false);
 	let scrollY = $state(0);
 
 	const meterVisible = $derived(scrollY > 80);
+
+	/* The single sticky banner at the top of `<main>` is driven by this
+	   derived bag of ChapterIntro props. Result takes precedence when its
+	   section is intersecting; otherwise the last visited chapter wins. */
+	const activeSection = $derived.by(() => {
+		if (resultActive && store.result) {
+			return {
+				numeral: 'V' as const,
+				title: 'Result',
+				archetype: store.result.dominant,
+				count: 5,
+				countLabel: 'verts',
+				description: 'Five independent fits — bars do not sum to 100.'
+			};
+		}
+		if (activeChapter) {
+			return {
+				numeral: activeChapter.numeral,
+				title: activeChapter.title,
+				archetype: activeChapter.archetype,
+				count: grouped[activeChapter.dimension].length,
+				countLabel: 'statements',
+				description: DIMENSION_META[activeChapter.dimension].description
+			};
+		}
+		return null;
+	});
 
 	$effect(() => {
 		if (!browser) return;
@@ -53,6 +83,31 @@
 		chapterTargets.forEach(({ el }) => chapterObserver.observe(el));
 
 		return () => chapterObserver.disconnect();
+	});
+
+	/* Result section gets its own observer because it only renders once the
+	   user has answered every question, so it isn't in the DOM when the
+	   chapter observer above is wired up. The store.result dependency
+	   re-runs the effect when the section enters the tree. The boolean is
+	   live (true while the section is intersecting, false when not), so
+	   scrolling back up into chapters cleanly hands the global banner back
+	   to `activeChapter`. */
+	$effect(() => {
+		if (!browser) return;
+		if (!store.result) {
+			resultActive = false;
+			return;
+		}
+		const el = document.getElementById('result');
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				resultActive = entry?.isIntersecting ?? false;
+			},
+			{ rootMargin: '-30% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
 	});
 
 	const firstChapter = CHAPTERS[0];
@@ -189,26 +244,20 @@
 
 <svelte:head>
 	<title>Multivert — what vert are you?</title>
-	<meta
-		name="description"
-		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end. Answers stay on your device."
-	/>
+	<meta name="description" content={`${pageDescription} Answers stay on your device.`} />
 	<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
 	<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Multivert — what vert are you?" />
-	<meta
-		property="og:description"
-		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end."
-	/>
+	<meta property="og:description" content={pageDescription} />
 	<meta property="og:site_name" content="Multivert" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Multivert — what vert are you?" />
 	<meta
 		name="twitter:description"
-		content="A five-sided personality quiz. 30 questions, one slider, a five-way breakdown at the end."
+		content={`A five-sided personality quiz. ${questionCount} questions, one slider, a five-way breakdown at the end.`}
 	/>
 </svelte:head>
 
@@ -284,16 +333,8 @@
 </header>
 
 <main class="quiz">
-	{#if activeChapter}
-		{@const head = activeChapter}
-		<ChapterIntro
-			id="active-chapter-head"
-			numeral={head.numeral}
-			title={head.title}
-			archetype={head.archetype}
-			count={grouped[head.dimension].length}
-			description={DIMENSION_META[head.dimension].description}
-		/>
+	{#if activeSection}
+		<ChapterIntro id="active-chapter-head" {...activeSection} />
 	{/if}
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
@@ -726,9 +767,18 @@
 		position: relative;
 		isolation: isolate;
 		background: var(--paper);
-		padding: clamp(64px, 10vh, 128px) clamp(16px, 4vw, 64px);
 		scroll-margin-top: 72px;
-		overflow: hidden;
+		/* No `overflow: hidden` — sticky descendants need an unclipped
+		   ancestor, and the global `<ChapterIntro>` sits at the top of
+		   `<main>` outside this section either way. The radial-gradient
+		   `::before` is bounded by `inset: 0` and fades to transparent
+		   before the section edges, so clipping isn't required. */
+	}
+
+	.result__inner {
+		max-width: 760px;
+		margin: 0 auto;
+		padding: clamp(56px, 9vh, 112px) clamp(16px, 4vw, 64px);
 	}
 
 	/* Soft archetype-tinted wash anchored top-left, fading to nothing.
@@ -747,11 +797,6 @@
 			),
 			var(--paper);
 		pointer-events: none;
-	}
-
-	.result__inner {
-		max-width: 760px;
-		margin: 0 auto;
 	}
 
 	.result__eyebrow {

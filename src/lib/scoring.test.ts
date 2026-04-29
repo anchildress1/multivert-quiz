@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-	ARCHETYPE_IDEALS,
-	ARCHETYPE_WEIGHTS,
+	archetypeFit,
 	computeDimensions,
-	distanceToFit,
 	scoreQuiz,
-	weightedDistance,
 	type AnsweredItem,
 	type Archetype,
 	type Dimension,
@@ -15,12 +12,29 @@ import {
 const itemsForDimension = (dimension: Dimension, value: number, count: number): AnsweredItem[] =>
 	Array.from({ length: count }, () => ({ dimension, value, reverse: false }));
 
-const fullSet = (vector: DimensionVector): AnsweredItem[] => [
-	...itemsForDimension('extraversion', vector.extraversion, 10),
-	...itemsForDimension('belonging', vector.belonging, 10),
-	...itemsForDimension('group_size', vector.group_size, 5),
-	...itemsForDimension('swings', vector.swings, 5)
-];
+const VECTOR_AT_ZERO: DimensionVector = {
+	extraversion: 0,
+	belonging: 0,
+	group_size: 0,
+	swings: 0
+};
+
+/**
+ * Build a 35-item answer set whose per-dimension means equal `target.{dim}`.
+ */
+const fullSet = (target: {
+	extraversion: number;
+	belonging: number;
+	group_size: number;
+	swings: number;
+}): AnsweredItem[] => {
+	return [
+		...itemsForDimension('extraversion', target.extraversion, 10),
+		...itemsForDimension('belonging', target.belonging, 15),
+		...itemsForDimension('group_size', target.group_size, 5),
+		...itemsForDimension('swings', target.swings, 5)
+	];
+};
 
 describe('computeDimensions', () => {
 	it('averages items per dimension', () => {
@@ -60,23 +74,15 @@ describe('computeDimensions', () => {
 		expect(result.belonging).toBe(-1);
 	});
 
-	it('boosts swings using extraversion variance (omnivert signal)', () => {
-		const flat: AnsweredItem[] = [
-			{ dimension: 'extraversion', value: 0, reverse: false },
-			{ dimension: 'extraversion', value: 0, reverse: false },
-			{ dimension: 'belonging', value: 0, reverse: false },
-			{ dimension: 'group_size', value: 0, reverse: false },
-			{ dimension: 'swings', value: 0, reverse: false }
-		];
-		const swingy: AnsweredItem[] = [
+	it('swings is the pure mean of swings items', () => {
+		const items: AnsweredItem[] = [
 			{ dimension: 'extraversion', value: 1, reverse: false },
 			{ dimension: 'extraversion', value: -1, reverse: false },
 			{ dimension: 'belonging', value: 0, reverse: false },
 			{ dimension: 'group_size', value: 0, reverse: false },
-			{ dimension: 'swings', value: 0, reverse: false }
+			{ dimension: 'swings', value: -0.4, reverse: false }
 		];
-		expect(computeDimensions(flat).swings).toBe(0);
-		expect(computeDimensions(swingy).swings).toBe(1);
+		expect(computeDimensions(items).swings).toBe(-0.4);
 	});
 
 	it('throws when a dimension has no answers', () => {
@@ -93,8 +99,6 @@ describe('computeDimensions', () => {
 		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 }).filter(
 			(it) => it.dimension !== dim
 		);
-		// `toThrow(string)` checks the message contains the substring — no
-		// dynamic-regex construction needed.
 		expect(() => computeDimensions(items)).toThrow(`Missing answers for dimension: ${dim}`);
 	});
 
@@ -115,103 +119,156 @@ describe('computeDimensions', () => {
 	});
 });
 
-describe('weightedDistance', () => {
-	it('is zero when user matches ideal exactly', () => {
-		const ideal = ARCHETYPE_IDEALS.extrovert;
-		expect(weightedDistance(ideal, ideal, ARCHETYPE_WEIGHTS.extrovert)).toBe(0);
+describe('archetypeFit — locked baseline (all-zeros user vector)', () => {
+	it('Ambivert reads 100% at the all-zeros baseline', () => {
+		expect(archetypeFit(VECTOR_AT_ZERO, 'ambivert')).toBeCloseTo(100, 12);
 	});
 
-	it('is symmetric in user/ideal', () => {
-		const a: DimensionVector = {
-			extraversion: 0.4,
-			belonging: -0.2,
-			group_size: 0.6,
-			swings: -0.1
-		};
-		const b: DimensionVector = {
-			extraversion: -0.4,
-			belonging: 0.2,
-			group_size: -0.6,
-			swings: 0.1
-		};
-		const w = ARCHETYPE_WEIGHTS.ambivert;
-		expect(weightedDistance(a, b, w)).toBeCloseTo(weightedDistance(b, a, w), 12);
+	it('Introvert and Extrovert each read 50% at the all-zeros baseline', () => {
+		expect(archetypeFit(VECTOR_AT_ZERO, 'introvert')).toBeCloseTo(50, 12);
+		expect(archetypeFit(VECTOR_AT_ZERO, 'extrovert')).toBeCloseTo(50, 12);
 	});
 
-	it('returns 2 for diametrically opposite vectors with full weighting', () => {
-		const ones: DimensionVector = { extraversion: 1, belonging: 1, group_size: 1, swings: 1 };
-		const negOnes: DimensionVector = {
+	it('Otrovert reads 0% at the all-zeros baseline (one-sided axis: no otherness signal yet)', () => {
+		expect(archetypeFit(VECTOR_AT_ZERO, 'otrovert')).toBeCloseTo(0, 12);
+	});
+
+	it('Otrovert is one-sided: positive belonging never goes below 0%', () => {
+		for (const belong of [0, 0.25, 0.5, 1]) {
+			const v: DimensionVector = {
+				extraversion: 0,
+				belonging: belong,
+				group_size: 0,
+				swings: 0
+			};
+			expect(archetypeFit(v, 'otrovert')).toBeCloseTo(0, 12);
+		}
+	});
+
+	it('Otrovert ramps linearly from belong=0 (0%) to belong=-1 (100%)', () => {
+		const cases = [
+			{ belong: 0, expected: 0 },
+			{ belong: -0.25, expected: 25 },
+			{ belong: -0.5, expected: 50 },
+			{ belong: -0.75, expected: 75 },
+			{ belong: -1, expected: 100 }
+		];
+		for (const { belong, expected } of cases) {
+			const v: DimensionVector = {
+				extraversion: 0,
+				belonging: belong,
+				group_size: 0,
+				swings: 0
+			};
+			expect(archetypeFit(v, 'otrovert')).toBeCloseTo(expected, 10);
+		}
+	});
+
+	it('Omnivert reads 0% at the all-zeros baseline (no contradiction evidence)', () => {
+		expect(archetypeFit(VECTOR_AT_ZERO, 'omnivert')).toBeCloseTo(0, 12);
+	});
+});
+
+describe('archetypeFit — extreme answer patterns', () => {
+	it('canonical Introvert pattern → 100% Introvert, 0% Extrovert', () => {
+		const v: DimensionVector = {
+			extraversion: -1,
+			belonging: 1,
+			group_size: -1,
+			swings: -1
+		};
+		expect(archetypeFit(v, 'introvert')).toBeCloseTo(100, 12);
+		expect(archetypeFit(v, 'extrovert')).toBeCloseTo(0, 12);
+		expect(archetypeFit(v, 'ambivert')).toBeCloseTo(0, 12);
+	});
+
+	it('canonical Extrovert pattern → 100% Extrovert, 0% Introvert', () => {
+		const v: DimensionVector = {
+			extraversion: 1,
+			belonging: 1,
+			group_size: 1,
+			swings: -1
+		};
+		expect(archetypeFit(v, 'extrovert')).toBeCloseTo(100, 12);
+		expect(archetypeFit(v, 'introvert')).toBeCloseTo(0, 12);
+		expect(archetypeFit(v, 'ambivert')).toBeCloseTo(0, 12);
+	});
+
+	it('canonical Otrovert pattern → 100% Otrovert', () => {
+		const v: DimensionVector = {
+			extraversion: 0,
+			belonging: -1,
+			group_size: 0,
+			swings: 0
+		};
+		expect(archetypeFit(v, 'otrovert')).toBeCloseTo(100, 12);
+	});
+
+	it('canonical Omnivert pattern (swings=+1) → 100% Omnivert', () => {
+		const v: DimensionVector = {
+			extraversion: 0,
+			belonging: 0,
+			group_size: 0,
+			swings: 1
+		};
+		expect(archetypeFit(v, 'omnivert')).toBeCloseTo(100, 12);
+	});
+});
+
+describe('archetypeFit — co-scoring (independent axes)', () => {
+	it('introverted otrovert scores 100% on both Introvert and Otrovert', () => {
+		const v: DimensionVector = {
 			extraversion: -1,
 			belonging: -1,
 			group_size: -1,
 			swings: -1
 		};
-		const equalWeights: DimensionVector = {
-			extraversion: 0.25,
-			belonging: 0.25,
-			group_size: 0.25,
-			swings: 0.25
+		expect(archetypeFit(v, 'introvert')).toBeCloseTo(100, 12);
+		expect(archetypeFit(v, 'otrovert')).toBeCloseTo(100, 12);
+	});
+
+	it('Otrovert score is independent of extraversion position', () => {
+		const introOtro: DimensionVector = {
+			extraversion: -1,
+			belonging: -1,
+			group_size: 0,
+			swings: 0
 		};
-		expect(weightedDistance(ones, negOnes, equalWeights)).toBeCloseTo(2, 12);
+		const extroOtro: DimensionVector = {
+			extraversion: 1,
+			belonging: -1,
+			group_size: 0,
+			swings: 0
+		};
+		expect(archetypeFit(introOtro, 'otrovert')).toBeCloseTo(
+			archetypeFit(extroOtro, 'otrovert'),
+			12
+		);
+	});
+
+	it('negative swings stay at 0% Omnivert', () => {
+		const v: DimensionVector = {
+			extraversion: 0,
+			belonging: 0,
+			group_size: 0,
+			swings: -1
+		};
+		expect(archetypeFit(v, 'omnivert')).toBeCloseTo(0, 12);
 	});
 });
 
-describe('distanceToFit', () => {
-	it('maps distance 0 → 100% fit', () => {
-		expect(distanceToFit(0)).toBe(100);
-	});
+describe('scoreQuiz — end to end', () => {
+	it('all-zeros bank → Ambivert 100%, Intro/Extro 50%, Otrovert/Omnivert 0%', () => {
+		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 });
+		const result = scoreQuiz(items);
 
-	it('maps distance 2 → 0% fit', () => {
-		expect(distanceToFit(2)).toBe(0);
-	});
-
-	it('clamps negative distances to 100%', () => {
-		expect(distanceToFit(-0.5)).toBe(100);
-	});
-
-	it('clamps distances above 2 to 0%', () => {
-		expect(distanceToFit(3)).toBe(0);
-	});
-
-	it('is monotonically decreasing in distance', () => {
-		expect(distanceToFit(0.5)).toBeGreaterThan(distanceToFit(1));
-		expect(distanceToFit(1)).toBeGreaterThan(distanceToFit(1.5));
-	});
-
-	it.each([
-		{ d: 0, fit: 100 },
-		{ d: 0.5, fit: 75 },
-		{ d: 1, fit: 50 },
-		{ d: 1.5, fit: 25 },
-		{ d: 2, fit: 0 }
-	])('maps distance $d to $fit% fit', ({ d, fit }) => {
-		expect(distanceToFit(d)).toBeCloseTo(fit, 12);
-	});
-
-	it('propagates NaN inputs as NaN (defensive)', () => {
-		// Math.max/min propagate NaN, so Math.max(0, Math.min(2, NaN)) → NaN.
-		// distanceToFit is only called from scoreQuiz where inputs are finite; NaN
-		// reaching this path is a programming error, not a user input scenario.
-		const result = distanceToFit(Number.NaN);
-		expect(Number.isNaN(result)).toBe(true);
-	});
-});
-
-describe('scoreQuiz', () => {
-	it('declares the matching archetype dominant when the user vector equals its ideal', () => {
-		const archetypes: Archetype[] = ['extrovert', 'introvert', 'ambivert', 'otrovert', 'omnivert'];
-		for (const archetype of archetypes) {
-			const ideal = ARCHETYPE_IDEALS[archetype];
-			// Flat extraversion answers (variance = 0) so the derived-variance signal
-			// doesn't perturb the swings dimension away from each archetype's ideal.
-			const items = fullSet(ideal);
-			const result = scoreQuiz(items);
-			const matching = result.fits.find((fit) => fit.archetype === archetype);
-			expect(matching).toBeDefined();
-			if (!matching) throw new Error(`fit row missing for ${archetype}`);
-			expect(matching.fit).toBeGreaterThan(95);
-			expect(result.dominant).toBe(archetype);
-		}
+		const find = (a: Archetype) => result.fits.find((f) => f.archetype === a)?.fit ?? -1;
+		expect(find('ambivert')).toBeCloseTo(100, 12);
+		expect(find('introvert')).toBeCloseTo(50, 12);
+		expect(find('extrovert')).toBeCloseTo(50, 12);
+		expect(find('otrovert')).toBeCloseTo(0, 12);
+		expect(find('omnivert')).toBeCloseTo(0, 12);
+		expect(result.dominant).toBe('ambivert');
 	});
 
 	it('returns a fit entry per archetype', () => {
@@ -225,7 +282,8 @@ describe('scoreQuiz', () => {
 		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 });
 		const result = scoreQuiz(items);
 		const total = result.fits.reduce((sum, entry) => sum + entry.fit, 0);
-		expect(total).not.toBeCloseTo(100, 0);
+		// 100 + 50 + 50 + 0 + 0 = 200
+		expect(total).toBeCloseTo(200, 10);
 	});
 
 	it('every archetype fit is in [0, 100]', () => {
@@ -237,23 +295,35 @@ describe('scoreQuiz', () => {
 		}
 	});
 
-	it('weights matrix rows each sum to 1 (locked invariant)', () => {
-		for (const archetype of Object.keys(ARCHETYPE_WEIGHTS) as Archetype[]) {
-			const total = Object.values(ARCHETYPE_WEIGHTS[archetype]).reduce((s, w) => s + w, 0);
-			expect(total).toBeCloseTo(1, 12);
-		}
-	});
-
 	it('throws when answers are incomplete', () => {
 		const items: AnsweredItem[] = [{ dimension: 'extraversion', value: 0, reverse: false }];
 		expect(() => scoreQuiz(items)).toThrow();
 	});
 
-	it.each(['extrovert', 'introvert', 'ambivert', 'otrovert', 'omnivert'] as const)(
-		'fitting %s ideal scores it as the strict-most-dominant archetype',
-		(archetype) => {
-			const ideal = ARCHETYPE_IDEALS[archetype];
-			const items = fullSet(ideal);
+	it.each([
+		{
+			archetype: 'introvert' as const,
+			items: fullSet({ extraversion: -1, belonging: 1, group_size: -1, swings: -1 })
+		},
+		{
+			archetype: 'extrovert' as const,
+			items: fullSet({ extraversion: 1, belonging: 1, group_size: 1, swings: -1 })
+		},
+		{
+			archetype: 'ambivert' as const,
+			items: fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 })
+		},
+		{
+			archetype: 'otrovert' as const,
+			items: fullSet({ extraversion: 0, belonging: -1, group_size: -1, swings: -1 })
+		},
+		{
+			archetype: 'omnivert' as const,
+			items: fullSet({ extraversion: 0.5, belonging: 0, group_size: 1, swings: 1 })
+		}
+	])(
+		'fitting $archetype scores it as the strict-most-dominant archetype',
+		({ archetype, items }) => {
 			const result = scoreQuiz(items);
 			const me = result.fits.find((f) => f.archetype === archetype);
 			const others = result.fits.filter((f) => f.archetype !== archetype);
@@ -275,11 +345,7 @@ describe('scoreQuiz', () => {
 		}
 	});
 
-	it('all-zero user vector produces a tie between symmetric archetypes', () => {
-		// Extrovert and Introvert have identical weight rows and ideals that are
-		// mirror images on extraversion/group_size; at the origin, distance is the
-		// same for both. The tie-break in scoreQuiz is "first encountered wins"
-		// (introvert in ARCHETYPES order), but their fits should be equal.
+	it('all-zero user vector ties Introvert and Extrovert (mirror-image projection)', () => {
 		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 });
 		const result = scoreQuiz(items);
 		const intro = result.fits.find((f) => f.archetype === 'introvert');

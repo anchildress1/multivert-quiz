@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Archetype } from '$lib/scoring';
+	import type { Archetype, ChapterNumeral } from '$lib/archetypes';
 
 	interface Props {
 		id: string;
-		numeral: 'I' | 'II' | 'III' | 'IV';
+		numeral: ChapterNumeral;
 		title: string;
 		archetype: Archetype;
 		count: number;
@@ -12,9 +12,19 @@
 		 * the registry so chapter copy has a single source of truth.
 		 */
 		description: string;
+		/** Suffix on the right-hand count, e.g. `7 statements` or `5 verts`. */
+		countLabel?: string;
 	}
 
-	const { id, numeral, title, archetype, count, description }: Props = $props();
+	const {
+		id,
+		numeral,
+		title,
+		archetype,
+		count,
+		description,
+		countLabel = 'statements'
+	}: Props = $props();
 </script>
 
 <header
@@ -31,7 +41,7 @@
 		</h2>
 		<p class="chapter-head__description">{description}</p>
 	</div>
-	<span class="chapter-head__count">{count} statements</span>
+	<span class="chapter-head__count">{count} {countLabel}</span>
 </header>
 
 <style>

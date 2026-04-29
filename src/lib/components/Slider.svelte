@@ -281,7 +281,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+		box-shadow: 0 2px 8px color-mix(in oklab, var(--ink) 16%, transparent);
 		transition:
 			left 0.2s cubic-bezier(0.2, 0.7, 0.3, 1),
 			border-color 0.2s ease,
@@ -292,7 +292,7 @@
 	.slider[data-state='in-progress'] .slider__thumb {
 		box-shadow:
 			0 0 0 8px var(--ink-08),
-			0 4px 14px rgba(0, 0, 0, 0.2);
+			0 4px 14px color-mix(in oklab, var(--ink) 20%, transparent);
 	}
 
 	.slider__dot {

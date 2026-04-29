@@ -1,13 +1,26 @@
 /**
  * Canonical archetype + dimension registry.
  *
- * Every list, type, vector, label, hue, and chapter mapping that varies by
- * archetype lives here so adding or renaming an archetype is a one-file
- * change. Other modules (scoring, components, routes) import from this file
- * directly or via the convenience re-exports in `scoring.ts` and `types.ts`.
+ * Every list, type, label, hue, and chapter mapping that varies by archetype
+ * lives here so adding or renaming an archetype is a one-file change. Other
+ * modules (scoring, components, routes) import from this file directly or via
+ * the convenience re-exports in `scoring.ts`.
  *
- * The locked weight matrix and ideal vectors are spec'd in docs/PRD.md and
- * must not be changed without a PRD revision.
+ * Scoring model
+ * -------------
+ * Per-archetype axis projection (no shared distance metric). Each archetype
+ * scores against a small subset of axes that define it:
+ *
+ *   - Introvert / Ambivert / Extrovert — three points on the *extraversion*
+ *     axis at -1, 0, +1. Group-size acts as a secondary correlate (introverts
+ *     usually prefer small, extroverts large).
+ *   - Otrovert — projection along the *belonging* axis (toward -1 = "high
+ *     otherness"). Independent of the extraversion line; an otrovert can
+ *     also be intro / extro / ambi.
+ *   - Omnivert — driven by explicit positive answers on the swings items
+ *     (self-reported oscillation across time / situation).
+ *
+ * The math itself lives in `scoring.ts`. PRD changes pair with code changes.
  */
 
 export type Dimension = 'extraversion' | 'belonging' | 'group_size' | 'swings';
@@ -16,7 +29,7 @@ export type Archetype = 'introvert' | 'extrovert' | 'ambivert' | 'omnivert' | 'o
 
 export type DimensionVector = Record<Dimension, number>;
 
-/** Stable iteration order for every dimension-keyed loop. */
+/** Stable iteration order for question-level loops (chapters, counters). */
 export const DIMENSIONS: readonly Dimension[] = [
 	'extraversion',
 	'belonging',
@@ -101,25 +114,7 @@ export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object
 /** Display order in the hero card and FiveDots. */
 export const VERT_ORDER: readonly Archetype[] = ARCHETYPES;
 
-/** Locked archetype weight matrix (rows sum to 1). PRD §P0. */
-export const ARCHETYPE_WEIGHTS: Readonly<Record<Archetype, DimensionVector>> = Object.freeze({
-	extrovert: { extraversion: 0.5, belonging: 0.2, group_size: 0.2, swings: 0.1 },
-	introvert: { extraversion: 0.5, belonging: 0.2, group_size: 0.2, swings: 0.1 },
-	ambivert: { extraversion: 0.55, belonging: 0.15, group_size: 0.2, swings: 0.1 },
-	otrovert: { extraversion: 0.1, belonging: 0.6, group_size: 0.2, swings: 0.1 },
-	omnivert: { extraversion: 0.05, belonging: 0.05, group_size: 0.05, swings: 0.85 }
-});
-
-/** Locked archetype ideal vectors (each dimension ∈ [-1, 1]). PRD §P0. */
-export const ARCHETYPE_IDEALS: Readonly<Record<Archetype, DimensionVector>> = Object.freeze({
-	extrovert: { extraversion: 0.7, belonging: 0.5, group_size: 0.7, swings: -0.5 },
-	introvert: { extraversion: -0.7, belonging: 0.5, group_size: -0.7, swings: -0.5 },
-	ambivert: { extraversion: 0, belonging: 0.5, group_size: 0, swings: -0.5 },
-	otrovert: { extraversion: 0, belonging: -0.7, group_size: -0.5, swings: -0.5 },
-	omnivert: { extraversion: 0, belonging: 0, group_size: 0, swings: 0.8 }
-});
-
-export type ChapterNumeral = 'I' | 'II' | 'III' | 'IV';
+export type ChapterNumeral = 'I' | 'II' | 'III' | 'IV' | 'V';
 
 export interface Chapter {
 	id: string;

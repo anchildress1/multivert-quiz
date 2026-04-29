@@ -15,7 +15,7 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 ## Non-Goals (v1)
 
 1. **Account creation, saved sessions, login** — anonymous one-shot quiz; no data persistence. Cuts complexity, avoids GDPR/cookie-banner work.
-2. **AI-driven clarifying questions** — evaluated and rejected upstream; a deterministic 30-question quiz handles ambiguity through aggregation.
+2. **AI-driven clarifying questions** — evaluated and rejected upstream; a deterministic 35-question quiz handles ambiguity through aggregation.
 3. **Event-level analytics (completion rate, drop-off, abandonment)** — Cloudflare Web Analytics gives page views + referrers only; richer event tracking deferred to Phase 2.
 4. **Custom domain** — `*.pages.dev` is sufficient for v1; domain purchase deferred until promo bot is live.
 5. **Calibration / attention-check items** — adds friction with no benefit since data isn't kept and no high-stakes decision rides on the result.
@@ -37,60 +37,55 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 
 **Question bank**
 
-30 questions across 4 dimensions, each item scored on a slider in [-1, +1]:
+35 questions across 4 dimensions, each item scored on a slider in [-1, +1]:
 
 | Dimension      | Items | Polarity (-1 ↔ +1)                                     |
 | -------------- | ----- | ------------------------------------------------------ |
 | `extraversion` | 10    | introvert ↔ extrovert                                  |
-| `belonging`    | 10    | otrovert (low belonging) ↔ strong group identification |
+| `belonging`    | 15    | otrovert (low belonging) ↔ strong group identification |
 | `group_size`   | 5     | prefers 1:1 / small ↔ thrives in large groups          |
 | `swings`       | 5     | stable ↔ dramatic situational swings (omnivert signal) |
 
-- **33% reverse-scored** (10 of 30), flagged in question metadata, sign-flipped at scoring time.
+- **43% reverse-scored** (15 of 35). Higher than typical 25–33% because the belonging dimension over-indexes on otrovert-pole items to cover all 5 documented Otherness Institute facets: group non-belonging, role-vs-casual-member confidence, maverick thinking, privacy / curated narrative, mass-movement and approval indifference.
 - **All items rewritten in the quiz's own voice** — meaning preserved, tone customized for engagement. Differentiates from the dozens of IPIP-verbatim quizzes already online.
-- Source mix: 10 extraversion items adapted from IPIP-NEO Big Five extraversion constructs; 20 custom items. Belonging items are derived from Kaminski's described characteristics of otroversion and are not clinically validated — flagged in disclaimer.
+- Source mix: 10 extraversion items adapted from IPIP-NEO Big Five extraversion constructs; 25 custom items. Belonging items derived from Kaminski / The Otherness Institute documented otrovert traits — clinical-source, not clinically validated. Flagged in disclaimer.
 
 **Input**
 
 - Continuous slider, range -1.0 to 1.0, center = 0 = "neither agree nor disagree" (a deliberate, valid answer).
 - **Unset by default**: slider has no thumb / placeholder visual until the user interacts with it. Distinguishes "not yet answered" from "deliberately neutral" — same pattern as 16personalities' radio buttons.
 - Required-interaction gating: "next" disabled until the slider has been moved on each question.
-- Visible "X of 30 answered" counter alongside the per-question progress.
+- Visible "X of 35 answered" counter alongside the per-question progress.
 - Large mobile hit targets.
 
 **Flow**
 
-- Progress bar: "Question X of 30" + visible fill.
+- Progress bar: "Question X of 35" + visible fill.
 - Forward + backward navigation between questions.
 - Single results page at the end.
 
 **Scoring engine** (pure TS, unit-testable)
 
-- Each dimension score = mean of its items (after reverse-score sign-flip).
-- **Derived variance signal feeds into `swings`**: within-dimension variance of the user's extraversion answers (after sign-flip) is computed and added to the swings input. Translation: if a user agrees with both "I am the life of the party" _and_ "I keep in the background," that contradiction reads as an omnivert signal without consuming question slots.
-- Per-archetype weighted Euclidean distance using the locked weight matrix below.
-- Distance → fit score on a 0–100% scale per archetype, **independent** (no cross-archetype normalization). Higher = closer match.
+Method: per-archetype axis projection, no shared distance metric, no cross-normalization. Each archetype scores against the small subset of question dimensions that define it. Co-scoring is preserved by design — bars do not sum to 100%.
+
+- Each of the 4 question dimensions is scored as the mean of its items (after reverse-score sign-flip and per-item clamp to `[-1, 1]`).
+- Per-archetype fit (each clamped to `[0, 100]`, independent of every other archetype's score):
+
+  | Archetype | Formula                                                            |
+  | --------- | ------------------------------------------------------------------ |
+  | Introvert | `0.7 · (1 − extra)/2 + 0.3 · (1 − size)/2`                         |
+  | Extrovert | `0.7 · (1 + extra)/2 + 0.3 · (1 + size)/2`                         |
+  | Ambivert  | `0.7 · (1 − \|extra\|) + 0.3 · (1 − \|size\|)`                     |
+  | Otrovert  | `max(0, −belong)` (one-sided ramp; positive belonging stays at 0%) |
+  | Omnivert  | `max(0, swings)` (one-sided ramp; neutral/stable stays at 0%)      |
+
+  Group-size is a secondary correlate for the extraversion-axis trio (intro/extro/ambi); the 0.7/0.3 split is locked here.
+
 - Dominant type = archetype with the highest fit score.
 
-**Locked archetype weight matrix** (extra / belong / size / swings):
+**Locked baseline (all-zeros respondent)**: Ambivert 100%, Introvert 50%, Extrovert 50%, Otrovert 0%, Omnivert 0%. The 50% scores reflect midpoints on the two-poled extraversion line; the 0% scores reflect one-sided axes (no evidence yet of otherness or contradiction).
 
-| Archetype | Extra | Belong   | Size | Swings   |
-| --------- | ----- | -------- | ---- | -------- |
-| Extrovert | 0.50  | 0.20     | 0.20 | 0.10     |
-| Introvert | 0.50  | 0.20     | 0.20 | 0.10     |
-| Ambivert  | 0.55  | 0.15     | 0.20 | 0.10     |
-| Otrovert  | 0.10  | **0.60** | 0.20 | 0.10     |
-| Omnivert  | 0.05  | 0.05     | 0.05 | **0.85** |
-
-**Locked archetype ideal vectors** (target dimension scores in [-1, 1]):
-
-| Archetype | Extra | Belong | Size | Swings |
-| --------- | ----- | ------ | ---- | ------ |
-| Extrovert | +0.7  | +0.5   | +0.7 | -0.5   |
-| Introvert | -0.7  | +0.5   | -0.7 | -0.5   |
-| Ambivert  | 0.0   | +0.5   | 0.0  | -0.5   |
-| Otrovert  | 0.0   | -0.7   | -0.5 | -0.5   |
-| Omnivert  | 0.0   | 0.0    | 0.0  | +0.8   |
+**Independence of axes**: Otrovert is computed only from `belong`, so it co-scores with intro/extro/ambi. An "introverted otrovert" legitimately reads 100% on both. Omnivert is computed only from explicit positive `swings` evidence, so a user can score high on omnivert and another type when their self-reported oscillation coexists with a strong average leaning.
 
 **Results page**
 
@@ -148,7 +143,7 @@ No hard deadline. Suggested phasing:
 
 | Phase             | Scope                                                                        |
 | ----------------- | ---------------------------------------------------------------------------- |
-| Week 1            | Scoring engine + 30-question bank (logic locked, unit-testable in isolation) |
+| Week 1            | Scoring engine + 35-question bank (logic locked, unit-testable in isolation) |
 | Week 2            | SvelteKit scaffold, slider component, quiz flow                              |
 | Week 3            | Results page, polish/animations, deploy to `pages.dev`                       |
 | Future (optional) | Event tracking, custom domain, share-card generation                         |
@@ -159,7 +154,7 @@ No external dependencies. All choices within Ashley's control.
 
 | #   | Risk                                                      | Disposition                                                          |
 | --- | --------------------------------------------------------- | -------------------------------------------------------------------- |
-| 1   | 30 questions → abandonment risk (~30%+)                   | Address — progress bar + counter + animations                        |
+| 1   | 35 questions → abandonment risk (~30%+)                   | Address — progress bar + counter + animations                        |
 | 2   | Slider UX finicky on mobile                               | Address — large hit targets, unset-state visual                      |
 | 3   | Can't distinguish "answered neutral" from "didn't answer" | Address — unset-state visual + interaction gating + answered-counter |
 | 4   | Reverse-scored items confuse fast readers                 | Accept — psychometric standard                                       |
