@@ -45,9 +45,10 @@ pre-push:
     - name: test
       run: pnpm test
 
-    # Build + Lighthouse share a single artifact; chained sequentially so
-    # `pnpm perf` runs against fresh `.svelte-kit/cloudflare/` output.
+    # Build, Playwright, and Lighthouse share a single artifact; chained
+    # sequentially so `pnpm e2e` and `pnpm perf` run against fresh output
+    # without fighting over the preview server port.
     # Lhci is the local hard gate (kept out of GHA — runner variance makes
     # the 100/100/100/100 floor too noisy on shared infrastructure).
-    - name: build-and-perf
-      run: pnpm build && pnpm perf
+    - name: build-e2e-and-perf
+      run: pnpm build && pnpm e2e && pnpm perf
