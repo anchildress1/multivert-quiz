@@ -24,9 +24,37 @@
 	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — ${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
+	let resultActive = $state(false);
 	let scrollY = $state(0);
 
 	const meterVisible = $derived(scrollY > 80);
+
+	/* The single sticky banner at the top of `<main>` is driven by this
+	   derived bag of ChapterIntro props. Result takes precedence when its
+	   section is intersecting; otherwise the last visited chapter wins. */
+	const activeSection = $derived.by(() => {
+		if (resultActive && store.result) {
+			return {
+				numeral: 'V' as const,
+				title: 'Result',
+				archetype: store.result.dominant,
+				count: 5,
+				countLabel: 'verts',
+				description: 'Five independent fits — bars do not sum to 100.'
+			};
+		}
+		if (activeChapter) {
+			return {
+				numeral: activeChapter.numeral,
+				title: activeChapter.title,
+				archetype: activeChapter.archetype,
+				count: grouped[activeChapter.dimension].length,
+				countLabel: 'statements',
+				description: DIMENSION_META[activeChapter.dimension].description
+			};
+		}
+		return null;
+	});
 
 	$effect(() => {
 		if (!browser) return;
@@ -55,6 +83,31 @@
 		chapterTargets.forEach(({ el }) => chapterObserver.observe(el));
 
 		return () => chapterObserver.disconnect();
+	});
+
+	/* Result section gets its own observer because it only renders once the
+	   user has answered every question, so it isn't in the DOM when the
+	   chapter observer above is wired up. The store.result dependency
+	   re-runs the effect when the section enters the tree. The boolean is
+	   live (true while the section is intersecting, false when not), so
+	   scrolling back up into chapters cleanly hands the global banner back
+	   to `activeChapter`. */
+	$effect(() => {
+		if (!browser) return;
+		if (!store.result) {
+			resultActive = false;
+			return;
+		}
+		const el = document.getElementById('result');
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				resultActive = entry?.isIntersecting ?? false;
+			},
+			{ rootMargin: '-30% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
 	});
 
 	const firstChapter = CHAPTERS[0];
@@ -280,16 +333,8 @@
 </header>
 
 <main class="quiz">
-	{#if activeChapter}
-		{@const head = activeChapter}
-		<ChapterIntro
-			id="active-chapter-head"
-			numeral={head.numeral}
-			title={head.title}
-			archetype={head.archetype}
-			count={grouped[head.dimension].length}
-			description={DIMENSION_META[head.dimension].description}
-		/>
+	{#if activeSection}
+		<ChapterIntro id="active-chapter-head" {...activeSection} />
 	{/if}
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
@@ -365,20 +410,6 @@
 			style:--dominant-mid="var(--vert-{result.dominant}-mid)"
 			style:--dominant-ink="var(--vert-{result.dominant}-ink)"
 		>
-			<header
-				class="result-head"
-				style:--accent="var(--dominant-mid)"
-				style:--accent-ink="var(--dominant-ink)"
-			>
-				<span class="result-head__numeral" aria-hidden="true">V</span>
-				<div class="result-head__rule" aria-hidden="true"></div>
-				<div class="result-head__copy">
-					<h2 class="result-head__title"><em>Result</em></h2>
-					<p class="result-head__description">Five independent fits — bars do not sum to 100.</p>
-				</div>
-				<span class="result-head__count">5 verts</span>
-			</header>
-
 			<div class="result__inner">
 				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
 				<h2 id="result-title" class="result__title">
@@ -737,109 +768,11 @@
 		isolation: isolate;
 		background: var(--paper);
 		scroll-margin-top: 72px;
-		/* No `overflow: hidden` here — that would break the sticky
-		   `.result-head` child. The radial-gradient `::before` is bounded
-		   by `inset: 0` and fades to transparent before the edges, so
-		   clipping isn't required. */
-	}
-
-	/* Mirrors `.chapter-head` layout/spacing/sticky-behavior so the result
-	   page reads as the natural Chapter V continuation of the quiz. The
-	   accent token is sourced from the dominant archetype (set inline). */
-	.result-head {
-		position: sticky;
-		top: 0;
-		z-index: 5;
-		display: grid;
-		grid-template-columns: auto 1fr auto auto;
-		align-items: center;
-		gap: clamp(12px, 2vw, 20px);
-		padding: 14px clamp(16px, 4vw, 56px);
-		min-height: 72px;
-		background: color-mix(in oklab, var(--paper) 88%, transparent);
-		backdrop-filter: blur(18px) saturate(1.05);
-		-webkit-backdrop-filter: blur(18px) saturate(1.05);
-		border-bottom: 1px solid var(--ink-08);
-	}
-
-	.result-head__numeral {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: clamp(28px, 3vw, 36px);
-		line-height: 1;
-		color: var(--accent-ink);
-		min-width: 32px;
-		text-align: center;
-	}
-
-	.result-head__rule {
-		height: 1px;
-		background: linear-gradient(to right, var(--accent), transparent 80%);
-	}
-
-	.result-head__copy {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 0;
-	}
-
-	.result-head__title {
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(20px, 2.4vw, 28px);
-		line-height: 1;
-		letter-spacing: -0.02em;
-		margin: 0;
-		color: var(--ink);
-		white-space: nowrap;
-	}
-
-	.result-head__title em {
-		font-style: italic;
-	}
-
-	.result-head__description {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: clamp(13px, 1.3vw, 15px);
-		line-height: 1.35;
-		color: var(--ink-70);
-		margin: 0;
-		text-wrap: balance;
-		max-width: 64ch;
-	}
-
-	.result-head__count {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-		white-space: nowrap;
-	}
-
-	@media (max-width: 760px) {
-		.result-head__count {
-			display: none;
-		}
-		.result-head {
-			grid-template-columns: auto 1fr auto;
-		}
-	}
-
-	@media (max-width: 540px) {
-		.result-head__description {
-			display: none;
-		}
-		.result-head__rule {
-			display: none;
-		}
-		.result-head {
-			grid-template-columns: auto auto 1fr;
-		}
+		/* No `overflow: hidden` — sticky descendants need an unclipped
+		   ancestor, and the global `<ChapterIntro>` sits at the top of
+		   `<main>` outside this section either way. The radial-gradient
+		   `::before` is bounded by `inset: 0` and fades to transparent
+		   before the section edges, so clipping isn't required. */
 	}
 
 	.result__inner {

@@ -114,7 +114,7 @@ export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object
 /** Display order in the hero card and FiveDots. */
 export const VERT_ORDER: readonly Archetype[] = ARCHETYPES;
 
-export type ChapterNumeral = 'I' | 'II' | 'III' | 'IV';
+export type ChapterNumeral = 'I' | 'II' | 'III' | 'IV' | 'V';
 
 export interface Chapter {
 	id: string;
