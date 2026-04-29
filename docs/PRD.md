@@ -117,7 +117,7 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 - **Event tracking for completion rate / drop-off** — homegrown Cloudflare Function + KV counter recommended over third-party tools (free, all-Cloudflare, ~30 lines).
 - **Light/dark mode toggle**.
 - **Result sharing** — OG-image generation, share buttons.
-- **Save/resume** — localStorage-based mid-quiz resumption.
+- **Save/resume** — sessionStorage-based mid-quiz resumption.
 - **A/B testing on question wording**.
 - **Multilingual support**.
 

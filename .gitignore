@@ -53,3 +53,5 @@ lefthook-local.yml
 # Misc
 *.tgz
 *.tsbuildinfo
+.claude
+.codex

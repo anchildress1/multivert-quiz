@@ -83,6 +83,36 @@ describe('computeDimensions', () => {
 		const items: AnsweredItem[] = [{ dimension: 'extraversion', value: 0.5, reverse: false }];
 		expect(() => computeDimensions(items)).toThrow(/Missing answers/);
 	});
+
+	it.each([
+		{ dim: 'extraversion' as Dimension },
+		{ dim: 'belonging' as Dimension },
+		{ dim: 'group_size' as Dimension },
+		{ dim: 'swings' as Dimension }
+	])('throws naming dimension $dim when only $dim is missing', ({ dim }) => {
+		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 }).filter(
+			(it) => it.dimension !== dim
+		);
+		// `toThrow(string)` checks the message contains the substring — no
+		// dynamic-regex construction needed.
+		expect(() => computeDimensions(items)).toThrow(`Missing answers for dimension: ${dim}`);
+	});
+
+	it.each([
+		{ value: 1, expected: 1 },
+		{ value: -1, expected: -1 },
+		{ value: 0, expected: 0 },
+		{ value: 100, expected: 1 },
+		{ value: -100, expected: -1 }
+	])('clamps boundary value $value to $expected', ({ value, expected }) => {
+		const items: AnsweredItem[] = [
+			{ dimension: 'extraversion', value, reverse: false },
+			{ dimension: 'belonging', value: 0, reverse: false },
+			{ dimension: 'group_size', value: 0, reverse: false },
+			{ dimension: 'swings', value: 0, reverse: false }
+		];
+		expect(computeDimensions(items).extraversion).toBe(expected);
+	});
 });
 
 describe('weightedDistance', () => {
@@ -147,6 +177,24 @@ describe('distanceToFit', () => {
 		expect(distanceToFit(0.5)).toBeGreaterThan(distanceToFit(1));
 		expect(distanceToFit(1)).toBeGreaterThan(distanceToFit(1.5));
 	});
+
+	it.each([
+		{ d: 0, fit: 100 },
+		{ d: 0.5, fit: 75 },
+		{ d: 1, fit: 50 },
+		{ d: 1.5, fit: 25 },
+		{ d: 2, fit: 0 }
+	])('maps distance $d to $fit% fit', ({ d, fit }) => {
+		expect(distanceToFit(d)).toBeCloseTo(fit, 12);
+	});
+
+	it('propagates NaN inputs as NaN (defensive)', () => {
+		// Math.max/min propagate NaN, so Math.max(0, Math.min(2, NaN)) → NaN.
+		// distanceToFit is only called from scoreQuiz where inputs are finite; NaN
+		// reaching this path is a programming error, not a user input scenario.
+		const result = distanceToFit(Number.NaN);
+		expect(Number.isNaN(result)).toBe(true);
+	});
 });
 
 describe('scoreQuiz', () => {
@@ -160,7 +208,8 @@ describe('scoreQuiz', () => {
 			const result = scoreQuiz(items);
 			const matching = result.fits.find((fit) => fit.archetype === archetype);
 			expect(matching).toBeDefined();
-			expect(matching!.fit).toBeGreaterThan(95);
+			if (!matching) throw new Error(`fit row missing for ${archetype}`);
+			expect(matching.fit).toBeGreaterThan(95);
 			expect(result.dominant).toBe(archetype);
 		}
 	});
@@ -198,5 +247,43 @@ describe('scoreQuiz', () => {
 	it('throws when answers are incomplete', () => {
 		const items: AnsweredItem[] = [{ dimension: 'extraversion', value: 0, reverse: false }];
 		expect(() => scoreQuiz(items)).toThrow();
+	});
+
+	it.each(['extrovert', 'introvert', 'ambivert', 'otrovert', 'omnivert'] as const)(
+		'fitting %s ideal scores it as the strict-most-dominant archetype',
+		(archetype) => {
+			const ideal = ARCHETYPE_IDEALS[archetype];
+			const items = fullSet(ideal);
+			const result = scoreQuiz(items);
+			const me = result.fits.find((f) => f.archetype === archetype);
+			const others = result.fits.filter((f) => f.archetype !== archetype);
+			if (!me) throw new Error(`fit row missing for ${archetype}`);
+			for (const other of others) {
+				expect(me.fit).toBeGreaterThan(other.fit);
+			}
+		}
+	);
+
+	it('returns deterministic output for the same input', () => {
+		const items = fullSet({ extraversion: 0.3, belonging: -0.4, group_size: 0.6, swings: 0.1 });
+		const a = scoreQuiz(items);
+		const b = scoreQuiz(items);
+		expect(a.dominant).toBe(b.dominant);
+		expect(a.dimensions).toEqual(b.dimensions);
+		for (let i = 0; i < a.fits.length; i++) {
+			expect(a.fits[i]).toEqual(b.fits[i]);
+		}
+	});
+
+	it('all-zero user vector produces a tie between symmetric archetypes', () => {
+		// Extrovert and Introvert have identical weight rows and ideals that are
+		// mirror images on extraversion/group_size; at the origin, distance is the
+		// same for both. The tie-break in scoreQuiz is "first encountered wins"
+		// (introvert in ARCHETYPES order), but their fits should be equal.
+		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 });
+		const result = scoreQuiz(items);
+		const intro = result.fits.find((f) => f.archetype === 'introvert');
+		const extro = result.fits.find((f) => f.archetype === 'extrovert');
+		expect(intro?.fit).toBeCloseTo(extro?.fit ?? -1, 12);
 	});
 });

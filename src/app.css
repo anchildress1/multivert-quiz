@@ -1,10 +1,157 @@
 @import 'tailwindcss';
 
+/* ── Editorial Paper · light + dark ──────────────────────────────────────
+   Foundation tokens are exposed as CSS custom properties so Svelte
+   components can reference them via Tailwind arbitrary values
+   (e.g. `bg-[var(--paper)]`). Vert hue palette is computed in oklch()
+   from a per-archetype hue token + global lightness/chroma anchors.
+
+   Theme resolution: `color-scheme: light dark` lets the browser pick
+   based on the system preference, which `light-dark()` then routes to
+   the right token value. Explicit overrides come from `[data-theme]`.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root {
+	color-scheme: light dark;
+
+	--paper: light-dark(#f8f7f4, #1a1815);
+	--paper-dk: light-dark(#ecebe6, #23201c);
+	--surface: light-dark(#fcfbf8, #221f1b);
+	--ink: light-dark(#1c1a17, #f3ede1);
+	--ink-70: light-dark(rgba(28, 26, 23, 0.7), rgba(243, 237, 225, 0.74));
+	--ink-50: light-dark(rgba(28, 26, 23, 0.5), rgba(243, 237, 225, 0.52));
+	--ink-30: light-dark(rgba(28, 26, 23, 0.3), rgba(243, 237, 225, 0.32));
+	--ink-12: light-dark(rgba(28, 26, 23, 0.12), rgba(243, 237, 225, 0.14));
+	--ink-08: light-dark(rgba(28, 26, 23, 0.08), rgba(243, 237, 225, 0.09));
+	--rule: light-dark(rgba(28, 26, 23, 0.18), rgba(243, 237, 225, 0.22));
+
+	/* oklch() lightness/chroma anchors. The chroma values match across
+	   themes; only the lightness scalars shift. `light-dark()` only takes
+	   colors, so the scalars themselves still need a media-query branch. */
+	--vert-mid-l: 0.62;
+	--vert-mid-c: 0.16;
+	--vert-soft-l: 0.95;
+	--vert-soft-c: 0.04;
+	--vert-ink-l: 0.32;
+	--vert-ink-c: 0.1;
+
+	--hue-introvert: 248;
+	--hue-extrovert: 38;
+	--hue-ambivert: 172;
+	--hue-omnivert: 296;
+	--hue-otrovert: 8;
+
+	--vert-introvert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-introvert));
+	--vert-introvert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-introvert));
+	--vert-introvert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-introvert));
+	--vert-extrovert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-extrovert));
+	--vert-extrovert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-extrovert));
+	--vert-extrovert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-extrovert));
+	--vert-ambivert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-ambivert));
+	--vert-ambivert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-ambivert));
+	--vert-ambivert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-ambivert));
+	--vert-omnivert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-omnivert));
+	--vert-omnivert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-omnivert));
+	--vert-omnivert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-omnivert));
+	--vert-otrovert-mid: oklch(var(--vert-mid-l) var(--vert-mid-c) var(--hue-otrovert));
+	--vert-otrovert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-otrovert));
+	--vert-otrovert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-otrovert));
+
+	--button-radius: 14px;
+	--card-radius: 18px;
+}
+
+[data-theme='light'] {
+	color-scheme: light;
+}
+
+/* Dark-theme oklch anchors. `light-dark()` only accepts colors, so the
+   scalar lightness/chroma values still need a media-query branch. The
+   explicit-override block and the system-preference block carry an
+   identical declaration — CSS does not let us union a media query with a
+   selector, so the duplication of these four lines is forced. */
+[data-theme='dark'] {
+	color-scheme: dark;
+	--vert-mid-l: 0.74;
+	--vert-soft-l: 0.3;
+	--vert-soft-c: 0.06;
+	--vert-ink-l: 0.86;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--vert-mid-l: 0.74;
+		--vert-soft-l: 0.3;
+		--vert-soft-c: 0.06;
+		--vert-ink-l: 0.86;
+	}
+}
+
 @theme {
-	--font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+	--font-sans: 'Geist Variable', 'Geist', 'Söhne', -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 }
 
 html,
 body {
 	height: 100%;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--font-sans);
+}
+
+/* Page-level snap: questions inside the quiz snap one-per-viewport via
+   `scroll-snap-align` on `.row`. `proximity` is intentionally gentler than
+   `mandatory` — `mandatory` would force the page to land on a snap target
+   on initial load, jumping past the hero. The forward-progress lock is
+   handled declaratively further down (.row[data-state='unset'] ~ .row).
+   `scroll-padding-top` reserves space for the sticky chapter header so a
+   snapped question sits below it. */
+html {
+	scroll-snap-type: y proximity;
+	scroll-padding-top: var(--chapter-head-h, 72px);
+}
+
+/* ── Forward-progress lock (declarative) ──────────────────────────────
+   The user must engage the current question before subsequent content
+   reveals. "Engage" means leaving the `unset` state — the answers store
+   transitions `unset → in-progress → answered` and never returns to
+   `unset` for the same question, so once a row is touched it stays
+   revealed. That makes mid-drag revision of an earlier answer safe:
+   later content does not re-collapse just because the user is moving
+   a slider on an already-answered row.
+
+   Hidden content is removed from layout entirely (`display: none`), so
+   the page literally cannot scroll past the active question. No JS
+   wheel/touch listeners, no fights with scroll-snap momentum, no
+   bounce-back. The browser's native scroll model does the work.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Within a chapter: hide every row that follows the first untouched row. */
+.chapter-wrap .row[data-state='unset'] ~ .row {
+	display: none;
+}
+
+/* Across chapters: hide every chapter that follows one with an untouched row,
+   and the submit panel when any chapter is still gating. */
+.chapter-wrap:has(.row[data-state='unset']) ~ .chapter-wrap,
+.chapter-wrap:has(.row[data-state='unset']) ~ #submit {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-snap-type: none;
+	}
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
 }

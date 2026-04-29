@@ -75,7 +75,7 @@ jobs:
       - name: SonarCloud scan
         if: steps.sonar-token.outputs.available == 'true'
         # nosemgrep: generic.secrets.security.detected-sonarqube-docs-api-key.detected-sonarqube-docs-api-key
-        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -130,11 +130,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm e2e:install
-
       - name: Build
         run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm e2e:install
 
       - name: Run E2E tests
         run: pnpm e2e
@@ -148,31 +148,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  lighthouse:
-    name: Lighthouse CI
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Run Lighthouse CI
-        run: pnpm perf
+  # Lighthouse CI is intentionally NOT a GHA job — runner-vs-local variance
+  # makes the strict 100/100/100/100 floor noisy on shared infrastructure.
+  # `pnpm perf` runs locally via lefthook (`lefthook run perf`).
 
   secret-scan:
     name: Secret scan
@@ -184,6 +162,6 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.10
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

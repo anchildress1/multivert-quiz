@@ -1,9 +1,15 @@
 <script lang="ts">
+	import '@fontsource/newsreader/400.css';
+	import '@fontsource/newsreader/500.css';
+	import '@fontsource/newsreader/400-italic.css';
+	import '@fontsource/newsreader/500-italic.css';
+	import '@fontsource-variable/geist/index.css';
+	import '@fontsource/jetbrains-mono/400.css';
+	import '@fontsource/jetbrains-mono/500.css';
+
 	import '../app.css';
 
 	const { children } = $props();
 </script>
 
-<main class="mx-auto flex min-h-dvh max-w-3xl flex-col px-4 py-8 sm:px-6">
-	{@render children?.()}
-</main>
+{@render children?.()}

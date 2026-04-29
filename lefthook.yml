@@ -6,11 +6,13 @@ pre-commit:
   jobs:
     - name: format
       glob: '*.{js,ts,svelte,css,md,json,yml,yaml,html}'
-      run: pnpm exec prettier --write {staged_files} && git add {staged_files}
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
 
     - name: lint
       glob: '*.{js,ts,svelte}'
-      run: pnpm exec eslint --fix {staged_files} && git add {staged_files}
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
 
     - name: actionlint
       glob: '.github/workflows/*.{yml,yaml}'
@@ -43,5 +45,9 @@ pre-push:
     - name: test
       run: pnpm test
 
-    - name: build
-      run: pnpm build
+    # Build + Lighthouse share a single artifact; chained sequentially so
+    # `pnpm perf` runs against fresh `.svelte-kit/cloudflare/` output.
+    # Lhci is the local hard gate (kept out of GHA — runner variance makes
+    # the 100/100/100/100 floor too noisy on shared infrastructure).
+    - name: build-and-perf
+      run: pnpm build && pnpm perf
