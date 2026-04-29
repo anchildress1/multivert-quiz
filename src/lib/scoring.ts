@@ -14,31 +14,21 @@
  *   - Introvert / Ambivert / Extrovert live on the *extraversion* axis at
  *     -1, 0, +1. A user vector is projected onto each of those three points
  *     linearly. Group-size is a secondary correlate (small ↔ large mirrors
- *     intro ↔ extro). All three are gated by a stability factor derived
- *     from `extra_variance` so a chaotic answerer can't sit at any stable
- *     point on the line.
+ *     intro ↔ extro).
  *   - Otrovert is a one-sided projection along the *belonging* axis (toward
  *     -1 = "high otherness"). Independent of every other axis: an otrovert
  *     can also be intro / extro / ambi.
- *   - Omnivert is driven by `extra_variance` (the strong behavioural tell:
- *     split answers on extraversion items) plus a bonus from positive swings
- *     answers (self-reported oscillation). Negative swings answers do not
- *     reduce omnivert below its variance baseline — "I claim to be stable"
- *     is not evidence against the omnivert pattern, just absence of a second
- *     signal for it.
+ *   - Omnivert is driven by explicit positive swings answers (self-reported
+ *     oscillation across time / situation). Neutral or negative swings are
+ *     treated as absence of omnivert evidence on this one-sided axis.
  *
  * Pipeline
  * --------
  *   1. Apply reverse-score sign-flip to flagged items, clamp to [-1, 1].
  *   2. Compute per-dimension means for the four question dimensions.
- *   3. Compute the raw variance of (sign-flipped) extraversion items as the
- *      fifth scoring axis (`extra_variance`, range [0, 1]). Variance is a
- *      one-sided signal — "no spread" is anti-omnivert, "max spread" is
- *      pro-omnivert; there is no opposite-named archetype. We deliberately
- *      do not centre to [-1, 1].
- *   4. Project per-archetype per the formulas below; clamp each to [0, 1]
+ *   3. Project per-archetype per the formulas below; clamp each to [0, 1]
  *      and scale to a 0–100% fit score.
- *   5. Headline = the archetype with the highest fit %.
+ *   4. Headline = the archetype with the highest fit %.
  *
  * Properties
  * ----------
@@ -64,11 +54,9 @@ import {
 export {
 	ARCHETYPES,
 	DIMENSIONS,
-	SCORING_AXES,
 	type Archetype,
 	type Dimension,
-	type DimensionVector,
-	type ScoringAxis
+	type DimensionVector
 } from './archetypes';
 
 export interface AnsweredItem {
@@ -108,21 +96,12 @@ const mean = (values: readonly number[]): number => {
 	return sum / values.length;
 };
 
-const variance = (values: readonly number[]): number => {
-	/* v8 ignore next — guarded upstream by computeDimensions */
-	if (values.length === 0) return 0;
-	const mu = mean(values);
-	let acc = 0;
-	for (const v of values) acc += (v - mu) ** 2;
-	return acc / values.length;
-};
-
 /** Apply reverse-score sign-flip and clamp to [-1, 1]. */
 const normalize = (item: AnsweredItem): number =>
 	clampUnit(item.reverse ? -item.value : item.value);
 
 /**
- * Compute the five-axis user vector from the answered question bank.
+ * Compute the four-dimension user vector from the answered question bank.
  * Throws if any of the four question dimensions is missing — partial
  * submissions are not scored.
  */
@@ -144,50 +123,37 @@ export const computeDimensions = (items: readonly AnsweredItem[]): DimensionVect
 		}
 	}
 
-	const extraVarianceRaw = clamp01(variance(buckets.extraversion));
-
 	return {
 		extraversion: mean(buckets.extraversion),
 		belonging: mean(buckets.belonging),
 		group_size: mean(buckets.group_size),
-		swings: mean(buckets.swings),
-		extra_variance: extraVarianceRaw
+		swings: mean(buckets.swings)
 	};
 };
-
-/**
- * Stability factor in [0, 1]. 1 when extraversion answers are fully
- * consistent (variance = 0), 0 when fully split (variance = 1). Gates
- * intro / extro / ambi: a chaotic answerer can't sit at any stable point
- * on the extraversion line.
- */
-const stabilityFactor = (user: DimensionVector): number => 1 - user.extra_variance;
 
 /**
  * Per-archetype fit, in [0, 100]. Independent of every other archetype's
  * score — bars do not cross-normalize.
  */
 export const archetypeFit = (user: DimensionVector, archetype: Archetype): number => {
-	const stable = stabilityFactor(user);
-
 	switch (archetype) {
 		case 'introvert': {
 			const extraPole = (1 - user.extraversion) / 2;
 			const sizePole = (1 - user.group_size) / 2;
 			const raw = EXTRA_PRIMARY_WEIGHT * extraPole + SIZE_SECONDARY_WEIGHT * sizePole;
-			return clamp01(raw * stable) * 100;
+			return clamp01(raw) * 100;
 		}
 		case 'extrovert': {
 			const extraPole = (1 + user.extraversion) / 2;
 			const sizePole = (1 + user.group_size) / 2;
 			const raw = EXTRA_PRIMARY_WEIGHT * extraPole + SIZE_SECONDARY_WEIGHT * sizePole;
-			return clamp01(raw * stable) * 100;
+			return clamp01(raw) * 100;
 		}
 		case 'ambivert': {
 			const extraCentre = 1 - Math.abs(user.extraversion);
 			const sizeCentre = 1 - Math.abs(user.group_size);
 			const raw = EXTRA_PRIMARY_WEIGHT * extraCentre + SIZE_SECONDARY_WEIGHT * sizeCentre;
-			return clamp01(raw * stable) * 100;
+			return clamp01(raw) * 100;
 		}
 		case 'otrovert': {
 			// One-sided ramp: only negative belonging produces non-zero otrovert.
@@ -199,13 +165,11 @@ export const archetypeFit = (user: DimensionVector, archetype: Archetype): numbe
 			return clamp01(-user.belonging) * 100;
 		}
 		case 'omnivert': {
-			// Variance is the primary behavioural tell (raw variance ∈ [0, 1]);
-			// positive swings answers are a bonus self-report signal. Negative
-			// or zero swings answers do not pull the score below the variance
-			// baseline — "I claim to be stable" is not evidence against the
-			// pattern, just absence of a second confirming signal.
-			const swingsBonus = Math.max(0, user.swings);
-			return clamp01((user.extra_variance + swingsBonus) / 2) * 100;
+			// One-sided ramp: only positive swings produce non-zero omnivert.
+			// In a one-shot quiz, these items directly ask about time/situation
+			// oscillation; cross-item extraversion disagreement is not treated as
+			// state variability.
+			return clamp01(user.swings) * 100;
 		}
 	}
 };

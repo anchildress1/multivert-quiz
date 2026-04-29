@@ -257,14 +257,13 @@ describe('createAnswersStore', () => {
 	});
 
 	it('result stays null when sessionStorage hydration leaves at least one entry unset', () => {
-		// Hydrate 29 of 30 questions.
 		const map: Record<string, { state: string; value: number }> = {};
-		for (const q of questions.slice(0, 29)) {
+		for (const q of questions.slice(0, -1)) {
 			map[q.id] = { state: 'answered', value: 0 };
 		}
 		globalThis.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
 		const store = createAnswersStore();
-		expect(store.totalAnswered).toBe(29);
+		expect(store.totalAnswered).toBe(questions.length - 1);
 		expect(store.allAnswered).toBe(false);
 		expect(store.result).toBeNull();
 	});

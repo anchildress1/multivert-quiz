@@ -13,7 +13,7 @@
  *                            4. privacy / curated narrative (b-14)
  *                            5. indifference to mass movements / approval (b-13, b-15)
  *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios.
- *   - swings       (5)  — distinct facets of situational variance: weekly mood,
+ *   - swings       (5)  — distinct facets of social-energy oscillation: weekly mood,
  *                          all-or-nothing pattern, others' uncertainty, within-
  *                          event flip, week-to-week same-plan flip.
  *
@@ -41,10 +41,9 @@
  * intentional, since the otrovert construct is multi-faceted and we want
  * adequate signal across all 5 facets.
  *
- * Note for the scoring engine: the spread of extraversion answers (after
- * sign-flip) feeds a derived `extra_variance` axis on the scoring vector —
- * an independent omnivert signal per Fleeson's intra-individual variability
- * framework. That math lives in the scoring module, not here.
+ * Note for the scoring engine: the swings items are the direct omnivert
+ * signal. This one-shot quiz does not treat disagreement across unrelated
+ * extraversion items as longitudinal state variability.
  *
  * Otrovert-construct caveat: per Kaminski / The Otherness Institute, otroverts
  * can be confident and outgoing when in a defined role (host, MC, lecturer).

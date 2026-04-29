@@ -16,25 +16,20 @@ const VECTOR_AT_ZERO: DimensionVector = {
 	extraversion: 0,
 	belonging: 0,
 	group_size: 0,
-	swings: 0,
-	extra_variance: 0
+	swings: 0
 };
 
 /**
  * Build a 35-item answer set whose per-dimension means equal `target.{dim}`.
- * `extraVarianceMode = 'split'` produces variance = 1 by splitting the 10
- * extra items into 5 strong-positive and 5 strong-negative answers (mean 0).
  */
-const fullSet = (
-	target: { extraversion: number; belonging: number; group_size: number; swings: number },
-	extraVarianceMode: 'flat' | 'split' = 'flat'
-): AnsweredItem[] => {
-	const extras: AnsweredItem[] =
-		extraVarianceMode === 'flat'
-			? itemsForDimension('extraversion', target.extraversion, 10)
-			: [...itemsForDimension('extraversion', 1, 5), ...itemsForDimension('extraversion', -1, 5)];
+const fullSet = (target: {
+	extraversion: number;
+	belonging: number;
+	group_size: number;
+	swings: number;
+}): AnsweredItem[] => {
 	return [
-		...extras,
+		...itemsForDimension('extraversion', target.extraversion, 10),
 		...itemsForDimension('belonging', target.belonging, 15),
 		...itemsForDimension('group_size', target.group_size, 5),
 		...itemsForDimension('swings', target.swings, 5)
@@ -79,34 +74,15 @@ describe('computeDimensions', () => {
 		expect(result.belonging).toBe(-1);
 	});
 
-	it('extra_variance is raw: consistent answers → 0, fully split → 1', () => {
-		const consistent: AnsweredItem[] = [
-			{ dimension: 'extraversion', value: 0, reverse: false },
-			{ dimension: 'extraversion', value: 0, reverse: false },
-			{ dimension: 'belonging', value: 0, reverse: false },
-			{ dimension: 'group_size', value: 0, reverse: false },
-			{ dimension: 'swings', value: 0, reverse: false }
-		];
-		const split: AnsweredItem[] = [
-			{ dimension: 'extraversion', value: 1, reverse: false },
-			{ dimension: 'extraversion', value: -1, reverse: false },
-			{ dimension: 'belonging', value: 0, reverse: false },
-			{ dimension: 'group_size', value: 0, reverse: false },
-			{ dimension: 'swings', value: 0, reverse: false }
-		];
-		expect(computeDimensions(consistent).extra_variance).toBe(0);
-		expect(computeDimensions(split).extra_variance).toBe(1);
-	});
-
-	it('swings is the pure mean of swings items — variance no longer baked in', () => {
-		const split: AnsweredItem[] = [
+	it('swings is the pure mean of swings items', () => {
+		const items: AnsweredItem[] = [
 			{ dimension: 'extraversion', value: 1, reverse: false },
 			{ dimension: 'extraversion', value: -1, reverse: false },
 			{ dimension: 'belonging', value: 0, reverse: false },
 			{ dimension: 'group_size', value: 0, reverse: false },
 			{ dimension: 'swings', value: -0.4, reverse: false }
 		];
-		expect(computeDimensions(split).swings).toBe(-0.4);
+		expect(computeDimensions(items).swings).toBe(-0.4);
 	});
 
 	it('throws when a dimension has no answers', () => {
@@ -163,8 +139,7 @@ describe('archetypeFit — locked baseline (all-zeros user vector)', () => {
 				extraversion: 0,
 				belonging: belong,
 				group_size: 0,
-				swings: 0,
-				extra_variance: 0
+				swings: 0
 			};
 			expect(archetypeFit(v, 'otrovert')).toBeCloseTo(0, 12);
 		}
@@ -183,8 +158,7 @@ describe('archetypeFit — locked baseline (all-zeros user vector)', () => {
 				extraversion: 0,
 				belonging: belong,
 				group_size: 0,
-				swings: 0,
-				extra_variance: 0
+				swings: 0
 			};
 			expect(archetypeFit(v, 'otrovert')).toBeCloseTo(expected, 10);
 		}
@@ -201,8 +175,7 @@ describe('archetypeFit — extreme answer patterns', () => {
 			extraversion: -1,
 			belonging: 1,
 			group_size: -1,
-			swings: -1,
-			extra_variance: 0
+			swings: -1
 		};
 		expect(archetypeFit(v, 'introvert')).toBeCloseTo(100, 12);
 		expect(archetypeFit(v, 'extrovert')).toBeCloseTo(0, 12);
@@ -214,8 +187,7 @@ describe('archetypeFit — extreme answer patterns', () => {
 			extraversion: 1,
 			belonging: 1,
 			group_size: 1,
-			swings: -1,
-			extra_variance: 0
+			swings: -1
 		};
 		expect(archetypeFit(v, 'extrovert')).toBeCloseTo(100, 12);
 		expect(archetypeFit(v, 'introvert')).toBeCloseTo(0, 12);
@@ -227,24 +199,19 @@ describe('archetypeFit — extreme answer patterns', () => {
 			extraversion: 0,
 			belonging: -1,
 			group_size: 0,
-			swings: 0,
-			extra_variance: 0
+			swings: 0
 		};
 		expect(archetypeFit(v, 'otrovert')).toBeCloseTo(100, 12);
 	});
 
-	it('canonical Omnivert pattern (variance=1, swings=+1) → 100% Omnivert, 0% on stable types', () => {
+	it('canonical Omnivert pattern (swings=+1) → 100% Omnivert', () => {
 		const v: DimensionVector = {
 			extraversion: 0,
 			belonging: 0,
 			group_size: 0,
-			swings: 1,
-			extra_variance: 1
+			swings: 1
 		};
 		expect(archetypeFit(v, 'omnivert')).toBeCloseTo(100, 12);
-		expect(archetypeFit(v, 'introvert')).toBeCloseTo(0, 12);
-		expect(archetypeFit(v, 'extrovert')).toBeCloseTo(0, 12);
-		expect(archetypeFit(v, 'ambivert')).toBeCloseTo(0, 12);
 	});
 });
 
@@ -254,8 +221,7 @@ describe('archetypeFit — co-scoring (independent axes)', () => {
 			extraversion: -1,
 			belonging: -1,
 			group_size: -1,
-			swings: -1,
-			extra_variance: 0
+			swings: -1
 		};
 		expect(archetypeFit(v, 'introvert')).toBeCloseTo(100, 12);
 		expect(archetypeFit(v, 'otrovert')).toBeCloseTo(100, 12);
@@ -266,15 +232,13 @@ describe('archetypeFit — co-scoring (independent axes)', () => {
 			extraversion: -1,
 			belonging: -1,
 			group_size: 0,
-			swings: 0,
-			extra_variance: 0
+			swings: 0
 		};
 		const extroOtro: DimensionVector = {
 			extraversion: 1,
 			belonging: -1,
 			group_size: 0,
-			swings: 0,
-			extra_variance: 0
+			swings: 0
 		};
 		expect(archetypeFit(introOtro, 'otrovert')).toBeCloseTo(
 			archetypeFit(extroOtro, 'otrovert'),
@@ -282,44 +246,20 @@ describe('archetypeFit — co-scoring (independent axes)', () => {
 		);
 	});
 
-	it('claiming stability without behavioural evidence does not push omnivert below variance baseline', () => {
-		// variance=1 (chaotic behaviour), swings=-1 (claims rock-solid stability).
-		// Omni should still reflect the strong behavioural signal — the denial
-		// is treated as absence of a second confirming signal, not as
-		// counter-evidence.
+	it('negative swings stay at 0% Omnivert', () => {
 		const v: DimensionVector = {
 			extraversion: 0,
 			belonging: 0,
 			group_size: 0,
-			swings: -1,
-			extra_variance: 1
+			swings: -1
 		};
-		// variance contribution = 1; bonus from swings = max(0, -1) = 0;
-		// fit = (1 + 0) / 2 = 0.5 → 50%.
-		expect(archetypeFit(v, 'omnivert')).toBeCloseTo(50, 12);
-	});
-});
-
-describe('archetypeFit — chaotic answerer suppresses stable archetypes', () => {
-	it('a chaotic user (extra_variance = 1) reads 0% on Introvert / Extrovert / Ambivert regardless of mean', () => {
-		for (const extra of [-1, -0.5, 0, 0.5, 1]) {
-			const v: DimensionVector = {
-				extraversion: extra,
-				belonging: 0,
-				group_size: 0,
-				swings: 0,
-				extra_variance: 1
-			};
-			expect(archetypeFit(v, 'introvert')).toBeCloseTo(0, 12);
-			expect(archetypeFit(v, 'extrovert')).toBeCloseTo(0, 12);
-			expect(archetypeFit(v, 'ambivert')).toBeCloseTo(0, 12);
-		}
+		expect(archetypeFit(v, 'omnivert')).toBeCloseTo(0, 12);
 	});
 });
 
 describe('scoreQuiz — end to end', () => {
 	it('all-zeros bank → Ambivert 100%, Intro/Extro 50%, Otrovert/Omnivert 0%', () => {
-		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 }, 'flat');
+		const items = fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 });
 		const result = scoreQuiz(items);
 
 		const find = (a: Archetype) => result.fits.find((f) => f.archetype === a)?.fit ?? -1;
@@ -363,23 +303,23 @@ describe('scoreQuiz — end to end', () => {
 	it.each([
 		{
 			archetype: 'introvert' as const,
-			items: fullSet({ extraversion: -1, belonging: 1, group_size: -1, swings: -1 }, 'flat')
+			items: fullSet({ extraversion: -1, belonging: 1, group_size: -1, swings: -1 })
 		},
 		{
 			archetype: 'extrovert' as const,
-			items: fullSet({ extraversion: 1, belonging: 1, group_size: 1, swings: -1 }, 'flat')
+			items: fullSet({ extraversion: 1, belonging: 1, group_size: 1, swings: -1 })
 		},
 		{
 			archetype: 'ambivert' as const,
-			items: fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 }, 'flat')
+			items: fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 0 })
 		},
 		{
 			archetype: 'otrovert' as const,
-			items: fullSet({ extraversion: 0, belonging: -1, group_size: -1, swings: -1 }, 'flat')
+			items: fullSet({ extraversion: 0, belonging: -1, group_size: -1, swings: -1 })
 		},
 		{
 			archetype: 'omnivert' as const,
-			items: fullSet({ extraversion: 0, belonging: 0, group_size: 0, swings: 1 }, 'split')
+			items: fullSet({ extraversion: 0.5, belonging: 0, group_size: 1, swings: 1 })
 		}
 	])(
 		'fitting $archetype scores it as the strict-most-dominant archetype',
@@ -391,7 +331,7 @@ describe('scoreQuiz — end to end', () => {
 			for (const other of others) {
 				// Otrovert and Ambivert can co-score 100 on the canonical Otrovert
 				// profile (extra=0, belong=-1) because the axes are independent —
-				// neutral extraversion + low variance is also a perfect Ambivert.
+				// neutral extraversion is also a perfect Ambivert.
 				if (archetype === 'otrovert' && other.archetype === 'ambivert') {
 					expect(me.fit).toBeGreaterThanOrEqual(other.fit);
 					continue;

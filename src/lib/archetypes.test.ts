@@ -5,12 +5,10 @@ import {
 	CHAPTERS,
 	DIMENSIONS,
 	DIMENSION_META,
-	SCORING_AXES,
 	VERT_NAMES,
 	VERT_ORDER,
 	type Archetype,
-	type Dimension,
-	type ScoringAxis
+	type Dimension
 } from './archetypes';
 
 const ARCHETYPE_LITERALS: readonly Archetype[] = [
@@ -26,14 +24,6 @@ const DIMENSION_LITERALS: readonly Dimension[] = [
 	'group_size',
 	'swings'
 ];
-const SCORING_AXIS_LITERALS: readonly ScoringAxis[] = [
-	'extraversion',
-	'belonging',
-	'group_size',
-	'swings',
-	'extra_variance'
-];
-
 describe('archetypes registry — invariants', () => {
 	it('ARCHETYPES contains all five archetypes exactly once', () => {
 		expect(new Set(ARCHETYPES)).toEqual(new Set(ARCHETYPE_LITERALS));
@@ -43,18 +33,6 @@ describe('archetypes registry — invariants', () => {
 	it('DIMENSIONS contains all four question dimensions exactly once', () => {
 		expect(new Set(DIMENSIONS)).toEqual(new Set(DIMENSION_LITERALS));
 		expect(DIMENSIONS).toHaveLength(4);
-	});
-
-	it('SCORING_AXES contains all five scoring axes exactly once', () => {
-		expect(new Set(SCORING_AXES)).toEqual(new Set(SCORING_AXIS_LITERALS));
-		expect(SCORING_AXES).toHaveLength(5);
-	});
-
-	it('SCORING_AXES is a strict superset of DIMENSIONS (adds extra_variance)', () => {
-		for (const dim of DIMENSIONS) {
-			expect(SCORING_AXES).toContain(dim);
-		}
-		expect(SCORING_AXES).toContain('extra_variance');
 	});
 
 	it('VERT_ORDER matches ARCHETYPES (display order ≡ canonical order)', () => {

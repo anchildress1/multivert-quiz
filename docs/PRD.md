@@ -66,27 +66,26 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 
 **Scoring engine** (pure TS, unit-testable)
 
-Method: per-archetype axis projection, no shared distance metric, no cross-normalization. Each archetype scores against the small subset of axes that define it. Co-scoring is preserved by design — bars do not sum to 100%.
+Method: per-archetype axis projection, no shared distance metric, no cross-normalization. Each archetype scores against the small subset of question dimensions that define it. Co-scoring is preserved by design — bars do not sum to 100%.
 
 - Each of the 4 question dimensions is scored as the mean of its items (after reverse-score sign-flip and per-item clamp to `[-1, 1]`).
-- **`extra_variance`** is a derived 5th scoring axis — the raw variance of sign-flipped extraversion items, range `[0, 1]`. Per Fleeson (2001), intra-individual variability is treated as a separate construct, not folded into the swings mean. The signal is one-sided (no spread = anti-omnivert; max spread = pro-omnivert) so we do not centre it.
 - Per-archetype fit (each clamped to `[0, 100]`, independent of every other archetype's score):
 
   | Archetype | Formula                                                            |
   | --------- | ------------------------------------------------------------------ |
-  | Introvert | `(0.7 · (1 − extra)/2 + 0.3 · (1 − size)/2) · stability`           |
-  | Extrovert | `(0.7 · (1 + extra)/2 + 0.3 · (1 + size)/2) · stability`           |
-  | Ambivert  | `(0.7 · (1 − \|extra\|) + 0.3 · (1 − \|size\|)) · stability`       |
+  | Introvert | `0.7 · (1 − extra)/2 + 0.3 · (1 − size)/2`                         |
+  | Extrovert | `0.7 · (1 + extra)/2 + 0.3 · (1 + size)/2`                         |
+  | Ambivert  | `0.7 · (1 − \|extra\|) + 0.3 · (1 − \|size\|)`                     |
   | Otrovert  | `max(0, −belong)` (one-sided ramp; positive belonging stays at 0%) |
-  | Omnivert  | `(extra_variance + max(0, swings)) / 2`                            |
+  | Omnivert  | `max(0, swings)` (one-sided ramp; neutral/stable stays at 0%)      |
 
-  where `stability = 1 − extra_variance` (1 when fully consistent, 0 when fully split). Group-size is a secondary correlate for the extraversion-axis trio (intro/extro/ambi); the 0.7/0.3 split is locked here.
+  Group-size is a secondary correlate for the extraversion-axis trio (intro/extro/ambi); the 0.7/0.3 split is locked here.
 
 - Dominant type = archetype with the highest fit score.
 
 **Locked baseline (all-zeros respondent)**: Ambivert 100%, Introvert 50%, Extrovert 50%, Otrovert 0%, Omnivert 0%. The 50% scores reflect midpoints on the two-poled extraversion line; the 0% scores reflect one-sided axes (no evidence yet of otherness or contradiction).
 
-**Independence of axes**: Otrovert is computed only from `belong`, so it co-scores with intro/extro/ambi. An "introverted otrovert" legitimately reads 100% on both. Omnivert is computed only from `extra_variance` and `swings`, so it is suppressed (via `stability`) for stable archetypes but scores independently on its own evidence.
+**Independence of axes**: Otrovert is computed only from `belong`, so it co-scores with intro/extro/ambi. An "introverted otrovert" legitimately reads 100% on both. Omnivert is computed only from explicit positive `swings` evidence, so a user can score high on omnivert and another type when their self-reported oscillation coexists with a strong average leaning.
 
 **Results page**
 

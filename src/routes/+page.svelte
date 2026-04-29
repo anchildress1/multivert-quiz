@@ -20,6 +20,8 @@
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
+	const questionCount = questions.length;
+	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — ${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let scrollY = $state(0);
@@ -189,26 +191,20 @@
 
 <svelte:head>
 	<title>Multivert — what vert are you?</title>
-	<meta
-		name="description"
-		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end. Answers stay on your device."
-	/>
+	<meta name="description" content={`${pageDescription} Answers stay on your device.`} />
 	<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
 	<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
 
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Multivert — what vert are you?" />
-	<meta
-		property="og:description"
-		content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — 30 questions, one slider, a five-way breakdown at the end."
-	/>
+	<meta property="og:description" content={pageDescription} />
 	<meta property="og:site_name" content="Multivert" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Multivert — what vert are you?" />
 	<meta
 		name="twitter:description"
-		content="A five-sided personality quiz. 30 questions, one slider, a five-way breakdown at the end."
+		content={`A five-sided personality quiz. ${questionCount} questions, one slider, a five-way breakdown at the end.`}
 	/>
 </svelte:head>
 

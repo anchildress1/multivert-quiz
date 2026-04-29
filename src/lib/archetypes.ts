@@ -13,27 +13,21 @@
  *
  *   - Introvert / Ambivert / Extrovert — three points on the *extraversion*
  *     axis at -1, 0, +1. Group-size acts as a secondary correlate (introverts
- *     usually prefer small, extroverts large). All three are gated by a
- *     stability factor derived from `extra_variance`: a chaotic answerer
- *     can't sit at any stable point on the extraversion line.
+ *     usually prefer small, extroverts large).
  *   - Otrovert — projection along the *belonging* axis (toward -1 = "high
  *     otherness"). Independent of the extraversion line; an otrovert can
  *     also be intro / extro / ambi.
- *   - Omnivert — driven by `extra_variance` (split answers on the
- *     extraversion items, the strong behavioural omnivert tell) plus a
- *     bonus from explicit positive answers on the swings items
- *     (self-reported oscillation).
+ *   - Omnivert — driven by explicit positive answers on the swings items
+ *     (self-reported oscillation across time / situation).
  *
  * The math itself lives in `scoring.ts`. PRD changes pair with code changes.
  */
 
 export type Dimension = 'extraversion' | 'belonging' | 'group_size' | 'swings';
 
-export type ScoringAxis = Dimension | 'extra_variance';
-
 export type Archetype = 'introvert' | 'extrovert' | 'ambivert' | 'omnivert' | 'otrovert';
 
-export type DimensionVector = Record<ScoringAxis, number>;
+export type DimensionVector = Record<Dimension, number>;
 
 /** Stable iteration order for question-level loops (chapters, counters). */
 export const DIMENSIONS: readonly Dimension[] = [
@@ -41,15 +35,6 @@ export const DIMENSIONS: readonly Dimension[] = [
 	'belonging',
 	'group_size',
 	'swings'
-];
-
-/** Stable iteration order for the 5-axis scoring vector. */
-export const SCORING_AXES: readonly ScoringAxis[] = [
-	'extraversion',
-	'belonging',
-	'group_size',
-	'swings',
-	'extra_variance'
 ];
 
 /** Stable iteration order for every archetype-keyed loop and the rotating accent. */
