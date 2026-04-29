@@ -1,16 +1,18 @@
 /**
  * Multivert — Question Bank (v1)
  *
- * 30 questions across 4 dimensions:
+ * 35 questions across 4 dimensions:
  *   - extraversion (10) — adapted from IPIP-NEO Big Five extraversion constructs;
  *                          rewritten in voice with specific, varied scenarios.
- *   - belonging    (10) — custom items. The 3 reverse (otrovert) items are
- *                          drawn from concrete traits documented by The Otherness
- *                          Institute (Kaminski) — e.g., absence of a social
- *                          circle, role-based confidence vs. discomfort as a
- *                          casual member, observer-not-member feeling.
- *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios
- *                          (house party, festival, brunch, mixer, bar).
+ *   - belonging    (15) — custom items. The 8 reverse (otrovert) items cover 5
+ *                          distinct facets documented by The Otherness Institute
+ *                          (Kaminski):
+ *                            1. group non-belonging / no social circle (b-08, b-09)
+ *                            2. role confidence vs. casual-member discomfort (b-10)
+ *                            3. independent thinking / maverick (b-11, b-12)
+ *                            4. privacy / curated narrative (b-14)
+ *                            5. indifference to mass movements / approval (b-13, b-15)
+ *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios.
  *   - swings       (5)  — distinct facets of situational variance: weekly mood,
  *                          all-or-nothing pattern, others' uncertainty, within-
  *                          event flip, week-to-week same-plan flip.
@@ -34,12 +36,15 @@
  * `reverse: true` means an item's response should be sign-flipped before
  * being aggregated into its dimension score.
  *
- * Reverse-scored ratio: 10/30 ≈ 33%. Within psychometric norms; helps reduce
- * acquiescence bias.
+ * Reverse-scored ratio: 15/35 ≈ 43%. Higher than typical 25–33% because the
+ * belonging dimension has more reverse (otrovert-pole) items than forward —
+ * intentional, since the otrovert construct is multi-faceted and we want
+ * adequate signal across all 5 facets.
  *
- * Note for the scoring engine: the swings dimension also receives a derived
- * variance signal computed from the spread of extraversion answers (after
- * sign-flip). That math lives in the scoring module, not here.
+ * Note for the scoring engine: the spread of extraversion answers (after
+ * sign-flip) feeds a derived `extra_variance` axis on the scoring vector —
+ * an independent omnivert signal per Fleeson's intra-individual variability
+ * framework. That math lives in the scoring module, not here.
  *
  * Otrovert-construct caveat: per Kaminski / The Otherness Institute, otroverts
  * can be confident and outgoing when in a defined role (host, MC, lecturer).
@@ -222,6 +227,41 @@ export const questions: Question[] = [
 		reverse: true,
 		source: 'Otherness Institute'
 	},
+	{
+		id: 'b-11',
+		text: 'I examine ideas for myself before adopting them — popularity does not make something true.',
+		dimension: 'belonging',
+		reverse: true,
+		source: 'Otherness Institute'
+	},
+	{
+		id: 'b-12',
+		text: "I don't feel any need to convince other people of what I believe.",
+		dimension: 'belonging',
+		reverse: true,
+		source: 'Otherness Institute'
+	},
+	{
+		id: 'b-13',
+		text: 'Causes everyone agrees on tend to make me skeptical, not enthusiastic.',
+		dimension: 'belonging',
+		reverse: true,
+		source: 'Otherness Institute'
+	},
+	{
+		id: 'b-14',
+		text: 'Most people in my life only see a curated version of me — even ones who think they know me well.',
+		dimension: 'belonging',
+		reverse: true,
+		source: 'Otherness Institute'
+	},
+	{
+		id: 'b-15',
+		text: "I don't need any group's approval to feel solid in who I am.",
+		dimension: 'belonging',
+		reverse: true,
+		source: 'Otherness Institute'
+	},
 
 	// ─── Group size preference (5) ──────────────────────────────────────
 	// Each item names a different concrete scenario.
@@ -264,12 +304,15 @@ export const questions: Question[] = [
 	},
 
 	// ─── Swings (5) ─────────────────────────────────────────────────────
-	// Five distinct facets of variance:
-	//   s-01 — week-level extremes (cancel one day, host the next)
-	//   s-02 — no middle gear (binary state, not a spectrum)
-	//   s-03 — others can't predict you
-	//   s-04 — within-event flip (peak then fade)
-	//   s-05 — same-plan flip across time (mood-driven, not context-driven)
+	// Five distinct facets of intro↔extro oscillation. Each item must
+	// unambiguously measure social-energy toggling, not generic moodiness —
+	// the omnivert construct is specifically "you swing between intro and
+	// extro modes," not "you have mood swings."
+	//   s-01 — week-level intro↔extro flip (cancel one day, host the next)
+	//   s-02 — no middle gear (binary social-energy state, not a spectrum)
+	//   s-03 — others can't predict which social mode shows up
+	//   s-04 — within-event intro↔extro flip (peak then fade)
+	//   s-05 — same-plan intro↔extro flip across time
 
 	{
 		id: 's-01',
@@ -287,7 +330,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 's-03',
-		text: 'My friends never know which version of me is showing up to a hangout.',
+		text: "My friends never know whether I'll show up wanting to work the room or wanting to leave by 9.",
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'
@@ -301,7 +344,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 's-05',
-		text: "Same plan, same people, different week — sometimes I can't wait, sometimes I want to bail.",
+		text: 'Same crowd, same plan, different week — one time I work the room, the next I find the quietest corner.',
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'
@@ -316,4 +359,4 @@ export const QUESTION_COUNT_BY_DIMENSION = {
 	swings: questions.filter((q) => q.dimension === 'swings').length
 } as const;
 
-// Expected: { extraversion: 10, belonging: 10, group_size: 5, swings: 5 } → total 30
+// Expected: { extraversion: 10, belonging: 15, group_size: 5, swings: 5 } → total 35

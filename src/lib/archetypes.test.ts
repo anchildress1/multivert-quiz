@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
 	ACCENT_ROTATION,
 	ARCHETYPES,
-	ARCHETYPE_IDEALS,
-	ARCHETYPE_WEIGHTS,
 	CHAPTERS,
 	DIMENSIONS,
 	DIMENSION_META,
+	SCORING_AXES,
 	VERT_NAMES,
 	VERT_ORDER,
 	type Archetype,
-	type Dimension
+	type Dimension,
+	type ScoringAxis
 } from './archetypes';
 
 const ARCHETYPE_LITERALS: readonly Archetype[] = [
@@ -26,6 +26,13 @@ const DIMENSION_LITERALS: readonly Dimension[] = [
 	'group_size',
 	'swings'
 ];
+const SCORING_AXIS_LITERALS: readonly ScoringAxis[] = [
+	'extraversion',
+	'belonging',
+	'group_size',
+	'swings',
+	'extra_variance'
+];
 
 describe('archetypes registry — invariants', () => {
 	it('ARCHETYPES contains all five archetypes exactly once', () => {
@@ -33,9 +40,21 @@ describe('archetypes registry — invariants', () => {
 		expect(ARCHETYPES).toHaveLength(5);
 	});
 
-	it('DIMENSIONS contains all four dimensions exactly once', () => {
+	it('DIMENSIONS contains all four question dimensions exactly once', () => {
 		expect(new Set(DIMENSIONS)).toEqual(new Set(DIMENSION_LITERALS));
 		expect(DIMENSIONS).toHaveLength(4);
+	});
+
+	it('SCORING_AXES contains all five scoring axes exactly once', () => {
+		expect(new Set(SCORING_AXES)).toEqual(new Set(SCORING_AXIS_LITERALS));
+		expect(SCORING_AXES).toHaveLength(5);
+	});
+
+	it('SCORING_AXES is a strict superset of DIMENSIONS (adds extra_variance)', () => {
+		for (const dim of DIMENSIONS) {
+			expect(SCORING_AXES).toContain(dim);
+		}
+		expect(SCORING_AXES).toContain('extra_variance');
 	});
 
 	it('VERT_ORDER matches ARCHETYPES (display order ≡ canonical order)', () => {
@@ -49,8 +68,6 @@ describe('archetypes registry — invariants', () => {
 			expect(meta).toBeDefined();
 			expect(meta.name).toMatch(/^[A-Z][a-z]+$/);
 			expect(meta.label.length).toBeGreaterThan(0);
-			// Prose is the result-page description; must be substantive (≥40 chars)
-			// so we don't accidentally ship a placeholder string.
 			expect(meta.prose.length).toBeGreaterThanOrEqual(40);
 		}
 	);
@@ -63,37 +80,6 @@ describe('archetypes registry — invariants', () => {
 
 	it('DIMENSION_META is frozen', () => {
 		expect(Object.isFrozen(DIMENSION_META)).toBe(true);
-	});
-
-	it.each(ARCHETYPE_LITERALS)(
-		'ARCHETYPE_WEIGHTS row for %s sums to 1 and has every dimension',
-		(archetype) => {
-			const row = ARCHETYPE_WEIGHTS[archetype];
-			expect(Object.keys(row).sort()).toEqual([...DIMENSION_LITERALS].sort());
-			const sum = Object.values(row).reduce((s, w) => s + w, 0);
-			expect(sum).toBeCloseTo(1, 12);
-			for (const w of Object.values(row)) {
-				expect(w).toBeGreaterThanOrEqual(0);
-				expect(w).toBeLessThanOrEqual(1);
-			}
-		}
-	);
-
-	it.each(ARCHETYPE_LITERALS)(
-		'ARCHETYPE_IDEALS row for %s lives in [-1, 1] for every dimension',
-		(archetype) => {
-			const row = ARCHETYPE_IDEALS[archetype];
-			expect(Object.keys(row).sort()).toEqual([...DIMENSION_LITERALS].sort());
-			for (const v of Object.values(row)) {
-				expect(v).toBeGreaterThanOrEqual(-1);
-				expect(v).toBeLessThanOrEqual(1);
-			}
-		}
-	);
-
-	it('ARCHETYPE_WEIGHTS and ARCHETYPE_IDEALS are frozen', () => {
-		expect(Object.isFrozen(ARCHETYPE_WEIGHTS)).toBe(true);
-		expect(Object.isFrozen(ARCHETYPE_IDEALS)).toBe(true);
 	});
 
 	it('ARCHETYPES tuple is the same length as Object.keys(VERT_NAMES)', () => {

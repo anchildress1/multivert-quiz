@@ -107,7 +107,7 @@ describe('createAnswersStore', () => {
 		expect(counts.extraversion.answered).toBe(1);
 		expect(counts.belonging.answered).toBe(0);
 		expect(counts.extraversion.total).toBe(10);
-		expect(counts.belonging.total).toBe(10);
+		expect(counts.belonging.total).toBe(15);
 		expect(counts.group_size.total).toBe(5);
 		expect(counts.swings.total).toBe(5);
 	});
@@ -308,7 +308,7 @@ describe('QUESTIONS_BY_DIMENSION', () => {
 	it('groups questions by their dimension and preserves source order', () => {
 		const grouped = QUESTIONS_BY_DIMENSION;
 		expect(grouped.extraversion).toHaveLength(10);
-		expect(grouped.belonging).toHaveLength(10);
+		expect(grouped.belonging).toHaveLength(15);
 		expect(grouped.group_size).toHaveLength(5);
 		expect(grouped.swings).toHaveLength(5);
 
