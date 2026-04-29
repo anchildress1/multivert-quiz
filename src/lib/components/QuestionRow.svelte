@@ -201,7 +201,7 @@
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.05em;
-		color: var(--ink-50);
+		color: var(--ink-70);
 	}
 
 	.row__index {
@@ -216,7 +216,7 @@
 	}
 
 	.row__total {
-		color: var(--ink-30);
+		color: var(--ink-70);
 	}
 
 	.row__rule {

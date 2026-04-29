@@ -91,12 +91,12 @@
 		font-size: 11px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--ink-50);
+		color: var(--ink-70);
 		overflow: hidden;
 	}
 
 	.meter__chapter-label {
-		color: var(--ink-30);
+		color: var(--ink-70);
 	}
 
 	.meter__chapter-name {
@@ -107,7 +107,7 @@
 	}
 
 	.meter__chapter-name--quiet {
-		color: var(--ink-50);
+		color: var(--ink-70);
 	}
 
 	.meter__progress {
@@ -117,7 +117,7 @@
 		gap: 12px;
 		font-family: var(--font-mono);
 		font-size: 11px;
-		color: var(--ink-50);
+		color: var(--ink-70);
 	}
 
 	.meter__count strong {
@@ -127,7 +127,7 @@
 	}
 
 	.meter__total {
-		color: var(--ink-30);
+		color: var(--ink-70);
 	}
 
 	.meter__bar {

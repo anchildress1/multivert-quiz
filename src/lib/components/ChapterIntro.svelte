@@ -79,7 +79,7 @@
 		font-size: 11px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--ink-50);
+		color: var(--ink-70);
 		white-space: nowrap;
 	}
 

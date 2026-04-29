@@ -278,7 +278,7 @@
 		display: flex;
 		justify-content: space-between;
 		font-size: 12px;
-		color: var(--ink-50);
+		color: var(--ink-70);
 		font-family: var(--font-sans);
 	}
 
@@ -292,7 +292,7 @@
 		margin-top: 12px;
 		font-family: var(--font-mono);
 		font-size: 11px;
-		color: var(--ink-30);
+		color: var(--ink-70);
 		letter-spacing: 0.05em;
 		text-align: center;
 		text-transform: uppercase;

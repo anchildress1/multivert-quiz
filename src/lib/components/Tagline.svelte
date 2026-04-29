@@ -9,7 +9,7 @@
 </script>
 
 <p
-	class="font-mono text-[var(--ink-50)]"
+	class="font-mono text-[var(--ink-70)]"
 	style:font-size="{size}px"
 	style:line-height="1.55"
 	style:letter-spacing="0.01em"
