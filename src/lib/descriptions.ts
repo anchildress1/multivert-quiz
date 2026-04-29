@@ -15,7 +15,10 @@
  *   - Rami Kaminski (2025), The Gift of Not Belonging
  */
 
-export type VertType = 'introvert' | 'extrovert' | 'ambivert' | 'omnivert' | 'otrovert';
+import type { Archetype } from './archetypes';
+
+/** Re-exported for back-compat with existing call sites. Single source of truth: `Archetype`. */
+export type VertType = Archetype;
 
 export interface TypeDescription {
 	type: VertType;

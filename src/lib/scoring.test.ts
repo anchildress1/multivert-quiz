@@ -329,13 +329,6 @@ describe('scoreQuiz — end to end', () => {
 			const others = result.fits.filter((f) => f.archetype !== archetype);
 			if (!me) throw new Error(`fit row missing for ${archetype}`);
 			for (const other of others) {
-				// Otrovert and Ambivert can co-score 100 on the canonical Otrovert
-				// profile (extra=0, belong=-1) because the axes are independent —
-				// neutral extraversion is also a perfect Ambivert.
-				if (archetype === 'otrovert' && other.archetype === 'ambivert') {
-					expect(me.fit).toBeGreaterThanOrEqual(other.fit);
-					continue;
-				}
 				expect(me.fit).toBeGreaterThan(other.fit);
 			}
 		}

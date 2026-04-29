@@ -13,9 +13,12 @@
  *                            4. privacy / curated narrative (b-14)
  *                            5. indifference to mass movements / approval (b-13, b-15)
  *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios.
- *   - swings       (5)  — distinct facets of social-energy oscillation: weekly mood,
- *                          all-or-nothing pattern, others' uncertainty, within-
- *                          event flip, week-to-week same-plan flip.
+ *   - swings       (5)  — distinct facets of intro↔extro oscillation: week-level
+ *                          flip (cancel one day, host the next), no-middle-gear
+ *                          binary, others' uncertainty about which social mode
+ *                          shows up, within-event flip, same-plan flip across
+ *                          time. Deliberately not "moodiness" — the omnivert
+ *                          construct is specifically social-energy toggling.
  *
  * Voice: conversational, scenic, slightly wry. Each item names a concrete
  * setting (party, coffee shop, wedding toast, work happy hour, etc.) so the
