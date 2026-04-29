@@ -46,7 +46,7 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 | `group_size`   | 5     | prefers 1:1 / small ↔ thrives in large groups          |
 | `swings`       | 5     | stable ↔ dramatic situational swings (omnivert signal) |
 
-- **43% reverse-scored** (15 of 35). Higher than typical 25–33% because the belonging dimension over-indexes on otrovert-pole items to cover all 5 documented Otherness Institute facets: group non-belonging, role-vs-casual-member confidence, maverick thinking, privacy / curated narrative, mass-movement and approval indifference.
+- **51% reverse-scored** (18 of 35). Heavier than typical 25–33% because the belonging dimension is deliberately tilted toward otrovert-pole items (11 reverse vs. 4 forward) to cover all 5 documented Otherness Institute facets: group non-belonging, role-vs-casual-member confidence, maverick thinking, privacy / curated narrative, mass-movement and approval indifference.
 - **All items rewritten in the quiz's own voice** — meaning preserved, tone customized for engagement. Differentiates from the dozens of IPIP-verbatim quizzes already online.
 - Source mix: 10 extraversion items adapted from IPIP-NEO Big Five extraversion constructs; 25 custom items. Belonging items derived from Kaminski / The Otherness Institute documented otrovert traits — clinical-source, not clinically validated. Flagged in disclaimer.
 

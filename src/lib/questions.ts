@@ -4,14 +4,17 @@
  * 35 questions across 4 dimensions:
  *   - extraversion (10) — adapted from IPIP-NEO Big Five extraversion constructs;
  *                          rewritten in voice with specific, varied scenarios.
- *   - belonging    (15) — custom items. The 8 reverse (otrovert) items cover 5
+ *   - belonging    (15) — custom items. The 11 reverse (otrovert) items cover 5
  *                          distinct facets documented by The Otherness Institute
  *                          (Kaminski):
- *                            1. group non-belonging / no social circle (b-08, b-09)
- *                            2. role confidence vs. casual-member discomfort (b-10)
+ *                            1. group non-belonging / no social circle
+ *                               (b-01, b-03, b-08, b-09)
+ *                            2. role confidence vs. casual-member discomfort
+ *                               (b-07, b-10)
  *                            3. independent thinking / maverick (b-11, b-12)
  *                            4. privacy / curated narrative (b-14)
- *                            5. indifference to mass movements / approval (b-13, b-15)
+ *                            5. indifference to mass movements / approval
+ *                               (b-13, b-15)
  *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios.
  *   - swings       (5)  — distinct facets of intro↔extro oscillation: week-level
  *                          flip (cancel one day, host the next), no-middle-gear
@@ -39,10 +42,10 @@
  * `reverse: true` means an item's response should be sign-flipped before
  * being aggregated into its dimension score.
  *
- * Reverse-scored ratio: 15/35 ≈ 43%. Higher than typical 25–33% because the
- * belonging dimension has more reverse (otrovert-pole) items than forward —
- * intentional, since the otrovert construct is multi-faceted and we want
- * adequate signal across all 5 facets.
+ * Reverse-scored ratio: 18/35 ≈ 51%. Heavier than typical 25–33% because the
+ * belonging dimension is deliberately tilted toward otrovert-pole items
+ * (11 reverse vs. 4 forward) — the otrovert construct is multi-faceted and
+ * we want adequate signal across all 5 documented facets.
  *
  * Note for the scoring engine: the swings items are the direct omnivert
  * signal. This one-shot quiz does not treat disagreement across unrelated
@@ -152,19 +155,20 @@ export const questions: Question[] = [
 		source: 'IPIP-NEO (adapted)'
 	},
 
-	// ─── Belonging (10) ─────────────────────────────────────────────────
-	// Forward items: identification with specific kinds of groups (teams,
-	//   alumni, congregations, hobby clubs).
-	// Reverse items (otrovert signal): drawn from Kaminski / Otherness Institute
-	//   documented traits — observer-not-member, no social circle, role-based
-	//   comfort vs. casual-member discomfort.
+	// ─── Belonging (15) ─────────────────────────────────────────────────
+	// Forward items (4): identification with specific kinds of groups (teams,
+	//   alumni, congregations, hobby rituals).
+	// Reverse items / otrovert signal (11): drawn from Kaminski / Otherness
+	//   Institute documented traits — observer-not-member, no social circle,
+	//   role-based comfort vs. casual-member discomfort, maverick thinking,
+	//   privacy / curated narrative, indifference to mass movements / approval.
 
 	{
 		id: 'b-01',
-		text: "I'll rearrange my schedule to attend an event for a group I'm part of, even when it's inconvenient.",
+		text: "The groups I'm in don't really bend my schedule — I show up when it works, skip when it doesn't.",
 		dimension: 'belonging',
-		reverse: false,
-		source: 'custom'
+		reverse: true,
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-02',
@@ -175,10 +179,10 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-03',
-		text: 'I happily rep team logos, alumni gear, or group merch I belong to — that stuff feels like mine.',
+		text: 'Team logos, alumni gear, inside jokes — even with groups I belong to, none of it really reads as mine.',
 		dimension: 'belonging',
-		reverse: false,
-		source: 'custom'
+		reverse: true,
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-04',
@@ -203,10 +207,10 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-07',
-		text: 'When I find a club or league that fits my vibe, I sign up without much hesitation.',
+		text: "Even when a club or league fits my vibe exactly, the moment I'd sign on as a regular member is the moment I freeze.",
 		dimension: 'belonging',
-		reverse: false,
-		source: 'custom'
+		reverse: true,
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-08',
