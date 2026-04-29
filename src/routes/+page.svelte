@@ -29,10 +29,14 @@
 	$effect(() => {
 		if (!browser) return;
 
-		const chapterTargets = CHAPTERS.map((ch) => ({
-			chapter: ch,
-			el: document.getElementById(ch.id)
-		})).filter((entry): entry is { chapter: Chapter; el: HTMLElement } => entry.el !== null);
+		const chapterTargets = CHAPTERS.flatMap((ch) => {
+			const el = document.getElementById(ch.id);
+			if (!el) {
+				console.warn(`[IntersectionObserver] Chapter element #${ch.id} not found — skipped`);
+				return [];
+			}
+			return [{ chapter: ch, el }];
+		});
 
 		const chapterObserver = new IntersectionObserver(
 			(entries) => {
@@ -54,12 +58,17 @@
 	const firstChapter = CHAPTERS[0];
 
 	const prefersReducedMotion = (): boolean =>
-		globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+		globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
 
 	function scrollToId(id: string, event?: Event) {
 		if (!browser) return;
 		event?.preventDefault();
-		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const el = document.getElementById(id);
+		if (!el) {
+			console.warn(`[scrollToId] Element #${id} not found — scroll skipped`);
+			return;
+		}
+		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
 	const scrollToFirstChapter = (event: MouseEvent) => {
@@ -67,6 +76,10 @@
 	};
 
 	function handleRetake() {
+		if (autoScrollTimer !== null) {
+			clearTimeout(autoScrollTimer);
+			autoScrollTimer = null;
+		}
 		store.reset();
 		if (!browser) return;
 		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
@@ -86,6 +99,7 @@
 	 * The browser's native scroll model is never interfered with.
 	 */
 	let nudgeAt = $state(0);
+	let autoScrollTimer: ReturnType<typeof setTimeout> | null = null;
 
 	$effect(() => {
 		if (!browser) return;
@@ -159,9 +173,15 @@
 		if (next && store.answers[next.id]?.state === 'answered') return;
 		const targetId = next ? `q-${next.id}` : 'submit';
 		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
-		// Wait for the slider's commit animation to settle before scrolling.
-		setTimeout(() => {
-			document.getElementById(targetId)?.scrollIntoView({ behavior, block: 'start' });
+		if (autoScrollTimer !== null) clearTimeout(autoScrollTimer);
+		autoScrollTimer = setTimeout(() => {
+			autoScrollTimer = null;
+			const el = document.getElementById(targetId);
+			if (!el) {
+				console.warn(`[handleAnswerCommit] Scroll target #${targetId} not found`);
+				return;
+			}
+			el.scrollIntoView({ behavior, block: 'start' });
 		}, 450);
 	}
 </script>

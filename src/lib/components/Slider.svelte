@@ -51,16 +51,18 @@
 	});
 
 	function handleInput(event: Event) {
+		if (!(event.target instanceof HTMLInputElement)) return;
 		hasInteracted = true;
-		const target = event.target as HTMLInputElement;
-		const next = Number(target.value);
+		const next = Number(event.target.value);
+		if (!Number.isFinite(next)) return;
 		onchange?.({ value: next, state: 'in-progress' });
 	}
 
 	function handleChange(event: Event) {
+		if (!(event.target instanceof HTMLInputElement)) return;
 		hasInteracted = true;
-		const target = event.target as HTMLInputElement;
-		const next = Number(target.value);
+		const next = Number(event.target.value);
+		if (!Number.isFinite(next)) return;
 		onchange?.({ value: next, state: 'answered' });
 	}
 
@@ -71,15 +73,18 @@
 	}
 
 	function handleClick(event: MouseEvent) {
+		if (!(event.currentTarget instanceof HTMLInputElement)) return;
 		// Skip if the user has already moved the slider in this session — input/
 		// change have done the right thing. Only fires for the no-op-value path.
 		if (hasInteracted) return;
 		hasInteracted = true;
-		const target = event.currentTarget as HTMLInputElement;
-		onchange?.({ value: Number(target.value), state: 'answered' });
+		const next = Number(event.currentTarget.value);
+		if (!Number.isFinite(next)) return;
+		onchange?.({ value: next, state: 'answered' });
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
+		if (!(event.currentTarget instanceof HTMLInputElement)) return;
 		// Same problem on the keyboard: pressing Enter or Space on the focused
 		// thumb without changing the value should still commit. Arrow keys
 		// already mutate the value so they go through input/change.
@@ -87,8 +92,9 @@
 		if (hasInteracted) return;
 		event.preventDefault();
 		hasInteracted = true;
-		const target = event.currentTarget as HTMLInputElement;
-		onchange?.({ value: Number(target.value), state: 'answered' });
+		const next = Number(event.currentTarget.value);
+		if (!Number.isFinite(next)) return;
+		onchange?.({ value: next, state: 'answered' });
 	}
 </script>
 
