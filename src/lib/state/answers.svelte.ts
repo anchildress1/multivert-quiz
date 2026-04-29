@@ -40,6 +40,19 @@ const seedAnswers = (): AnswerMap => {
 	return seed;
 };
 
+const parseStoredEntry = (entry: unknown): AnswerEntry | null => {
+	if (!entry || typeof entry !== 'object') return null;
+	const candidate = entry as { value?: unknown; state?: unknown };
+	const numericValue =
+		typeof candidate.value === 'number' && Number.isFinite(candidate.value)
+			? Math.max(-1, Math.min(1, candidate.value))
+			: null;
+	if (numericValue === null) return null;
+	if (candidate.state === 'answered') return { state: 'answered', value: numericValue };
+	if (candidate.state === 'in-progress') return { state: 'in-progress', value: numericValue };
+	return null;
+};
+
 const readStoredAnswers = (): AnswerMap | null => {
 	if (!browser) return null;
 	try {
@@ -49,19 +62,9 @@ const readStoredAnswers = (): AnswerMap | null => {
 		if (!parsed || typeof parsed !== 'object') return null;
 		const merged = seedAnswers();
 		for (const [id, entry] of Object.entries(parsed as Record<string, unknown>)) {
-			if (!(id in merged) || !entry || typeof entry !== 'object') continue;
-			const candidate = entry as { value?: unknown; state?: unknown };
-			const numericValue =
-				typeof candidate.value === 'number' && Number.isFinite(candidate.value)
-					? Math.max(-1, Math.min(1, candidate.value))
-					: null;
-			if (candidate.state === 'answered' && numericValue !== null) {
-				merged[id] = { state: 'answered', value: numericValue };
-			} else if (candidate.state === 'in-progress' && numericValue !== null) {
-				merged[id] = { state: 'in-progress', value: numericValue };
-			}
-			// All other shapes (including 'answered' with non-finite value, or
-			// any unknown state) fall back to the seeded `unset` entry.
+			if (!(id in merged)) continue;
+			const next = parseStoredEntry(entry);
+			if (next) merged[id] = next;
 		}
 		return merged;
 	} catch (err) {
