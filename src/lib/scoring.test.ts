@@ -188,10 +188,10 @@ describe('distanceToFit', () => {
 		expect(distanceToFit(d)).toBeCloseTo(fit, 12);
 	});
 
-	it('clamps NaN inputs to 0% (defensive)', () => {
-		// Math.max/min with NaN yields NaN, but the early clamp Math.max(0, Math.min(2, NaN))
-		// becomes Math.max(0, NaN) → NaN. The function is only called from inside scoreQuiz
-		// where the input is a finite distance, so NaN here is purely defensive territory.
+	it('propagates NaN inputs as NaN (defensive)', () => {
+		// Math.max/min propagate NaN, so Math.max(0, Math.min(2, NaN)) → NaN.
+		// distanceToFit is only called from scoreQuiz where inputs are finite; NaN
+		// reaching this path is a programming error, not a user input scenario.
 		const result = distanceToFit(Number.NaN);
 		expect(Number.isNaN(result)).toBe(true);
 	});

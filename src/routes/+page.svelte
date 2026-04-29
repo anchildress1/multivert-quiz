@@ -68,7 +68,8 @@
 			console.warn(`[scrollToId] Element #${id} not found — scroll skipped`);
 			return;
 		}
-		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
+		el.scrollIntoView({ behavior, block: 'start' });
 	}
 
 	const scrollToFirstChapter = (event: MouseEvent) => {
