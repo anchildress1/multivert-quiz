@@ -75,7 +75,7 @@ jobs:
       - name: SonarCloud scan
         if: steps.sonar-token.outputs.available == 'true'
         # nosemgrep: generic.secrets.security.detected-sonarqube-docs-api-key.detected-sonarqube-docs-api-key
-        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -130,11 +130,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Download build artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: cloudflare-build-${{ github.run_id }}
+          path: .svelte-kit/cloudflare/
+
       - name: Install Playwright browsers
         run: pnpm e2e:install
-
-      - name: Build
-        run: pnpm build
 
       - name: Run E2E tests
         run: pnpm e2e
@@ -162,6 +165,6 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.10
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
