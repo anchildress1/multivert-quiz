@@ -737,7 +737,10 @@
 		isolation: isolate;
 		background: var(--paper);
 		scroll-margin-top: 72px;
-		overflow: hidden;
+		/* No `overflow: hidden` here — that would break the sticky
+		   `.result-head` child. The radial-gradient `::before` is bounded
+		   by `inset: 0` and fades to transparent before the edges, so
+		   clipping isn't required. */
 	}
 
 	/* Mirrors `.chapter-head` layout/spacing/sticky-behavior so the result
