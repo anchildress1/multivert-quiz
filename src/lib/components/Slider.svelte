@@ -44,6 +44,12 @@
 	// the template — reactivity isn't needed.
 	let hasInteracted = false;
 
+	$effect(() => {
+		// Retake/reset returns the external slider state to `unset`; clear the
+		// local latch so neutral click/keyboard commit works again.
+		if (phase === 'unset') hasInteracted = false;
+	});
+
 	function handleInput(event: Event) {
 		hasInteracted = true;
 		const target = event.target as HTMLInputElement;
