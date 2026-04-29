@@ -348,4 +348,26 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(page.locator('#result-title')).toContainText(/^You are an/i);
 		await expect(page.locator('.result__bar')).toHaveCount(5);
 	});
+
+	test('retake clears every answer, hides the result, and clears localStorage', async ({
+		page
+	}) => {
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('#result')).toBeAttached();
+
+		await page.locator('.result__retake').click();
+
+		await expect(page.locator('#result')).toHaveCount(0);
+		await expect(page.locator('.submit__cta')).toBeDisabled();
+
+		const storedStates = await page.evaluate(() => {
+			const raw = localStorage.getItem('multivert.answers.v1');
+			if (!raw) return null;
+			const parsed = JSON.parse(raw) as Record<string, { state: string; value: number | null }>;
+			return Object.values(parsed).map((entry) => entry.state);
+		});
+		expect(storedStates).not.toBeNull();
+		expect(storedStates?.every((state) => state === 'unset')).toBe(true);
+	});
 });

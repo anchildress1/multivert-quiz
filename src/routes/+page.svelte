@@ -59,6 +59,13 @@
 		if (firstChapter) scrollToId(firstChapter.id, event);
 	};
 
+	function handleRetake() {
+		store.reset();
+		if (!browser) return;
+		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
+		window.scrollTo({ top: 0, behavior });
+	}
+
 	/**
 	 * Forward-progress feedback. The lock itself is layout-only (CSS
 	 * `.row[data-state='unset'] ~ .row` removes later content from layout),
@@ -344,6 +351,13 @@
 					Each bar is independent — the five percentages do not sum to 100. A strong introverted
 					otrovert can legitimately score high on both axes.
 				</p>
+
+				<div class="result__actions">
+					<button class="result__retake" type="button" onclick={handleRetake}>
+						Retake the quiz <span aria-hidden="true">↺</span>
+					</button>
+					<p class="result__retake-meta">Clears your answers on this device and starts over.</p>
+				</div>
 			</div>
 		</section>
 	{/if}
@@ -769,6 +783,56 @@
 		font-family: var(--font-mono);
 		font-size: 11px;
 		line-height: 1.6;
+		color: var(--ink-70);
+		margin: 0;
+	}
+
+	.result__actions {
+		margin-top: 48px;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px 20px;
+	}
+
+	.result__retake {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		height: 52px;
+		padding: 0 24px;
+		background: var(--paper);
+		color: var(--ink);
+		border: 1px solid var(--rule);
+		border-radius: var(--button-radius);
+		font-family: var(--font-sans);
+		font-size: 15px;
+		font-weight: 500;
+		letter-spacing: -0.005em;
+		cursor: pointer;
+		transition:
+			transform 0.2s ease,
+			background 0.2s ease,
+			border-color 0.2s ease;
+	}
+
+	.result__retake:hover {
+		transform: translateY(-1px);
+		border-color: var(--ink);
+	}
+
+	.result__retake:active {
+		transform: translateY(0);
+	}
+
+	.result__retake:focus-visible {
+		outline: 2px solid var(--ink);
+		outline-offset: 3px;
+	}
+
+	.result__retake-meta {
+		font-family: var(--font-mono);
+		font-size: 12px;
 		color: var(--ink-70);
 		margin: 0;
 	}
