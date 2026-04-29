@@ -365,6 +365,20 @@
 			style:--dominant-mid="var(--vert-{result.dominant}-mid)"
 			style:--dominant-ink="var(--vert-{result.dominant}-ink)"
 		>
+			<header
+				class="result-head"
+				style:--accent="var(--dominant-mid)"
+				style:--accent-ink="var(--dominant-ink)"
+			>
+				<span class="result-head__numeral" aria-hidden="true">V</span>
+				<div class="result-head__rule" aria-hidden="true"></div>
+				<div class="result-head__copy">
+					<h2 class="result-head__title"><em>Result</em></h2>
+					<p class="result-head__description">Five independent fits — bars do not sum to 100.</p>
+				</div>
+				<span class="result-head__count">5 verts</span>
+			</header>
+
 			<div class="result__inner">
 				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
 				<h2 id="result-title" class="result__title">
@@ -722,9 +736,113 @@
 		position: relative;
 		isolation: isolate;
 		background: var(--paper);
-		padding: clamp(64px, 10vh, 128px) clamp(16px, 4vw, 64px);
 		scroll-margin-top: 72px;
 		overflow: hidden;
+	}
+
+	/* Mirrors `.chapter-head` layout/spacing/sticky-behavior so the result
+	   page reads as the natural Chapter V continuation of the quiz. The
+	   accent token is sourced from the dominant archetype (set inline). */
+	.result-head {
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		display: grid;
+		grid-template-columns: auto 1fr auto auto;
+		align-items: center;
+		gap: clamp(12px, 2vw, 20px);
+		padding: 14px clamp(16px, 4vw, 56px);
+		min-height: 72px;
+		background: color-mix(in oklab, var(--paper) 88%, transparent);
+		backdrop-filter: blur(18px) saturate(1.05);
+		-webkit-backdrop-filter: blur(18px) saturate(1.05);
+		border-bottom: 1px solid var(--ink-08);
+	}
+
+	.result-head__numeral {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
+		font-size: clamp(28px, 3vw, 36px);
+		line-height: 1;
+		color: var(--accent-ink);
+		min-width: 32px;
+		text-align: center;
+	}
+
+	.result-head__rule {
+		height: 1px;
+		background: linear-gradient(to right, var(--accent), transparent 80%);
+	}
+
+	.result-head__copy {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+	}
+
+	.result-head__title {
+		font-family: var(--font-display);
+		font-weight: 400;
+		font-size: clamp(20px, 2.4vw, 28px);
+		line-height: 1;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: var(--ink);
+		white-space: nowrap;
+	}
+
+	.result-head__title em {
+		font-style: italic;
+	}
+
+	.result-head__description {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-weight: 400;
+		font-size: clamp(13px, 1.3vw, 15px);
+		line-height: 1.35;
+		color: var(--ink-70);
+		margin: 0;
+		text-wrap: balance;
+		max-width: 64ch;
+	}
+
+	.result-head__count {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--ink-70);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 760px) {
+		.result-head__count {
+			display: none;
+		}
+		.result-head {
+			grid-template-columns: auto 1fr auto;
+		}
+	}
+
+	@media (max-width: 540px) {
+		.result-head__description {
+			display: none;
+		}
+		.result-head__rule {
+			display: none;
+		}
+		.result-head {
+			grid-template-columns: auto auto 1fr;
+		}
+	}
+
+	.result__inner {
+		max-width: 760px;
+		margin: 0 auto;
+		padding: clamp(56px, 9vh, 112px) clamp(16px, 4vw, 64px);
 	}
 
 	/* Soft archetype-tinted wash anchored top-left, fading to nothing.
@@ -743,11 +861,6 @@
 			),
 			var(--paper);
 		pointer-events: none;
-	}
-
-	.result__inner {
-		max-width: 760px;
-		margin: 0 auto;
 	}
 
 	.result__eyebrow {
