@@ -21,7 +21,7 @@ const firstWhere = (pred: (q: Question) => boolean): Question => {
 };
 
 const requireString = (value: string | null): string => {
-	if (value === null) throw new Error('localStorage key was unexpectedly null');
+	if (value === null) throw new Error('sessionStorage key was unexpectedly null');
 	return value;
 };
 
@@ -52,7 +52,7 @@ describe('createAnswersStore', () => {
 				inner.set(key, value);
 			}
 		};
-		vi.stubGlobal('localStorage', fakeStorage);
+		vi.stubGlobal('sessionStorage', fakeStorage);
 	});
 
 	afterEach(() => {
@@ -112,18 +112,18 @@ describe('createAnswersStore', () => {
 		expect(counts.swings.total).toBe(5);
 	});
 
-	it('persists every change to localStorage', () => {
+	it('persists every change to sessionStorage', () => {
 		const store = createAnswersStore();
 		const id = pickQuestion(0).id;
 		store.setAnswer(id, { value: 0.42, state: 'answered' });
-		const raw = requireString(globalThis.localStorage.getItem(STORAGE_KEY));
+		const raw = requireString(globalThis.sessionStorage.getItem(STORAGE_KEY));
 		const parsed: Record<string, { value: number; state: string }> = JSON.parse(raw);
 		expect(parsed[id]).toEqual({ value: 0.42, state: 'answered' });
 	});
 
-	it('hydrates from localStorage on construction', () => {
+	it('hydrates from sessionStorage on construction', () => {
 		const id = pickQuestion(0).id;
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: -0.7, state: 'answered' } })
 		);
@@ -136,7 +136,7 @@ describe('createAnswersStore', () => {
 		const a = pickQuestion(0);
 		const b = pickQuestion(1);
 		const c = pickQuestion(2);
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({
 				[a.id]: { value: 5, state: 'answered' },
@@ -153,7 +153,7 @@ describe('createAnswersStore', () => {
 	});
 
 	it('falls back to seed when stored payload is malformed JSON', () => {
-		globalThis.localStorage.setItem(STORAGE_KEY, '{not-json');
+		globalThis.sessionStorage.setItem(STORAGE_KEY, '{not-json');
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
 		const first = pickQuestion(0);
@@ -161,7 +161,7 @@ describe('createAnswersStore', () => {
 	});
 
 	it('falls back to seed when stored payload is not an object', () => {
-		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
+		globalThis.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
 	});
@@ -172,7 +172,7 @@ describe('createAnswersStore', () => {
 		{ label: 'string', payload: '"a string"' },
 		{ label: 'boolean', payload: 'true' }
 	])('falls back to seed when stored payload is a primitive ($label)', ({ payload }) => {
-		globalThis.localStorage.setItem(STORAGE_KEY, payload);
+		globalThis.sessionStorage.setItem(STORAGE_KEY, payload);
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(0);
 		const first = pickQuestion(0);
@@ -181,7 +181,7 @@ describe('createAnswersStore', () => {
 
 	it('drops entries with unknown state strings back to seeded unset', () => {
 		const id = pickQuestion(0).id;
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: 0.3, state: 'bogus' } })
 		);
@@ -192,7 +192,7 @@ describe('createAnswersStore', () => {
 	});
 
 	it('ignores unknown question ids in the stored payload', () => {
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ 'not-a-real-id': { value: 0.5, state: 'answered' } })
 		);
@@ -202,7 +202,7 @@ describe('createAnswersStore', () => {
 
 	it('hydrates an in-progress entry as in-progress (not answered)', () => {
 		const id = pickQuestion(0).id;
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: 0.25, state: 'in-progress' } })
 		);
@@ -215,7 +215,7 @@ describe('createAnswersStore', () => {
 
 	it('drops an in-progress hydration with non-finite value back to seeded unset', () => {
 		const id = pickQuestion(0).id;
-		globalThis.localStorage.setItem(
+		globalThis.sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({ [id]: { value: Number.POSITIVE_INFINITY, state: 'in-progress' } })
 		);
@@ -256,20 +256,20 @@ describe('createAnswersStore', () => {
 		expect(counts.swings.answered).toBe(1);
 	});
 
-	it('result stays null when localStorage hydration leaves at least one entry unset', () => {
+	it('result stays null when sessionStorage hydration leaves at least one entry unset', () => {
 		// Hydrate 29 of 30 questions.
 		const map: Record<string, { state: string; value: number }> = {};
 		for (const q of questions.slice(0, 29)) {
 			map[q.id] = { state: 'answered', value: 0 };
 		}
-		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+		globalThis.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
 		const store = createAnswersStore();
 		expect(store.totalAnswered).toBe(29);
 		expect(store.allAnswered).toBe(false);
 		expect(store.result).toBeNull();
 	});
 
-	it('persist() silently no-ops when localStorage.setItem throws (quota / private mode)', () => {
+	it('persist() silently no-ops when sessionStorage.setItem throws (quota / private mode)', () => {
 		// Replace setItem with a throwing implementation. setAnswer should not
 		// raise; the in-memory state should still update.
 		const throwing: Storage = {
@@ -284,7 +284,7 @@ describe('createAnswersStore', () => {
 				throw new Error('QuotaExceeded');
 			}
 		};
-		vi.stubGlobal('localStorage', throwing);
+		vi.stubGlobal('sessionStorage', throwing);
 		const store = createAnswersStore();
 		const id = pickQuestion(0).id;
 		expect(() => store.setAnswer(id, { state: 'answered', value: 0.5 })).not.toThrow();
@@ -297,7 +297,7 @@ describe('createAnswersStore', () => {
 		expect(store.totalAnswered).toBe(questions.length);
 		store.reset();
 		expect(store.totalAnswered).toBe(0);
-		const raw = requireString(globalThis.localStorage.getItem(STORAGE_KEY));
+		const raw = requireString(globalThis.sessionStorage.getItem(STORAGE_KEY));
 		const parsed: Record<string, { value: number | null; state: string }> = JSON.parse(raw);
 		const first = pickQuestion(0);
 		expect(parsed[first.id]).toEqual({ value: null, state: 'unset' });

@@ -53,7 +53,7 @@ const seedAllAnswered = (page: Page) =>
 		(ids: readonly string[]) => {
 			const map: Record<string, { state: string; value: number }> = {};
 			for (const id of ids) map[id] = { state: 'answered', value: 0 };
-			localStorage.setItem('multivert.answers.v1', JSON.stringify(map));
+			sessionStorage.setItem('multivert.answers.v1', JSON.stringify(map));
 		},
 		QUESTION_IDS as unknown as string[]
 	);
@@ -329,7 +329,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await dispatchSliderClick(page, 'e-01');
 		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
 		const persisted = await page.evaluate(() => {
-			const raw = localStorage.getItem('multivert.answers.v1');
+			const raw = sessionStorage.getItem('multivert.answers.v1');
 			return raw ? JSON.parse(raw)['e-01'] : null;
 		});
 		expect(persisted).toEqual({ state: 'answered', value: 0 });
@@ -359,7 +359,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(dominant).toMatch(/^(introvert|extrovert|ambivert|omnivert|otrovert)$/);
 	});
 
-	test('retake clears every answer, hides the result, and clears localStorage', async ({
+	test('retake clears every answer, hides the result, and clears sessionStorage', async ({
 		page
 	}) => {
 		await seedAllAnswered(page);
@@ -375,7 +375,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(page.locator('.submit__cta')).toBeDisabled();
 
 		const storedStates = await page.evaluate(() => {
-			const raw = localStorage.getItem('multivert.answers.v1');
+			const raw = sessionStorage.getItem('multivert.answers.v1');
 			if (!raw) return null;
 			const parsed = JSON.parse(raw) as Record<string, { state: string; value: number | null }>;
 			return Object.values(parsed).map((entry) => entry.state);

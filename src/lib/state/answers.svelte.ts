@@ -56,7 +56,7 @@ const parseStoredEntry = (entry: unknown): AnswerEntry | null => {
 const readStoredAnswers = (): AnswerMap | null => {
 	if (!browser) return null;
 	try {
-		const raw = globalThis.localStorage.getItem(STORAGE_KEY);
+		const raw = globalThis.sessionStorage.getItem(STORAGE_KEY);
 		if (!raw) return null;
 		const parsed: unknown = JSON.parse(raw);
 		if (!parsed || typeof parsed !== 'object') return null;
@@ -79,10 +79,10 @@ const readStoredAnswers = (): AnswerMap | null => {
 const persist = (state: AnswerMap): void => {
 	if (!browser) return;
 	try {
-		globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+		globalThis.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 	} catch (err) {
 		/* v8 ignore next — quota / private-mode restriction; answers are session-only */
-		console.warn('[answers] persist failed — answers are session-only:', (err as Error).name);
+		console.warn('[answers] persist failed — answers are tab-session-only:', (err as Error).name);
 	}
 };
 

@@ -1,5 +1,5 @@
 // The quiz lives entirely in the browser: answers are held in $state +
-// localStorage, with no server-side personalisation to render. Disabling SSR
+// sessionStorage, with no server-side personalisation to render. Disabling SSR
 // avoids hydration mismatches and removes any risk of state leaking across
 // requests in a Cloudflare Worker (where module-scoped reactive state would
 // otherwise be shared between concurrent renders).

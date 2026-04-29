@@ -31,14 +31,14 @@ describe('createAnswersStore — SSR / browser=false', () => {
 				storage.set(key, value);
 			}
 		};
-		vi.stubGlobal('localStorage', fakeStorage);
+		vi.stubGlobal('sessionStorage', fakeStorage);
 	});
 
 	afterEach(() => {
 		vi.unstubAllGlobals();
 	});
 
-	it('does not read from localStorage during hydration when not in the browser', () => {
+	it('does not read from sessionStorage during hydration when not in the browser', () => {
 		// Seed the store with a value that, if read, would be visible. The
 		// browser=false guard must skip the read so the store falls back to
 		// the seeded `unset` map instead of hydrating from storage.
@@ -51,7 +51,7 @@ describe('createAnswersStore — SSR / browser=false', () => {
 		expect(store.answers[first.id]).toEqual({ state: 'unset', value: null });
 	});
 
-	it('does not write to localStorage when setAnswer is called outside the browser', () => {
+	it('does not write to sessionStorage when setAnswer is called outside the browser', () => {
 		const store = createAnswersStore();
 		const first = questions[0]!;
 
@@ -63,7 +63,7 @@ describe('createAnswersStore — SSR / browser=false', () => {
 		expect(storage.get(STORAGE_KEY)).toBeUndefined();
 	});
 
-	it('reset() leaves localStorage untouched outside the browser', () => {
+	it('reset() leaves sessionStorage untouched outside the browser', () => {
 		const store = createAnswersStore();
 		store.reset();
 		expect(storage.get(STORAGE_KEY)).toBeUndefined();
