@@ -107,6 +107,67 @@ describe('Slider — handleFocus', () => {
 	});
 });
 
+describe('Slider — handlePointerup (drag-back-to-start commit)', () => {
+	const flushTimers = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+	it('commits answered on pointerup when input fired but change did not', async () => {
+		const { input, onchange } = renderSlider({ value: null, phase: 'unset' });
+		// User taps at non-zero, drags back to 0, releases — native `change`
+		// never fires because the final value matches the start value.
+		fireEvent.input(input, { target: { value: '0.5' } });
+		fireEvent.input(input, { target: { value: '0' } });
+		onchange.mockClear();
+		fireEvent.pointerUp(input);
+		await flushTimers();
+		expect(onchange).toHaveBeenCalledOnce();
+		expect(onchange).toHaveBeenCalledWith({ value: 0, state: 'answered' });
+	});
+
+	it('does not double-commit when change fires after pointerup', async () => {
+		const { input, onchange } = renderSlider({ value: null, phase: 'unset' });
+		fireEvent.input(input, { target: { value: '0.5' } });
+		fireEvent.pointerUp(input);
+		fireEvent.change(input, { target: { value: '0.5' } });
+		await flushTimers();
+		expect(onchange).toHaveBeenCalledTimes(2);
+		expect(onchange).toHaveBeenNthCalledWith(1, { value: 0.5, state: 'in-progress' });
+		expect(onchange).toHaveBeenNthCalledWith(2, { value: 0.5, state: 'answered' });
+	});
+
+	it('does nothing on pointerup when no input has fired', async () => {
+		const { input, onchange } = renderSlider({ value: 0, phase: 'unset' });
+		fireEvent.pointerUp(input);
+		await flushTimers();
+		expect(onchange).not.toHaveBeenCalled();
+	});
+
+	it('ignores NaN values on pointerup commit', async () => {
+		const { input, onchange } = renderSlider({ value: null, phase: 'unset' });
+		fireEvent.input(input, { target: { value: '0.5' } });
+		onchange.mockClear();
+		Object.defineProperty(input, 'value', { writable: true, value: 'NaN' });
+		fireEvent.pointerUp(input);
+		await flushTimers();
+		expect(onchange).not.toHaveBeenCalled();
+	});
+
+	it('clears pendingCommit on retake so a stale pointerup does not commit', async () => {
+		const { input, rerender, onchange } = renderSlider({ value: 0.5, phase: 'in-progress' });
+		fireEvent.input(input, { target: { value: '0.5' } });
+		await rerender({
+			id: 'test-slider',
+			label: 'Test question',
+			onchange,
+			value: null,
+			phase: 'unset'
+		});
+		onchange.mockClear();
+		fireEvent.pointerUp(input);
+		await flushTimers();
+		expect(onchange).not.toHaveBeenCalled();
+	});
+});
+
 describe('Slider — hasInteracted latch reset on retake', () => {
 	it('re-enables neutral-click commit after phase returns to unset', async () => {
 		const { input, rerender, onchange } = renderSlider({ value: 0, phase: 'answered' });

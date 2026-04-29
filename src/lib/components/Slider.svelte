@@ -44,15 +44,27 @@
 	// the template — reactivity isn't needed.
 	let hasInteracted = false;
 
+	// Set true when `input` fires; cleared when `change` (or our pointerup
+	// fallback) commits `answered`. Native `change` for range inputs is only
+	// queued when the final value differs from the value at the start of the
+	// interaction — drag away from a value and back to it and `change` never
+	// runs, leaving the slider stuck in `in-progress`. The pointerup handler
+	// catches that case.
+	let pendingCommit = false;
+
 	$effect(() => {
 		// Retake/reset returns the external slider state to `unset`; clear the
 		// local latch so neutral click/keyboard commit works again.
-		if (phase === 'unset') hasInteracted = false;
+		if (phase === 'unset') {
+			hasInteracted = false;
+			pendingCommit = false;
+		}
 	});
 
 	function handleInput(event: Event) {
 		if (!(event.target instanceof HTMLInputElement)) return;
 		hasInteracted = true;
+		pendingCommit = true;
 		const next = Number(event.target.value);
 		if (!Number.isFinite(next)) return;
 		onchange?.({ value: next, state: 'in-progress' });
@@ -61,9 +73,27 @@
 	function handleChange(event: Event) {
 		if (!(event.target instanceof HTMLInputElement)) return;
 		hasInteracted = true;
+		pendingCommit = false;
 		const next = Number(event.target.value);
 		if (!Number.isFinite(next)) return;
 		onchange?.({ value: next, state: 'answered' });
+	}
+
+	function handlePointerup(event: PointerEvent) {
+		if (!(event.currentTarget instanceof HTMLInputElement)) return;
+		if (!pendingCommit) return;
+		const target = event.currentTarget;
+		// `pointerup` runs before `change`. Defer one task so the native event
+		// can commit first when it's going to. If `change` doesn't fire (drag
+		// returned to the starting value), `pendingCommit` is still true and
+		// we commit ourselves.
+		setTimeout(() => {
+			if (!pendingCommit) return;
+			pendingCommit = false;
+			const next = Number(target.value);
+			if (!Number.isFinite(next)) return;
+			onchange?.({ value: next, state: 'answered' });
+		}, 0);
 	}
 
 	function handleFocus() {
@@ -151,6 +181,7 @@
 		onfocus={handleFocus}
 		onclick={handleClick}
 		onkeydown={handleKeydown}
+		onpointerup={handlePointerup}
 	/>
 
 	<div class="slider__legend">
