@@ -165,7 +165,7 @@ export const questions: Question[] = [
 
 	{
 		id: 'b-01',
-		text: "The groups I'm in don't really bend my schedule — I show up when it works, skip when it doesn't.",
+		text: 'Being part of a group has never really run my calendar — my week follows my own rhythm, not theirs.',
 		dimension: 'belonging',
 		reverse: true,
 		source: 'Otherness Institute'
@@ -179,7 +179,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-03',
-		text: 'Team logos, alumni gear, inside jokes — even with groups I belong to, none of it really reads as mine.',
+		text: "Team logos, alumni gear, inside jokes — that whole 'this is who we are' shorthand has never really stuck to me.",
 		dimension: 'belonging',
 		reverse: true,
 		source: 'Otherness Institute'
@@ -207,7 +207,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-07',
-		text: "Even when a club or league fits my vibe exactly, the moment I'd sign on as a regular member is the moment I freeze.",
+		text: "Even when a club or league fits my vibe exactly, I freeze at the part where I'd actually sign on as a regular member.",
 		dimension: 'belonging',
 		reverse: true,
 		source: 'Otherness Institute'
