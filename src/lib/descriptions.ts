@@ -157,9 +157,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		headline: 'Friendly to everyone. Member of nothing.',
 		body: [
 			"You can host the party, give the lecture, MC the show — and you might enjoy it. But sign on as a regular member of anything? That's where it cracks. Clubs, teams, friend groups, fandoms — guest appearances, never regular cast.",
-			"You don't run on group consensus. You examine ideas yourself before adopting them, and you don't feel any urge to convince anyone of what you believe. Mass movements pass you by, including the ones you quietly agree with.",
-			'Privacy is structural, not preferential. You curate what people see, keep close-held things actually close, and decline to perform a public version of yourself even in places where everyone else does.',
-			'Friendships are deep and one-on-one. There\'s no "social circle." There never was.'
+			'Friendships, on the other hand, are deep and one-on-one. There\'s no "social circle." There never was.'
 		].join('\n\n'),
 		deep: {
 			dayInTheLife:

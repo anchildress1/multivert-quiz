@@ -871,10 +871,10 @@
 	.result__prose {
 		max-width: 56ch;
 		font-family: var(--font-display);
-		font-size: clamp(15px, 1.2vw, 16px);
+		font-size: clamp(17px, 1.5vw, 19px);
 		line-height: 1.55;
 		color: var(--ink-70);
-		margin: 0 0 14px;
+		margin: 0 0 18px;
 		text-wrap: pretty;
 	}
 
