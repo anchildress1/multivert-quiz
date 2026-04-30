@@ -100,7 +100,7 @@ export const createAnswersStore = () => {
 	const answeredByDimension = $derived.by(() => {
 		const counts: Record<Dimension, { answered: number; total: number }> = {
 			extraversion: { answered: 0, total: 0 },
-			belonging: { answered: 0, total: 0 },
+			otherness: { answered: 0, total: 0 },
 			group_size: { answered: 0, total: 0 },
 			swings: { answered: 0, total: 0 }
 		};
@@ -175,7 +175,7 @@ export type AnswersStore = ReturnType<typeof createAnswersStore>;
 export const QUESTIONS_BY_DIMENSION: Readonly<Record<Dimension, readonly Question[]>> = (() => {
 	const grouped: Record<Dimension, Question[]> = {
 		extraversion: [],
-		belonging: [],
+		otherness: [],
 		group_size: [],
 		swings: []
 	};

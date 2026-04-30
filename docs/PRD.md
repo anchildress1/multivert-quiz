@@ -42,13 +42,13 @@ Existing personality quizzes covering the introvert/extrovert spectrum do not in
 | Dimension      | Items | Polarity (-1 ↔ +1)                                     |
 | -------------- | ----- | ------------------------------------------------------ |
 | `extraversion` | 10    | introvert ↔ extrovert                                  |
-| `belonging`    | 15    | otrovert (low belonging) ↔ strong group identification |
+| `otherness`    | 15    | strong group identification ↔ otrovert pole            |
 | `group_size`   | 5     | prefers 1:1 / small ↔ thrives in large groups          |
 | `swings`       | 5     | stable ↔ dramatic situational swings (omnivert signal) |
 
-- **43% reverse-scored** (15 of 35). Higher than typical 25–33% because the belonging dimension over-indexes on otrovert-pole items to cover all 5 documented Otherness Institute facets: group non-belonging, role-vs-casual-member confidence, maverick thinking, privacy / curated narrative, mass-movement and approval indifference.
+- **31% reverse-scored** (11 of 35), within the typical 25–33% psychometric range. The otherness axis is deliberately tilted toward the otrovert pole (11 forward vs. 4 reverse) to cover all 5 documented Otherness Institute facets — group non-belonging, role-vs-casual-member confidence, maverick thinking, privacy / curated narrative, mass-movement and approval indifference — but those items now read forward against an axis whose positive pole _is_ otherness, instead of being reverse-scored against "belonging." Chapter II is still presented to the user as **Belonging** (topic label).
 - **All items rewritten in the quiz's own voice** — meaning preserved, tone customized for engagement. Differentiates from the dozens of IPIP-verbatim quizzes already online.
-- Source mix: 10 extraversion items adapted from IPIP-NEO Big Five extraversion constructs; 25 custom items. Belonging items derived from Kaminski / The Otherness Institute documented otrovert traits — clinical-source, not clinically validated. Flagged in disclaimer.
+- Source mix: 10 extraversion items adapted from IPIP-NEO Big Five extraversion constructs; 25 custom items. Otherness items derived from Kaminski / The Otherness Institute documented otrovert traits — clinical-source, not clinically validated. Flagged in disclaimer.
 
 **Input**
 
@@ -71,13 +71,13 @@ Method: per-archetype axis projection, no shared distance metric, no cross-norma
 - Each of the 4 question dimensions is scored as the mean of its items (after reverse-score sign-flip and per-item clamp to `[-1, 1]`).
 - Per-archetype fit (each clamped to `[0, 100]`, independent of every other archetype's score):
 
-  | Archetype | Formula                                                            |
-  | --------- | ------------------------------------------------------------------ |
-  | Introvert | `0.7 · (1 − extra)/2 + 0.3 · (1 − size)/2`                         |
-  | Extrovert | `0.7 · (1 + extra)/2 + 0.3 · (1 + size)/2`                         |
-  | Ambivert  | `0.7 · (1 − \|extra\|) + 0.3 · (1 − \|size\|)`                     |
-  | Otrovert  | `max(0, −belong)` (one-sided ramp; positive belonging stays at 0%) |
-  | Omnivert  | `max(0, swings)` (one-sided ramp; neutral/stable stays at 0%)      |
+  | Archetype | Formula                                                               |
+  | --------- | --------------------------------------------------------------------- |
+  | Introvert | `0.7 · (1 − extra)/2 + 0.3 · (1 − size)/2`                            |
+  | Extrovert | `0.7 · (1 + extra)/2 + 0.3 · (1 + size)/2`                            |
+  | Ambivert  | `0.7 · (1 − \|extra\|) + 0.3 · (1 − \|size\|)`                        |
+  | Otrovert  | `max(0, +otherness)` (one-sided ramp; negative otherness stays at 0%) |
+  | Omnivert  | `max(0, swings)` (one-sided ramp; neutral/stable stays at 0%)         |
 
   Group-size is a secondary correlate for the extraversion-axis trio (intro/extro/ambi); the 0.7/0.3 split is locked here.
 
@@ -85,7 +85,7 @@ Method: per-archetype axis projection, no shared distance metric, no cross-norma
 
 **Locked baseline (all-zeros respondent)**: Ambivert 100%, Introvert 50%, Extrovert 50%, Otrovert 0%, Omnivert 0%. The 50% scores reflect midpoints on the two-poled extraversion line; the 0% scores reflect one-sided axes (no evidence yet of otherness or contradiction).
 
-**Independence of axes**: Otrovert is computed only from `belong`, so it co-scores with intro/extro/ambi. An "introverted otrovert" legitimately reads 100% on both. Omnivert is computed only from explicit positive `swings` evidence, so a user can score high on omnivert and another type when their self-reported oscillation coexists with a strong average leaning.
+**Independence of axes**: Otrovert is computed only from `otherness`, so it co-scores with intro/extro/ambi. An "introverted otrovert" legitimately reads 100% on both. Omnivert is computed only from explicit positive `swings` evidence, so a user can score high on omnivert and another type when their self-reported oscillation coexists with a strong average leaning.
 
 **Results page**
 

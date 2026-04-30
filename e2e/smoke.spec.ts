@@ -30,7 +30,7 @@ const scrollToElement = (page: Page, id: string, offset = 0) =>
 		({ id: targetId, offset: targetOffset }) => {
 			const target = document.getElementById(targetId);
 			if (!target) return;
-			window.scrollTo({
+			globalThis.scrollTo({
 				top: target.offsetTop + targetOffset,
 				behavior: 'instant' as ScrollBehavior
 			});
@@ -62,11 +62,11 @@ const waitForNudgeArmed = (page: Page) =>
 
 const dispatchForwardWheel = (page: Page) =>
 	page.evaluate(() => {
-		window.scrollTo({
+		globalThis.scrollTo({
 			top: document.documentElement.scrollHeight,
 			behavior: 'instant' as ScrollBehavior
 		});
-		window.dispatchEvent(
+		globalThis.dispatchEvent(
 			new WheelEvent('wheel', {
 				deltaY: 60,
 				deltaMode: 0,
@@ -203,8 +203,8 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await waitForNudgeArmed(page);
 		await page.evaluate(() => {
-			window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-			window.dispatchEvent(
+			globalThis.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+			globalThis.dispatchEvent(
 				new WheelEvent('wheel', {
 					deltaY: 60,
 					deltaMode: 0,
@@ -246,17 +246,19 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 test.describe('landing + scroll quiz — navigation', () => {
 	test('Begin button scrolls the first chapter into view', async ({ page }) => {
 		await page.goto('/');
-		await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }));
-		const beforeY = await page.evaluate(() => window.scrollY);
+		await page.evaluate(() =>
+			globalThis.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+		);
+		const beforeY = await page.evaluate(() => globalThis.scrollY);
 		await page.evaluate(() => {
 			const btn = Array.from(document.querySelectorAll('button')).find((b) =>
 				/^\s*begin/i.test(b.textContent ?? '')
 			);
-			(btn as HTMLButtonElement | undefined)?.click();
+			btn?.click();
 		});
 		// Anchor on the scrollY actually moving past the hero rather than a
 		// sleep — works across slow runners.
-		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeY);
+		await expect.poll(() => page.evaluate(() => globalThis.scrollY)).toBeGreaterThan(beforeY);
 	});
 
 	test('shared chapter header swaps when the user enters a chapter', async ({ page }) => {

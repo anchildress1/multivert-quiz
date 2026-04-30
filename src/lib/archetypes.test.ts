@@ -20,7 +20,7 @@ const ARCHETYPE_LITERALS: readonly Archetype[] = [
 ];
 const DIMENSION_LITERALS: readonly Dimension[] = [
 	'extraversion',
-	'belonging',
+	'otherness',
 	'group_size',
 	'swings'
 ];
@@ -79,7 +79,7 @@ describe('archetypes registry — chapter map', () => {
 		expect(CHAPTERS.filter((c) => c.numeral === numeral)).toHaveLength(1);
 	});
 
-	it.each([['extraversion'], ['belonging'], ['group_size'], ['swings']] as const)(
+	it.each([['extraversion'], ['otherness'], ['group_size'], ['swings']] as const)(
 		'chapter for %s references a known archetype',
 		(dimension) => {
 			const ch = CHAPTERS.find((c) => c.dimension === dimension);

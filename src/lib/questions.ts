@@ -4,14 +4,17 @@
  * 35 questions across 4 dimensions:
  *   - extraversion (10) — adapted from IPIP-NEO Big Five extraversion constructs;
  *                          rewritten in voice with specific, varied scenarios.
- *   - belonging    (15) — custom items. The 8 reverse (otrovert) items cover 5
- *                          distinct facets documented by The Otherness Institute
- *                          (Kaminski):
- *                            1. group non-belonging / no social circle (b-08, b-09)
- *                            2. role confidence vs. casual-member discomfort (b-10)
+ *   - otherness    (15) — custom items. The 11 forward-scored otrovert items
+ *                          cover 5 distinct facets documented by The Otherness
+ *                          Institute (Kaminski):
+ *                            1. group non-belonging / no social circle
+ *                               (b-01, b-03, b-08, b-09)
+ *                            2. role confidence vs. casual-member discomfort
+ *                               (b-07, b-10)
  *                            3. independent thinking / maverick (b-11, b-12)
  *                            4. privacy / curated narrative (b-14)
- *                            5. indifference to mass movements / approval (b-13, b-15)
+ *                            5. indifference to mass movements / approval
+ *                               (b-13, b-15)
  *   - group_size   (5)  — large-group ↔ 1:1 preference, with varied scenarios.
  *   - swings       (5)  — distinct facets of intro↔extro oscillation: week-level
  *                          flip (cancel one day, host the next), no-middle-gear
@@ -32,17 +35,19 @@
  *
  * Dimension polarity (after reverse-score sign-flip):
  *   - extraversion: -1 = introvert pole, +1 = extrovert pole
- *   - belonging:    -1 = otrovert pole (low belonging), +1 = strong group identification
+ *   - otherness:    -1 = strong group identification, +1 = otrovert pole
  *   - group_size:   -1 = prefers 1:1 / small, +1 = thrives in large groups
  *   - swings:       -1 = stable, +1 = dramatic situational swings
  *
  * `reverse: true` means an item's response should be sign-flipped before
  * being aggregated into its dimension score.
  *
- * Reverse-scored ratio: 15/35 ≈ 43%. Higher than typical 25–33% because the
- * belonging dimension has more reverse (otrovert-pole) items than forward —
- * intentional, since the otrovert construct is multi-faceted and we want
- * adequate signal across all 5 facets.
+ * Reverse-scored ratio: 11/35 ≈ 31%, within the typical 25–33% psychometric
+ * range. The otherness axis is deliberately tilted toward the otrovert pole
+ * (11 forward vs. 4 reverse) so all 5 documented Otherness Institute facets
+ * get adequate signal — but those items now read forward against an axis whose
+ * positive pole *is* otherness, instead of being reverse-scored against
+ * "belonging."
  *
  * Note for the scoring engine: the swings items are the direct omnivert
  * signal. This one-shot quiz does not treat disagreement across unrelated
@@ -52,7 +57,7 @@
  * can be confident and outgoing when in a defined role (host, MC, lecturer).
  * Extraversion items in this bank deliberately measure casual / unstructured
  * social behavior, not role-based confidence — so an otrovert and an extrovert
- * differ on the belonging axis, not the extraversion axis.
+ * differ on the otherness axis, not the extraversion axis.
  *
  * Sources:
  *   - IPIP-NEO Big Five: https://ipip.ori.org/
@@ -104,7 +109,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'e-04',
-		text: "At a group dinner, I'd rather sit at the end of the table than in the middle of it.",
+		text: "At a group dinner, I'd rather sit at the quiet end than in the busy middle.",
 		dimension: 'extraversion',
 		reverse: true,
 		source: 'IPIP-NEO (adapted)'
@@ -152,116 +157,121 @@ export const questions: Question[] = [
 		source: 'IPIP-NEO (adapted)'
 	},
 
-	// ─── Belonging (10) ─────────────────────────────────────────────────
-	// Forward items: identification with specific kinds of groups (teams,
-	//   alumni, congregations, hobby clubs).
-	// Reverse items (otrovert signal): drawn from Kaminski / Otherness Institute
-	//   documented traits — observer-not-member, no social circle, role-based
-	//   comfort vs. casual-member discomfort.
+	// ─── Otherness (15) ─────────────────────────────────────────────────
+	// Axis: -1 = strong group identification, +1 = otrovert pole. Chapter
+	// title remains "Belonging" (user-facing topic label) but the dimension
+	// key and polarity follow the otrovert pole so most items read forward.
+	// Forward items / otrovert signal (11): drawn from Kaminski / Otherness
+	//   Institute documented traits — observer-not-member, no social circle,
+	//   role-based comfort vs. casual-member discomfort, maverick thinking,
+	//   privacy / curated narrative, indifference to mass movements / approval.
+	// Reverse items (4): identification with specific kinds of groups (teams,
+	//   alumni, congregations, hobby rituals) — sign-flipped because they
+	//   measure the negative pole.
 
 	{
 		id: 'b-01',
-		text: "I'll rearrange my schedule to attend an event for a group I'm part of, even when it's inconvenient.",
-		dimension: 'belonging',
+		text: 'Being part of a group has never really run my calendar — my week follows my own rhythm, not theirs.',
+		dimension: 'otherness',
 		reverse: false,
-		source: 'custom'
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-02',
-		text: "When I introduce myself, I mention what I'm part of (team, church, company) before what I do.",
-		dimension: 'belonging',
-		reverse: false,
+		text: "When I introduce myself, I lead with what I'm part of — team, church, neighborhood — before I get to what I do for work.",
+		dimension: 'otherness',
+		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-03',
-		text: 'I happily rep team logos, alumni gear, or group merch I belong to — that stuff feels like mine.',
-		dimension: 'belonging',
+		text: "Team logos, alumni gear, inside jokes — that whole 'this is who we are' shorthand has never really stuck to me.",
+		dimension: 'otherness',
 		reverse: false,
-		source: 'custom'
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-04',
-		text: "The recurring events tied to groups I'm in (reunions, traditions, annual gatherings) are some of my favorite things on the calendar.",
-		dimension: 'belonging',
-		reverse: false,
+		text: 'Reunions, traditions, annual gatherings — that kind of recurring group event is some of my favorite stuff on the calendar.',
+		dimension: 'otherness',
+		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-05',
-		text: "If you took away every group I'm part of, I'd feel like a smaller version of myself.",
-		dimension: 'belonging',
-		reverse: false,
+		text: "Belonging somewhere is a big part of what makes me feel like me — without it, I'd feel like a smaller version of myself.",
+		dimension: 'otherness',
+		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-06',
-		text: 'At my recurring ritual — Sunday dinner, standing meetup, weekly hangout — I feel the most like myself.',
-		dimension: 'belonging',
-		reverse: false,
+		text: "I'm most myself at recurring rituals — Sunday dinner, standing meetup, weekly hangout, the kinds of things that anchor a week.",
+		dimension: 'otherness',
+		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-07',
-		text: 'When I find a club or league that fits my vibe, I sign up without much hesitation.',
-		dimension: 'belonging',
+		text: "Even when a club or league fits my vibe exactly, I freeze at the part where I'd actually sign on as a regular member.",
+		dimension: 'otherness',
 		reverse: false,
-		source: 'custom'
+		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-08',
 		text: 'I can be friendly with everyone in a group and still feel like an observer rather than a member.',
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-09',
 		text: "I have close one-on-one friendships, but I don't really have a social circle.",
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-10',
 		text: "I'm comfortable in groups when I have a defined role (host, organizer, MC). As just another member? Much less so.",
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-11',
 		text: 'I examine ideas for myself before adopting them — popularity does not make something true.',
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-12',
 		text: "I don't feel any need to convince other people of what I believe.",
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-13',
 		text: 'Causes everyone agrees on tend to make me skeptical, not enthusiastic.',
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-14',
 		text: 'Most people in my life only see a curated version of me — even ones who think they know me well.',
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-15',
 		text: "I don't need any group's approval to feel solid in who I am.",
-		dimension: 'belonging',
-		reverse: true,
+		dimension: 'otherness',
+		reverse: false,
 		source: 'Otherness Institute'
 	},
 
@@ -356,9 +366,9 @@ export const questions: Question[] = [
 // ─── Sanity counts (runtime sanity check; values are computed lazily) ───
 export const QUESTION_COUNT_BY_DIMENSION = {
 	extraversion: questions.filter((q) => q.dimension === 'extraversion').length,
-	belonging: questions.filter((q) => q.dimension === 'belonging').length,
+	otherness: questions.filter((q) => q.dimension === 'otherness').length,
 	group_size: questions.filter((q) => q.dimension === 'group_size').length,
 	swings: questions.filter((q) => q.dimension === 'swings').length
 } as const;
 
-// Expected: { extraversion: 10, belonging: 15, group_size: 5, swings: 5 } → total 35
+// Expected: { extraversion: 10, otherness: 15, group_size: 5, swings: 5 } → total 35
