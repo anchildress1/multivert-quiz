@@ -720,18 +720,49 @@
 		scroll-margin-top: 72px;
 	}
 
-	/* ── Pantone-style swatch hero ─────────────────────────────────────────
-	   Full-bleed dominant hue; the archetype name reads as the colour name.
-	   Reference numerals top, swatch ink throughout (tone-on-tone deep ink
-	   over saturated mid — the same printing logic a Pantone chip uses).
-	   The hue, ink, and soft tints are bound from the dominant archetype
-	   tokens via inline custom properties so each archetype prints itself. */
+	/* ── Pantone-style swatch hero, behind glass ───────────────────────────
+	   Full-bleed dominant hue, but softened — the hue itself is mixed into
+	   paper (about 28% paper) so saturated reds/oranges don't shout, and a
+	   top-left light-catch radial gradient sits on top to read as the
+	   surface of a frosted glass card rather than a pure printed swatch.
+	   The archetype name still functions as the colour name; type prints
+	   in the deep tone-on-tone ink (`--vert-{name}-ink`). */
 	.swatch {
-		background: var(--swatch);
+		background:
+			radial-gradient(
+				ellipse 70% 55% at 18% 8%,
+				color-mix(in oklab, white 30%, transparent) 0%,
+				transparent 65%
+			),
+			color-mix(in oklab, var(--swatch) 72%, var(--paper));
 		color: var(--swatch-ink);
-		padding: clamp(56px, 10vh, 144px) clamp(20px, 5vw, 96px) clamp(72px, 12vh, 160px);
+		/* Top padding kept lean — the sticky chapter banner is already 72px,
+		   so adding a giant top gap on the swatch leaves the colour-card
+		   feeling pushed off-screen. Bottom keeps generous breathing room. */
+		padding: clamp(32px, 5vh, 72px) clamp(20px, 5vw, 96px) clamp(72px, 12vh, 160px);
 		position: relative;
 		overflow: hidden;
+	}
+
+	/* A second, very faint glass sheen at the bottom-right — lifts the card
+	   off the page edge and gives the surface depth without becoming a
+	   gradient page. */
+	.swatch::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			ellipse 50% 40% at 88% 92%,
+			color-mix(in oklab, var(--swatch-ink) 14%, transparent) 0%,
+			transparent 60%
+		);
+	}
+
+	/* Stack the swatch's children above the ::after sheen. */
+	.swatch > * {
+		position: relative;
+		z-index: 1;
 	}
 
 	/* Swatch chrome — the small mono band of "reference numbers" running
@@ -742,7 +773,7 @@
 		justify-content: space-between;
 		gap: 12px 24px;
 		flex-wrap: wrap;
-		margin-bottom: clamp(48px, 10vh, 112px);
+		margin-bottom: clamp(32px, 6vh, 64px);
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.18em;
