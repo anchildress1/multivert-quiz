@@ -40,13 +40,12 @@ describe('archetypes registry — invariants', () => {
 	});
 
 	it.each(ARCHETYPE_LITERALS)(
-		'VERT_NAMES has a capitalised name + non-empty label + prose entry for %s',
+		'VERT_NAMES has a capitalised name + non-empty label entry for %s',
 		(archetype) => {
 			const meta = VERT_NAMES[archetype];
 			expect(meta).toBeDefined();
 			expect(meta.name).toMatch(/^[A-Z][a-z]+$/);
 			expect(meta.label.length).toBeGreaterThan(0);
-			expect(meta.prose.length).toBeGreaterThanOrEqual(40);
 		}
 	);
 

@@ -16,6 +16,7 @@
 	import Tagline from '$lib/components/Tagline.svelte';
 	import VertSheet from '$lib/components/VertSheet.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
+	import { descriptions } from '$lib/descriptions';
 	import { questions } from '$lib/questions';
 	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
 	import { APP_VERSION } from '$lib/version';
@@ -427,7 +428,24 @@
 					You are an <em>{VERT_NAMES[result.dominant].name}</em>.
 				</h2>
 				<p class="result__lede">{VERT_NAMES[result.dominant].label}</p>
-				<p class="result__prose">{VERT_NAMES[result.dominant].prose}</p>
+				<p class="result__headline">{descriptions[result.dominant].headline}</p>
+				<p class="result__prose">{descriptions[result.dominant].body}</p>
+
+				<button
+					type="button"
+					class="result__more"
+					onclick={() => openSheet(result.dominant)}
+					data-testid="result-more-button"
+				>
+					<em>Read the full field guide</em>
+					<span class="result__more-glyph" aria-hidden="true">→</span>
+				</button>
+
+				<p class="result__bars-eyebrow">
+					<span class="result__bars-eyebrow-rule" aria-hidden="true"></span>
+					<span>the five-vert breakdown</span>
+					<span class="result__bars-eyebrow-rule" aria-hidden="true"></span>
+				</p>
 
 				<ul class="result__bars">
 					{#each VERT_ORDER as vert, i (vert)}
@@ -464,8 +482,9 @@
 
 				<p class="result__hint">
 					Each bar is independent — the five percentages do not sum to 100. A strong introverted
-					otrovert can legitimately score high on both axes. Click any name to see what it means to
-					be one.
+					otrovert can legitimately score high on both axes. <strong
+						>Tap any vert to read the full field guide for that type.</strong
+					>
 				</p>
 
 				<div class="result__actions">
@@ -850,20 +869,110 @@
 	}
 
 	.result__lede {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--ink-70);
+		margin: 0 0 18px;
+	}
+
+	/* Voice-led headline pulled from `descriptions[archetype].headline` —
+	   metaphor-first, in the editorial italic display weight so it reads as a
+	   pull-quote sitting between the result title and the body paragraph. */
+	.result__headline {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(20px, 2.4vw, 26px);
+		font-size: clamp(22px, 2.8vw, 30px);
+		line-height: 1.25;
+		letter-spacing: -0.015em;
 		color: var(--ink);
 		margin: 0 0 24px;
+		max-width: 32ch;
+		text-wrap: balance;
 	}
 
 	.result__prose {
 		max-width: 56ch;
-		font-size: 16px;
-		line-height: 1.6;
+		font-family: var(--font-display);
+		font-size: clamp(17px, 1.5vw, 19px);
+		line-height: 1.55;
 		color: var(--ink-70);
-		margin: 0 0 56px;
+		margin: 0 0 28px;
 		text-wrap: pretty;
+		white-space: pre-wrap;
+	}
+
+	/* "Read the full field guide" — primary affordance into the detail sheet
+	   for the dominant archetype. Editorial underline button, archetype-tinted
+	   on hover/focus to mirror the result__retake treatment at the bottom. */
+	.result__more {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 10px;
+		padding: 6px 0 8px;
+		margin: 0 0 64px;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid var(--dominant-mid, var(--ink));
+		color: var(--ink);
+		font-family: var(--font-display);
+		font-size: clamp(18px, 2vw, 22px);
+		line-height: 1.1;
+		cursor: pointer;
+		transition:
+			gap 0.2s ease,
+			color 0.2s ease;
+	}
+
+	.result__more em {
+		font-style: italic;
+	}
+
+	.result__more-glyph {
+		font-family: var(--font-sans);
+		font-style: normal;
+		font-size: 18px;
+		color: var(--dominant-mid, var(--ink-70));
+		transform: translateX(0);
+		transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.result__more:hover,
+	.result__more:focus-visible {
+		gap: 16px;
+		color: var(--dominant-ink, var(--ink));
+	}
+
+	.result__more:hover .result__more-glyph,
+	.result__more:focus-visible .result__more-glyph {
+		transform: translateX(6px);
+	}
+
+	.result__more:focus-visible {
+		outline: 2px solid var(--dominant-mid, var(--ink));
+		outline-offset: 4px;
+		border-radius: 2px;
+	}
+
+	/* Centered eyebrow rule that frames the breakdown bars as a separate
+	   editorial section beneath the headline lede. */
+	.result__bars-eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin: 0 0 24px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--ink-70);
+	}
+
+	.result__bars-eyebrow-rule {
+		flex: 1;
+		height: 1px;
+		background: var(--ink-12);
 	}
 
 	.result__bars {
@@ -915,12 +1024,14 @@
 		background: color-mix(in oklab, var(--ink-08) 55%, transparent);
 	}
 
+	/* Affordance arrow — visible at rest so the bar reads as a clickable
+	   link, not a static stat. Brightens and slides on hover/focus. */
 	.result__bar-glyph {
 		font-family: var(--font-sans);
 		font-size: 16px;
 		color: var(--ink-30);
-		transform: translateX(-4px);
-		opacity: 0;
+		opacity: 0.55;
+		transform: translateX(0);
 		transition:
 			opacity 0.18s ease,
 			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
@@ -930,8 +1041,8 @@
 	.result__bar-button:hover .result__bar-glyph,
 	.result__bar-button:focus-visible .result__bar-glyph {
 		opacity: 1;
-		transform: none;
-		color: var(--ink-70);
+		transform: translateX(4px);
+		color: var(--ink);
 	}
 
 	.result__bar[data-dominant='true'] .result__bar-glyph {
