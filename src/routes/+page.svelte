@@ -413,88 +413,82 @@
 
 	{#if store.result}
 		{@const result = store.result}
+		{@const dominant = result.dominant}
+		{@const bodyParas = descriptions[dominant].body.split('\n\n')}
 		<section
 			id="result"
 			class="result"
 			aria-labelledby="result-title"
-			data-dominant={result.dominant}
-			style:--dominant-soft="var(--vert-{result.dominant}-soft)"
-			style:--dominant-mid="var(--vert-{result.dominant}-mid)"
-			style:--dominant-ink="var(--vert-{result.dominant}-ink)"
+			data-dominant={dominant}
+			style:--dominant-soft="var(--vert-{dominant}-soft)"
+			style:--dominant-mid="var(--vert-{dominant}-mid)"
+			style:--dominant-ink="var(--vert-{dominant}-ink)"
 		>
 			<div class="result__inner">
-				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
-				<h2 id="result-title" class="result__title">
-					You are an <em>{VERT_NAMES[result.dominant].name}</em>.
-				</h2>
-				<p class="result__lede">{VERT_NAMES[result.dominant].label}</p>
-				<p class="result__headline">{descriptions[result.dominant].headline}</p>
-				<p class="result__prose">{descriptions[result.dominant].body}</p>
-
-				<button
-					type="button"
-					class="result__more"
-					onclick={() => openSheet(result.dominant)}
-					data-testid="result-more-button"
-				>
-					<em>Read the full field guide</em>
-					<span class="result__more-glyph" aria-hidden="true">→</span>
-				</button>
-
-				<p class="result__bars-eyebrow">
-					<span class="result__bars-eyebrow-rule" aria-hidden="true"></span>
-					<span>the five-vert breakdown</span>
-					<span class="result__bars-eyebrow-rule" aria-hidden="true"></span>
-				</p>
-
-				<ul class="result__bars">
-					{#each VERT_ORDER as vert, i (vert)}
-						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
-						<li
-							class="result__bar"
-							data-dominant={vert === result.dominant}
-							style:--bar-delay="{i * 90}ms"
-						>
-							<button
-								type="button"
-								class="result__bar-button"
-								data-archetype={vert}
-								data-testid="result-bar-button-{vert}"
-								aria-label="Read what it means to be {VERT_NAMES[
-									vert
-								].name.toLowerCase()} — {fit.toFixed(1)} percent fit"
-								onclick={() => openSheet(vert)}
-							>
-								<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
-								<span class="result__bar-track" aria-hidden="true">
-									<span
-										class="result__bar-fill"
-										style:--bar-width="{fit}%"
-										style:background="var(--vert-{vert}-mid)"
-									></span>
-								</span>
-								<span class="result__bar-pct">{fit.toFixed(1)}%</span>
-								<span class="result__bar-glyph" aria-hidden="true">→</span>
-							</button>
-						</li>
+				<header class="block">
+					<p class="block__eyebrow">
+						<span class="block__num" aria-hidden="true">i.</span>
+						<span class="block__label">Verdict</span>
+						<span class="block__meta">— {store.total} of {store.total} answered</span>
+					</p>
+					<h2 id="result-title" class="result__title">
+						You are an <em>{VERT_NAMES[dominant].name}</em>.
+					</h2>
+					<p class="result__headline">{descriptions[dominant].headline}</p>
+					{#each bodyParas as para, i (i)}
+						<p class="result__prose">{para}</p>
 					{/each}
-				</ul>
+				</header>
 
-				<p class="result__hint">
-					Each bar is independent — the five percentages do not sum to 100. A strong introverted
-					otrovert can legitimately score high on both axes. <strong
-						>Tap any vert to read the full field guide for that type.</strong
-					>
-				</p>
+				<section class="block" aria-labelledby="result-breakdown">
+					<p id="result-breakdown" class="block__eyebrow">
+						<span class="block__num" aria-hidden="true">ii.</span>
+						<span class="block__label">Five-vert breakdown</span>
+						<span class="block__meta">— independent fits, tap any vert to read its guide</span>
+					</p>
+					<ul class="result__bars">
+						{#each VERT_ORDER as vert, i (vert)}
+							{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
+							<li
+								class="result__bar"
+								data-dominant={vert === dominant}
+								style:--bar-delay="{i * 90}ms"
+							>
+								<button
+									type="button"
+									class="result__bar-button"
+									data-archetype={vert}
+									data-testid="result-bar-button-{vert}"
+									aria-label="Read what it means to be {VERT_NAMES[
+										vert
+									].name.toLowerCase()} — {fit.toFixed(1)} percent fit"
+									onclick={() => openSheet(vert)}
+								>
+									<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
+									<span class="result__bar-track" aria-hidden="true">
+										<span
+											class="result__bar-fill"
+											style:--bar-width="{fit}%"
+											style:background="var(--vert-{vert}-mid)"
+										></span>
+									</span>
+									<span class="result__bar-pct">{fit.toFixed(1)}%</span>
+									<span class="result__bar-glyph" aria-hidden="true">→</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</section>
 
-				<div class="result__actions">
+				<footer class="result__colophon">
 					<button class="result__retake" type="button" onclick={handleRetake}>
-						<em>Start over.</em><span class="result__retake-glyph" aria-hidden="true">↺</span>
+						<em>Start over.</em>
+						<span class="result__retake-glyph" aria-hidden="true">↺</span>
 					</button>
 					<p class="result__retake-meta">
 						Clears your answers on this device and rolls the page back to the top.
 					</p>
-				</div>
+				</footer>
 			</div>
 		</section>
 	{/if}
@@ -844,13 +838,44 @@
 		pointer-events: none;
 	}
 
-	.result__eyebrow {
+	/* The result section is one editorial spread, three blocks (verdict /
+	   breakdown / colophon). Each block carries the same eyebrow shape so
+	   the typographic system stays uniform. The block stack is the only
+	   spacing rhythm — content inside a block uses tighter, intentional
+	   margins and never invents its own gap with the next section. */
+	.block + .block {
+		margin-top: clamp(72px, 10vh, 120px);
+	}
+
+	.block__eyebrow {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 4px 10px;
+		margin: 0 0 28px;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin: 0 0 20px;
+	}
+
+	.block__num {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: 15px;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--dominant-ink, var(--ink));
+	}
+
+	.block__label {
+		color: var(--ink);
+	}
+
+	.block__meta {
+		letter-spacing: 0.12em;
+		color: var(--ink-50);
 	}
 
 	.result__title {
@@ -859,7 +884,7 @@
 		font-size: clamp(48px, 8vw, 96px);
 		line-height: 1;
 		letter-spacing: -0.03em;
-		margin: 0 0 18px;
+		margin: 0 0 24px;
 		text-wrap: balance;
 	}
 
@@ -868,18 +893,9 @@
 		color: var(--dominant-ink, var(--ink));
 	}
 
-	.result__lede {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-		margin: 0 0 18px;
-	}
-
-	/* Voice-led headline pulled from `descriptions[archetype].headline` —
-	   metaphor-first, in the editorial italic display weight so it reads as a
-	   pull-quote sitting between the result title and the body paragraph. */
+	/* Voice-led headline from `descriptions[archetype].headline`. Italic
+	   display, metaphor-first — the visual bridge between the title and the
+	   body paragraphs. */
 	.result__headline {
 		font-family: var(--font-display);
 		font-style: italic;
@@ -887,7 +903,7 @@
 		line-height: 1.25;
 		letter-spacing: -0.015em;
 		color: var(--ink);
-		margin: 0 0 24px;
+		margin: 0 0 28px;
 		max-width: 32ch;
 		text-wrap: balance;
 	}
@@ -898,86 +914,17 @@
 		font-size: clamp(17px, 1.5vw, 19px);
 		line-height: 1.55;
 		color: var(--ink-70);
-		margin: 0 0 28px;
+		margin: 0 0 18px;
 		text-wrap: pretty;
-		white-space: pre-wrap;
 	}
 
-	/* "Read the full field guide" — primary affordance into the detail sheet
-	   for the dominant archetype. Editorial underline button, archetype-tinted
-	   on hover/focus to mirror the result__retake treatment at the bottom. */
-	.result__more {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 10px;
-		padding: 6px 0 8px;
-		margin: 0 0 64px;
-		background: transparent;
-		border: none;
-		border-bottom: 1px solid var(--dominant-mid, var(--ink));
-		color: var(--ink);
-		font-family: var(--font-display);
-		font-size: clamp(18px, 2vw, 22px);
-		line-height: 1.1;
-		cursor: pointer;
-		transition:
-			gap 0.2s ease,
-			color 0.2s ease;
-	}
-
-	.result__more em {
-		font-style: italic;
-	}
-
-	.result__more-glyph {
-		font-family: var(--font-sans);
-		font-style: normal;
-		font-size: 18px;
-		color: var(--dominant-mid, var(--ink-70));
-		transform: translateX(0);
-		transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
-	}
-
-	.result__more:hover,
-	.result__more:focus-visible {
-		gap: 16px;
-		color: var(--dominant-ink, var(--ink));
-	}
-
-	.result__more:hover .result__more-glyph,
-	.result__more:focus-visible .result__more-glyph {
-		transform: translateX(6px);
-	}
-
-	.result__more:focus-visible {
-		outline: 2px solid var(--dominant-mid, var(--ink));
-		outline-offset: 4px;
-		border-radius: 2px;
-	}
-
-	/* Centered eyebrow rule that frames the breakdown bars as a separate
-	   editorial section beneath the headline lede. */
-	.result__bars-eyebrow {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		margin: 0 0 24px;
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-	}
-
-	.result__bars-eyebrow-rule {
-		flex: 1;
-		height: 1px;
-		background: var(--ink-12);
+	.result__prose:last-of-type {
+		margin-bottom: 0;
 	}
 
 	.result__bars {
 		list-style: none;
-		margin: 0 0 36px;
+		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
@@ -1123,16 +1070,11 @@
 		text-align: right;
 	}
 
-	.result__hint {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		line-height: 1.6;
-		color: var(--ink-70);
-		margin: 0;
-	}
-
-	.result__actions {
-		margin-top: 56px;
+	/* Colophon — the third block. Sits below the breakdown with the same
+	   block-rhythm spacing the other two follow, plus a hairline rule above
+	   so the retake reads as the page's quiet "turn over" gesture. */
+	.result__colophon {
+		margin-top: clamp(72px, 10vh, 120px);
 		padding-top: 32px;
 		border-top: 1px solid var(--ink-08);
 		display: flex;

@@ -330,11 +330,16 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await seedAllAnswered(page);
 		await page.goto('/');
 		await expect(page.locator('#result')).toBeAttached();
+		// The result section sits at the bottom of a long scroll-snapped page.
+		// Scroll the bars into view before interacting — auto-scroll on click
+		// fights the snap container.
+		await scrollToElement(page, 'result');
 
-		// The bars are buttons now — click introvert and assert the dialog mounts
+		// The bars are buttons — click introvert and assert the dialog mounts
 		// with the right archetype, the canonical headline lands, and dismissal
 		// returns focus to the trigger.
 		const trigger = page.locator('[data-testid="result-bar-button-introvert"]');
+		await trigger.scrollIntoViewIfNeeded();
 		await trigger.click();
 
 		const dialog = page.locator('[role="dialog"][aria-modal="true"]');
