@@ -239,7 +239,9 @@
 		if (idx < 0) return;
 		const next = questions[idx + 1];
 		if (next && store.answers[next.id]?.state === 'answered') return;
-		const targetId = next ? `q-${next.id}` : 'submit';
+		// Last commit lands the user directly on the result — finishing the
+		// quiz IS the submit, no intermediary panel.
+		const targetId = next ? `q-${next.id}` : 'result';
 		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
 		if (autoScrollTimer !== null) clearTimeout(autoScrollTimer);
 		autoScrollTimer = setTimeout(() => {
@@ -289,7 +291,6 @@
 			<a href="#chapter-energy" onclick={(e) => scrollToId('chapter-energy', e)}>
 				The five verts
 			</a>
-			<a href="#submit" onclick={(e) => scrollToId('submit', e)}>Submit</a>
 			<FiveDots />
 		</nav>
 	</div>
@@ -377,39 +378,6 @@
 			{/each}
 		</section>
 	{/each}
-
-	<section id="submit" class="submit">
-		<div class="submit__inner">
-			<p class="submit__eyebrow">
-				{store.totalAnswered} of {store.total} answered
-			</p>
-			<h2 class="submit__title">
-				{#if store.allAnswered}
-					That’s <em>all of them.</em><br />Want to see how you came out?
-				{:else}
-					Almost there — <em>{store.total - store.totalAnswered}</em> still need a&nbsp;slide.
-				{/if}
-			</h2>
-
-			<button
-				class="submit__cta"
-				type="button"
-				disabled={!store.allAnswered}
-				aria-disabled={!store.allAnswered}
-				onclick={() => scrollToId('result')}
-			>
-				{#if store.allAnswered}
-					See my five-vert breakdown <span aria-hidden="true">→</span>
-				{:else}
-					{store.total - store.totalAnswered} more to go
-				{/if}
-			</button>
-
-			<p class="submit__hint">
-				Your answers stay on this device. We don’t persist anything to a server.
-			</p>
-		</div>
-	</section>
 
 	{#if store.result}
 		{@const result = store.result}
@@ -727,88 +695,6 @@
 		isolation: isolate;
 		color: var(--ink);
 		background: var(--paper);
-	}
-
-	.submit {
-		background: var(--paper-dk);
-		padding: clamp(80px, 12vh, 160px) 24px;
-		border-top: 1px solid var(--ink-08);
-		border-bottom: 1px solid var(--ink-08);
-	}
-
-	.submit__inner {
-		max-width: 720px;
-		margin: 0 auto;
-		text-align: center;
-	}
-
-	.submit__eyebrow {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-		margin: 0 0 18px;
-	}
-
-	.submit__title {
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(36px, 5vw, 56px);
-		line-height: 1.05;
-		letter-spacing: -0.02em;
-		margin: 0 0 36px;
-		text-wrap: balance;
-	}
-
-	.submit__title em {
-		font-style: italic;
-		color: var(--vert-otrovert-ink);
-	}
-
-	.submit__cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 14px;
-		height: 60px;
-		padding: 0 32px;
-		background: var(--ink);
-		color: var(--paper);
-		border: none;
-		border-radius: var(--button-radius);
-		font-family: var(--font-sans);
-		font-size: 16px;
-		font-weight: 500;
-		cursor: pointer;
-		transition:
-			background 0.2s ease,
-			transform 0.2s ease;
-	}
-
-	.submit__cta:disabled,
-	.submit__cta[aria-disabled='true'] {
-		background: var(--ink-12);
-		color: var(--ink-70);
-		cursor: not-allowed;
-		transform: none;
-	}
-
-	.submit__cta:not(:disabled):hover {
-		transform: translateY(-1px);
-	}
-
-	.submit__cta:focus-visible {
-		outline: 2px solid var(--paper);
-		outline-offset: 3px;
-		box-shadow: 0 0 0 4px var(--ink);
-	}
-
-	.submit__hint {
-		margin: 24px 0 0;
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		color: var(--ink-70);
 	}
 
 	.result {

@@ -110,18 +110,12 @@ test.describe('landing + scroll quiz — structure', () => {
 		await expect(page.locator('.meter')).toBeAttached();
 	});
 
-	test('submit CTA is disabled and out of layout until all questions are answered', async ({
-		page
-	}) => {
+	test('result section is not in the DOM until every question is answered', async ({ page }) => {
 		await page.goto('/');
-		const submitBtn = page.locator('.submit__cta');
-		// Still disabled and still carries the holding-pattern copy for AT users.
-		await expect(submitBtn).toBeDisabled();
-		await expect(submitBtn).toContainText(/more to go/i);
-		// Forward-progress lock keeps the submit panel out of layout (display:
-		// none) until the last gating question is committed, so a sighted user
-		// physically cannot scroll to it.
-		await expect(submitBtn).not.toBeVisible();
+		// `{#if store.result}` keeps `#result` out of the DOM entirely until
+		// `store.allAnswered` flips. There is no intermediary "submit" panel —
+		// finishing the last question is the submit, the result IS the receipt.
+		await expect(page.locator('#result')).toHaveCount(0);
 	});
 });
 
@@ -130,18 +124,20 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		page
 	}) => {
 		await page.goto('/');
-		// Initial state: Q1 is laid out, Q2+ are display:none, later chapters hidden.
+		// Initial state: Q1 is laid out, Q2+ are display:none, later chapters
+		// hidden, and the result section is gated by `{#if store.result}`.
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await expect(page.locator('article#q-e-02')).toBeHidden();
 		await expect(page.locator('section#chapter-belonging')).toBeHidden();
-		await expect(page.locator('section#submit')).toBeHidden();
+		await expect(page.locator('#result')).toHaveCount(0);
 
-		// Commit Q1 → Q2 enters layout, but later chapters and submit remain hidden.
+		// Commit Q1 → Q2 enters layout, but later chapters and the result
+		// section remain unavailable until every question is answered.
 		await dispatchSliderCommit(page, 'e-01', 0.5);
 		await expect(page.locator('article#q-e-02')).toBeVisible();
 		await expect(page.locator('article#q-e-03')).toBeHidden();
 		await expect(page.locator('section#chapter-belonging')).toBeHidden();
-		await expect(page.locator('section#submit')).toBeHidden();
+		await expect(page.locator('#result')).toHaveCount(0);
 	});
 
 	test('forward-scroll attempt at the document floor pulses the gating row', async ({ page }) => {
@@ -236,10 +232,14 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		});
 		await expect(page.locator('article#q-e-03')).toHaveAttribute('data-state', 'in-progress');
 
-		// Q4 and the final row both stay visible — the gate is not re-engaged.
+		// Q4, the final row, and every later chapter all stay visible — the
+		// forward-progress lock is keyed on `[data-state='unset']`, so an
+		// in-progress revision (which is no longer unset) does not re-engage
+		// the gate. The result section unmounts via `{#if store.result}` while
+		// any answer is mid-drag, so it isn't checked here.
 		await expect(page.locator('article#q-e-04')).toBeVisible();
 		await expect(page.locator('article#q-s-05')).toBeVisible();
-		await expect(page.locator('section#submit')).toBeVisible();
+		await expect(page.locator('section#chapter-swings')).toBeVisible();
 	});
 });
 
@@ -304,21 +304,18 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(persisted).toEqual({ state: 'answered', value: 0 });
 	});
 
-	test('answering all questions enables the submit CTA and surfaces a result', async ({ page }) => {
+	test('answering all questions surfaces the result section', async ({ page }) => {
 		await seedAllAnswered(page);
 		await page.goto('/');
-		const submitBtn = page.locator('.submit__cta');
-		await expect(submitBtn).toBeEnabled();
-		await expect(submitBtn).toContainText(/breakdown/i);
-		// The result section is conditionally rendered when store.result is non-null.
+		// `{#if store.result}` mounts the result section once the store has a
+		// computed verdict — there is no intermediary submit panel.
 		await expect(page.locator('#result')).toBeAttached();
 		await expect(page.locator('#result-title')).toContainText(/^You are an/i);
 		await expect(page.locator('.result__bar')).toHaveCount(5);
-		// The archetype prose paragraph is the new content layer below the lede —
-		// confirm it's rendered with substantive copy so we don't silently ship
-		// a missing/empty entry from VERT_NAMES.
-		await expect(page.locator('.result__prose')).toBeAttached();
-		const proseText = (await page.locator('.result__prose').textContent()) ?? '';
+		// The body paragraphs come from `descriptions[dominant].body` — confirm
+		// at least one renders with substantive copy.
+		await expect(page.locator('.result__prose').first()).toBeAttached();
+		const proseText = (await page.locator('.result__prose').first().textContent()) ?? '';
 		expect(proseText.trim().length).toBeGreaterThanOrEqual(40);
 		// The result section carries data-dominant matching the headline archetype,
 		// which the radial accent wash binds to via inline custom properties.
@@ -382,7 +379,10 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await page.locator('.result__retake').click();
 
 		await expect(page.locator('#result')).toHaveCount(0);
-		await expect(page.locator('.submit__cta')).toBeDisabled();
+		// After reset, the first question is the only thing in layout — every
+		// downstream chapter is gated by the forward-progress lock again.
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await expect(page.locator('article#q-e-02')).toBeHidden();
 
 		const storedStates = await page.evaluate(() => {
 			const raw = sessionStorage.getItem('multivert.answers.v1');

@@ -133,10 +133,11 @@ html {
 	display: none;
 }
 
-/* Across chapters: hide every chapter that follows one with an untouched row,
-   and the submit panel when any chapter is still gating. */
-.chapter-wrap:has(.row[data-state='unset']) ~ .chapter-wrap,
-.chapter-wrap:has(.row[data-state='unset']) ~ #submit {
+/* Across chapters: hide every chapter that follows one with an untouched row.
+   The result section is conditionally rendered via `{#if store.result}`, so
+   it doesn't need a CSS gate — `store.result` is non-null only once every
+   question is committed. */
+.chapter-wrap:has(.row[data-state='unset']) ~ .chapter-wrap {
 	display: none;
 }
 
