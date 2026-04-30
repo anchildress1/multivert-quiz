@@ -25,8 +25,9 @@ export type VertType = Archetype;
 export interface DeepDescription {
 	dayInTheLife: string;
 	trueThings: readonly string[];
-	/** External observables — short specific things others would notice that
-	    betray the type. A different register from `trueThings` (interior). */
+	/** Three observable, exterior tells — behaviors that betray the type from
+	    the outside. Same second-person voice as the rest, just describing
+	    visible patterns instead of interior life. */
 	giveaways: readonly string[];
 	whatHelps: string;
 	whatKillsYou: string;
@@ -56,9 +57,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"You've felt closer to someone after they stopped talking than while they were talking."
 			],
 			giveaways: [
-				'Their headphones are a permanent accessory, even indoors.',
-				'They leave the party with the same volume they arrived with — most people leave louder.',
-				"They've owned the same three mugs for five years, and use only one."
+				'Your headphones are a permanent accessory, even indoors.',
+				'You leave the party with the same volume you arrived with — most people leave louder.',
+				"You've owned the same three mugs for five years, and use only one."
 			],
 			whatHelps:
 				'A whole afternoon nobody can reach you, and nobody is in the next room either. Not even a good one.',
@@ -71,7 +72,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	extrovert: {
 		type: 'extrovert',
 		headline: 'Other people are your espresso.',
-		body: "You think out loud. Solitude isn't peaceful — it's static. The energy in a crowded room is how you find your edges. A quiet weekend with no plans gives you a vague itch that gets cured by a noisy dinner. People aren't input you process; they're the field you play on.",
+		body: "You think out loud. Solitude isn't peaceful — it's static. The hum of a crowded room is how you find your edges. A quiet weekend with no plans gives you a vague itch that gets cured by a noisy dinner. People aren't input you process; they're the field you play on.",
 		deep: {
 			dayInTheLife:
 				"You wake up looking for the day to start, which to you means looking for someone. Coffee tastes wrong without a person across from it. By lunch you've workshopped three ideas with three different people, and one of them is now your idea. You organised a follow-up dinner from scratch in a parking lot at 4 p.m., and seven people are coming. By the time you fall asleep you've absorbed seven moods, returned six, and the seventh is going to be tomorrow's whole personality.",
@@ -83,9 +84,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"You've cried because nobody was free on a Sunday, and you'd cry for that reason again."
 			],
 			giveaways: [
-				"They know the bartender's name within twenty minutes.",
-				'They start the story before anyone asked for it.',
-				'Their phone is face-up on the dinner table, and somehow nobody minds.'
+				"You know the bartender's name within twenty minutes.",
+				'You start the story before anyone asked for it.',
+				'Your phone is face-up on the dinner table, and somehow nobody minds.'
 			],
 			whatHelps:
 				'One more dinner, even though everyone in the chat already said no. Especially because they did.',
@@ -97,7 +98,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	ambivert: {
 		type: 'ambivert',
 		headline: "You don't have a default setting — you have a dial.",
-		body: "You're the one nobody can guess at the party. At the team dinner you're loud; at the work mixer you're listening; at a family event you're somehow both. Your trick isn't being in the middle — it's reading the room and becoming the answer. You're not undecided. You're situational. The dial costs energy to turn — most people only have a switch.",
+		body: "You're the one nobody can guess at the party. At the team dinner you're loud; at the work mixer you're listening; at a family event you're somehow both. Your trick isn't being in the middle — it's reading the room and becoming the answer. You're not undecided. You're situational. The dial takes effort to turn — most people only have a switch.",
 		deep: {
 			dayInTheLife:
 				"You wake up and the day picks you. Mornings are quiet because they were always going to be — coffee, a long inbox, a low playlist. By lunch you're carrying a conversation through three jokes and a rebrand. You read the room at three meetings and become a slightly different person at each one, on purpose. You go home and don't talk to anyone for two hours, and that's fine. You answer one important text, then go quiet again. Nobody, including you, could honestly say which mode is the real one.",
@@ -109,9 +110,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"You've performed competence so often that competence has become performance, and you can't always tell which week you're in."
 			],
 			giveaways: [
-				'They show up first, or last, never in the middle.',
-				"Their voice changes register slightly with the room — they don't notice it doing it.",
-				'They read the room before they read the menu.'
+				'You show up first, or last, never in the middle.',
+				"Your voice changes register slightly with the room — you don't notice it doing it.",
+				'You read the room before you read the menu.'
 			],
 			whatHelps:
 				"Whatever the last week wasn't. If it was loud, this one is novels. If it was novels, this one is dinner for ten.",
@@ -137,9 +138,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				'You\'ve apologised for being "moody" your whole life when actually you were just being correctly calibrated to which week it was.'
 			],
 			giveaways: [
-				'Their texts arrive in clusters: silence for a week, then forty in an hour.',
+				'Your texts arrive in clusters: silence for a week, then forty in an hour.',
 				'A four-photo carousel of brunch on Saturday; phone untouched by Tuesday.',
-				'Their group chat avatar changes roughly every season.'
+				'Your group chat avatar changes roughly every season.'
 			],
 			whatHelps:
 				'A literal door, closed, for a literal weekend, with permission from no one. Then you come back loud.',
@@ -154,8 +155,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		type: 'otrovert',
 		headline: 'Friendly to everyone. Member of nothing.',
 		body: [
-			"You can host the party, give the lecture, MC the show — and you might enjoy it. But sign on as a regular member of anything? That's where it cracks. Clubs, teams, friend groups, fandoms — guest appearances, never regular cast.",
-			'Friendships, on the other hand, are deep and one-on-one. There\'s no "social circle." There never was.'
+			"You can host the party, give the lecture, MC the show. But sign on as a regular member of anything? That's where it cracks. Clubs, teams, friend groups, fandoms — guest appearances, never regular cast.",
+			'Friendships, on the other hand, are deep and one-on-one. There\'s no "social circle." There never was.',
+			"Consensus doesn't move you, either. You examine ideas yourself before adopting them, you decline the urge to convince anyone else, and mass movements pass you by — including the ones you quietly agree with. Privacy isn't preference; it's posture. Even close friends only see the version you let through."
 		].join('\n\n'),
 		deep: {
 			dayInTheLife:
@@ -168,9 +170,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				'The deepest friendships of your life have been one person at a time, with no overlapping witnesses.'
 			],
 			giveaways: [
-				'They host the dinner and clear the plates, both.',
-				'Their entire participation in the group chat is a heart react and the word "thanks!"',
-				"They've kept the same haircut for nine years without considering changing it."
+				'You hold doors open until three strangers have walked through. No idea why.',
+				'In any group chat over six people, your entire participation is a heart react.',
+				"You've kept the same haircut for nine years without considering changing it."
 			],
 			whatHelps:
 				"A real two-hour conversation with one person you don't see often enough. Not a phone call. In a kitchen.",

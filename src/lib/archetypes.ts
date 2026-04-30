@@ -76,8 +76,7 @@ export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object
 			'Whether you carry a "we" with you, or whether you watch from just outside the circle.'
 	},
 	group_size: {
-		description:
-			'Whether energy comes from one deep conversation or twenty new faces in the same hour.'
+		description: 'Whether one deep conversation refills you, or twenty new faces in the same hour.'
 	},
 	swings: {
 		description: 'How dramatically the same person, same plan, same week can flip.'
