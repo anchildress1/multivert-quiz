@@ -309,10 +309,10 @@
 			</h1>
 
 			<p class="hero__lede">
-				Most quizzes only know two: introvert, extrovert. We added three more —
+				Most quizzes only know two: introvert, extrovert. There are three more —
 				<em>ambivert</em> (context-flexible),
 				<em>omnivert</em> (oscillates between extremes), and
-				<em>otrovert</em> (a 2025 construct from psychiatrist Rami Kaminski; belongs without
+				<em>otrovert</em> (a 2025 term coined by psychiatrist Rami Kaminski; belongs without
 				belonging). {questions.length} statements, one quiet slider, a five-way breakdown at the end.
 			</p>
 
@@ -1002,7 +1002,10 @@
 	}
 
 	.breakdown__chip-fit-pct {
-		font-size: 0.55em;
+		/* Sized at 0.55em the % glyph collapsed into an "s" shape — bumped
+		   to 0.78em so it reads unambiguously as percent without competing
+		   with the value. */
+		font-size: 0.78em;
 		opacity: 0.75;
 	}
 

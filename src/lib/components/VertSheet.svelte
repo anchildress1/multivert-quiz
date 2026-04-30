@@ -91,81 +91,88 @@
 		></div>
 
 		<article class="sheet__card" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
-			<header class="sheet__chrome">
-				<span class="sheet__ref">
-					№ {String(archetypeIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; on being an {meta.name.toLowerCase()}
-				</span>
-				<button
-					type="button"
-					class="sheet__close"
-					onclick={onclose}
-					aria-label="Close — return to results"
-				>
-					<em>close.</em>
-					<span class="sheet__close-glyph" aria-hidden="true">×</span>
-				</button>
+			<!-- Narrow colour strip — the only piece of the card that wears the
+			     archetype hue. Holds the Pantone chrome row (№ + identity) and
+			     the italic tagline beneath. Everything else prints on paper. -->
+			<header class="sheet__banner">
+				<div class="sheet__chrome">
+					<span class="sheet__ref">
+						№ {String(archetypeIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; on being an {meta.name.toLowerCase()}
+					</span>
+					<button
+						type="button"
+						class="sheet__close"
+						onclick={onclose}
+						aria-label="Close — return to results"
+					>
+						<em>close.</em>
+						<span class="sheet__close-glyph" aria-hidden="true">×</span>
+					</button>
+				</div>
+				<p class="sheet__tagline">{meta.label}.</p>
 			</header>
 
-			<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
-			<p class="sheet__tagline">{meta.label}.</p>
+			<div class="sheet__content">
+				<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
 
-			<div class="sheet__lede">
-				<p class="sheet__headline">{desc.headline}</p>
-				<p class="sheet__body">{desc.body}</p>
+				<div class="sheet__lede">
+					<p class="sheet__headline">{desc.headline}</p>
+					<p class="sheet__body">{desc.body}</p>
+				</div>
+
+				<section class="sheet__section sheet__section--day" aria-labelledby="vert-sheet-day">
+					<p id="vert-sheet-day" class="sheet__section-label">
+						<span class="sheet__section-num">i.</span>
+						A day in the life
+					</p>
+					<p class="sheet__day-text">{desc.deep.dayInTheLife}</p>
+				</section>
+
+				<section class="sheet__section" aria-labelledby="vert-sheet-truths">
+					<p id="vert-sheet-truths" class="sheet__section-label">
+						<span class="sheet__section-num">ii.</span>
+						Five things that are true and you've never told anyone
+					</p>
+					<ol class="sheet__truth-list">
+						{#each desc.deep.trueThings as line, i (line)}
+							<li class="sheet__truth">
+								<span class="sheet__truth-num" aria-hidden="true">
+									{String(i + 1).padStart(2, '0')}
+								</span>
+								<span class="sheet__truth-text">{line}</span>
+							</li>
+						{/each}
+					</ol>
+				</section>
+
+				<section class="sheet__section" aria-labelledby="vert-sheet-giveaways">
+					<p id="vert-sheet-giveaways" class="sheet__section-label">
+						<span class="sheet__section-num">iii.</span>
+						The giveaways
+					</p>
+					<ul class="sheet__giveaway-list">
+						{#each desc.deep.giveaways as tell (tell)}
+							<li class="sheet__giveaway">{tell}</li>
+						{/each}
+					</ul>
+				</section>
+
+				<dl class="sheet__defs">
+					<div class="sheet__def">
+						<dt>What helps</dt>
+						<dd>{desc.deep.whatHelps}</dd>
+					</div>
+					<div class="sheet__def">
+						<dt>What kills you</dt>
+						<dd>{desc.deep.whatKillsYou}</dd>
+					</div>
+				</dl>
+
+				<aside class="sheet__pull" aria-label="closing line">
+					<span class="sheet__pull-label">You'll never admit it, but —</span>
+					<p class="sheet__pull-text">{desc.deep.youllNeverAdmit}</p>
+				</aside>
 			</div>
-
-			<section class="sheet__section sheet__section--day" aria-labelledby="vert-sheet-day">
-				<p id="vert-sheet-day" class="sheet__section-label">
-					<span class="sheet__section-num">i.</span>
-					A day in the life
-				</p>
-				<p class="sheet__day-text">{desc.deep.dayInTheLife}</p>
-			</section>
-
-			<section class="sheet__section" aria-labelledby="vert-sheet-truths">
-				<p id="vert-sheet-truths" class="sheet__section-label">
-					<span class="sheet__section-num">ii.</span>
-					Five things that are true and you've never told anyone
-				</p>
-				<ol class="sheet__truth-list">
-					{#each desc.deep.trueThings as line, i (line)}
-						<li class="sheet__truth">
-							<span class="sheet__truth-num" aria-hidden="true">
-								{String(i + 1).padStart(2, '0')}
-							</span>
-							<span class="sheet__truth-text">{line}</span>
-						</li>
-					{/each}
-				</ol>
-			</section>
-
-			<section class="sheet__section" aria-labelledby="vert-sheet-giveaways">
-				<p id="vert-sheet-giveaways" class="sheet__section-label">
-					<span class="sheet__section-num">iii.</span>
-					The giveaways
-				</p>
-				<ul class="sheet__giveaway-list">
-					{#each desc.deep.giveaways as tell (tell)}
-						<li class="sheet__giveaway">{tell}</li>
-					{/each}
-				</ul>
-			</section>
-
-			<dl class="sheet__defs">
-				<div class="sheet__def">
-					<dt>What helps</dt>
-					<dd>{desc.deep.whatHelps}</dd>
-				</div>
-				<div class="sheet__def">
-					<dt>What kills you</dt>
-					<dd>{desc.deep.whatKillsYou}</dd>
-				</div>
-			</dl>
-
-			<aside class="sheet__pull" aria-label="closing line">
-				<span class="sheet__pull-label">You'll never admit it, but —</span>
-				<p class="sheet__pull-text">{desc.deep.youllNeverAdmit}</p>
-			</aside>
 		</article>
 	</div>
 {/if}
@@ -209,37 +216,33 @@
 		max-width: 880px;
 		max-height: 100vh;
 		overflow-y: auto;
-		padding: clamp(28px, 4vh, 56px) clamp(20px, 5vw, 72px) clamp(48px, 8vh, 96px);
-		background:
-			radial-gradient(
-				ellipse 70% 55% at 18% 8%,
-				color-mix(in oklab, white 30%, transparent) 0%,
-				transparent 65%
-			),
-			color-mix(in oklab, var(--sheet-mid) 72%, var(--paper));
-		color: var(--sheet-ink);
+		background: var(--paper);
+		color: var(--ink);
 		box-shadow: 0 40px 120px -40px color-mix(in oklab, var(--ink) 70%, transparent);
 		animation: card-in 320ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 		outline: none;
 	}
 
-	/* Bottom-right glass sheen — same gesture as the result hero. */
-	.sheet__card::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		background: radial-gradient(
-			ellipse 50% 40% at 88% 92%,
-			color-mix(in oklab, var(--sheet-ink) 14%, transparent) 0%,
-			transparent 60%
-		);
+	/* Narrow colour banner — the only piece of the card that wears the
+	   archetype hue. Glass-card finish (colour mixed into paper, top-left
+	   light catch) so it visually quotes the result hero, but kept thin
+	   enough that it reads as a header strip rather than a full card. */
+	.sheet__banner {
+		padding: clamp(14px, 2.4vh, 22px) clamp(20px, 5vw, 72px) clamp(16px, 2.6vh, 24px);
+		background:
+			radial-gradient(
+				ellipse 70% 55% at 18% 0%,
+				color-mix(in oklab, white 30%, transparent) 0%,
+				transparent 70%
+			),
+			color-mix(in oklab, var(--sheet-mid) 70%, var(--paper));
+		color: var(--sheet-ink);
 	}
 
-	/* Lift the content above the bottom-right sheen. */
-	.sheet__card > * {
-		position: relative;
-		z-index: 1;
+	/* Body section — paper, generous side and bottom padding to read like
+	   a printed brief once the banner identifies the type at the top. */
+	.sheet__content {
+		padding: clamp(32px, 5vh, 64px) clamp(20px, 5vw, 72px) clamp(48px, 8vh, 96px);
 	}
 
 	@media (min-width: 760px) {
@@ -255,14 +258,14 @@
 
 	/* Pantone chrome — same shape as the swatch hero's chrome row, so
 	   opening the sheet feels like turning the colour-card over to read
-	   the back. */
+	   the back. Sits inside the banner now (colour bg, sheet-ink type). */
 	.sheet__chrome {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 12px 24px;
+		gap: 8px 24px;
 		flex-wrap: wrap;
-		margin-bottom: clamp(24px, 4vh, 48px);
+		margin-bottom: 6px;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.18em;
@@ -332,9 +335,9 @@
 		outline: none;
 	}
 
-	/* Archetype name as the colour-card label — heavy sans, all-caps,
-	   sized smaller than the result hero (this is the back of the card,
-	   not the front). */
+	/* Archetype name as the colour-card label — heavy sans, all-caps. On
+	   paper now, but printed in `--sheet-ink` (the deep archetype tone)
+	   so it ties back to the colour banner above. */
 	.sheet__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
@@ -342,21 +345,21 @@
 		line-height: 0.9;
 		letter-spacing: -0.04em;
 		color: var(--sheet-ink);
-		margin: 0;
+		margin: 0 0 clamp(24px, 4vh, 40px);
 		text-transform: uppercase;
 		text-wrap: balance;
 	}
 
-	/* Tagline right-aligned to the card edge — mirrors the swatch hero's
-	   right-aligned label. */
+	/* Tagline right-aligned inside the colour banner — mirrors the swatch
+	   hero's right-aligned label. */
 	.sheet__tagline {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(16px, 1.8vw, 22px);
+		font-size: clamp(15px, 1.6vw, 19px);
 		line-height: 1.2;
 		color: var(--sheet-ink);
 		opacity: 0.78;
-		margin: clamp(8px, 1.2vh, 14px) 0 clamp(32px, 5vh, 56px);
+		margin: 0;
 		text-align: right;
 	}
 
@@ -371,7 +374,7 @@
 		font-size: clamp(22px, 2.6vw, 30px);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		margin: 0 0 24px;
 		max-width: 28ch;
 		text-wrap: balance;
@@ -381,11 +384,10 @@
 		font-family: var(--font-sans);
 		font-size: clamp(15px, 1.4vw, 17px);
 		line-height: 1.6;
-		color: var(--sheet-ink);
+		color: var(--ink-70);
 		margin: 0;
 		text-wrap: pretty;
 		white-space: pre-wrap;
-		opacity: 0.92;
 	}
 
 	/* ── Section blocks ───────────────────────────────────────────────────
@@ -406,7 +408,6 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
-		opacity: 0.85;
 		text-wrap: balance;
 	}
 
@@ -415,18 +416,20 @@
 		font-size: 11px;
 		letter-spacing: 0.1em;
 		text-transform: lowercase;
+		color: var(--sheet-ink);
 		opacity: 0.7;
 	}
 
 	/* Day-in-the-life — the centrepiece. Sans body, drop-cap on the first
 	   letter (Y, T, etc.) sized via `initial-letter` so it snaps to three
-	   lines cleanly. */
+	   lines cleanly. The drop-cap stays archetype-tinted to tie back to
+	   the banner. */
 	.sheet__day-text {
 		max-width: 60ch;
 		font-family: var(--font-sans);
 		font-size: clamp(16px, 1.5vw, 18px);
 		line-height: 1.6;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		margin: 0;
 		text-wrap: pretty;
 	}
@@ -460,7 +463,7 @@
 		align-items: baseline;
 		gap: 18px;
 		padding-top: 16px;
-		border-top: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
+		border-top: 1px solid var(--ink-08);
 	}
 
 	.sheet__truth:first-child {
@@ -481,7 +484,7 @@
 		font-family: var(--font-sans);
 		font-size: clamp(15px, 1.4vw, 17px);
 		line-height: 1.55;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		text-wrap: pretty;
 	}
 
@@ -503,7 +506,7 @@
 		font-style: italic;
 		font-size: clamp(17px, 1.7vw, 20px);
 		line-height: 1.4;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		text-wrap: pretty;
 	}
 
@@ -513,20 +516,20 @@
 		left: 0;
 		top: 0;
 		font-style: normal;
-		opacity: 0.6;
+		color: var(--sheet-ink);
+		opacity: 0.7;
 	}
 
-	/* What helps / What kills you — definition pair set in two columns on
-	   wide screens, stacked on narrow. Mono labels match the section
-	   chrome. */
+	/* What helps / What kills you — definition pair, two columns on wide
+	   screens, stacked on narrow. Mono labels match the section chrome. */
 	.sheet__defs {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 0;
 		margin: 0 0 clamp(40px, 6vh, 64px);
 		padding: 28px 0;
-		border-top: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
-		border-bottom: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
+		border-top: 1px solid var(--ink-08);
+		border-bottom: 1px solid var(--ink-08);
 	}
 
 	.sheet__def {
@@ -537,7 +540,7 @@
 	}
 
 	.sheet__def + .sheet__def {
-		border-top: 1px dashed color-mix(in oklab, var(--sheet-ink) 16%, transparent);
+		border-top: 1px dashed var(--ink-12);
 	}
 
 	.sheet__def dt {
@@ -546,7 +549,6 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
-		opacity: 0.85;
 		margin: 0;
 	}
 
@@ -555,7 +557,7 @@
 		font-family: var(--font-sans);
 		font-size: clamp(15px, 1.4vw, 17px);
 		line-height: 1.6;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		max-width: 60ch;
 		text-wrap: pretty;
 	}
@@ -581,7 +583,6 @@
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
-		opacity: 0.75;
 		margin-bottom: 14px;
 	}
 
@@ -591,7 +592,7 @@
 		font-size: clamp(22px, 2.8vw, 32px);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
-		color: var(--sheet-ink);
+		color: var(--ink);
 		margin: 0;
 		text-wrap: balance;
 		max-width: 28ch;
