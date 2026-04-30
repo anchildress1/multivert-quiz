@@ -47,7 +47,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		body: 'People aren\'t the problem. Recovery time is your fuel. You can absolutely show up, charm a room, hold court at a dinner — every hour spent doing it costs you, and you need the math to balance. Most "introverts" online are actually shy or anxious. You\'re neither. You just have a meter, and you respect it.',
 		deep: {
 			dayInTheLife:
-				"You wake up before the house does, because the silence at 6 a.m. is yours and the silence at 9 p.m. has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many — even if two of them were just baristas. You go to bed twenty minutes earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
+				"You're awake while the house is asleep, because the silence at 6 a.m. is yours and the silence at 9 p.m. has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many — even if two of them were just baristas. You go to bed twenty minutes earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
 			trueThings: [
 				"You have rehearsed apologies for plans you haven't been invited to yet.",
 				"You've stayed in the bathroom an extra five minutes at parties just to be alone with the towel rack.",
