@@ -326,6 +326,30 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(dominant).toMatch(/^(introvert|extrovert|ambivert|omnivert|otrovert)$/);
 	});
 
+	test('clicking a result bar opens the per-archetype detail sheet', async ({ page }) => {
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('#result')).toBeAttached();
+
+		// The bars are buttons now — click introvert and assert the dialog mounts
+		// with the right archetype, the canonical headline lands, and dismissal
+		// returns focus to the trigger.
+		const trigger = page.locator('[data-testid="result-bar-button-introvert"]');
+		await trigger.click();
+
+		const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+		await expect(dialog).toBeVisible();
+		await expect(dialog).toHaveAttribute('data-archetype', 'introvert');
+		await expect(page.locator('#vert-sheet-title')).toContainText(/battery-operated/i);
+		await expect(page.locator('.sheet__sign')).toHaveCount(5);
+		await expect(page.locator('.sheet__credits-list li').first()).toBeVisible();
+
+		// Escape dismisses; the trigger button reclaims focus.
+		await page.keyboard.press('Escape');
+		await expect(dialog).toHaveCount(0);
+		await expect(trigger).toBeFocused();
+	});
+
 	test('retake clears every answer, hides the result, and clears sessionStorage', async ({
 		page
 	}) => {

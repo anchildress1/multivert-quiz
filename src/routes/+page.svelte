@@ -6,6 +6,7 @@
 		DIMENSION_META,
 		VERT_NAMES,
 		VERT_ORDER,
+		type Archetype,
 		type Chapter
 	} from '$lib/archetypes';
 	import ChapterIntro from '$lib/components/ChapterIntro.svelte';
@@ -13,6 +14,7 @@
 	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
 	import QuestionRow from '$lib/components/QuestionRow.svelte';
 	import Tagline from '$lib/components/Tagline.svelte';
+	import VertSheet from '$lib/components/VertSheet.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 	import { questions } from '$lib/questions';
 	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
@@ -26,6 +28,15 @@
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
 	let scrollY = $state(0);
+	let sheetArchetype = $state<Archetype | null>(null);
+
+	function openSheet(archetype: Archetype) {
+		sheetArchetype = archetype;
+	}
+
+	function closeSheet() {
+		sheetArchetype = null;
+	}
 
 	const meterVisible = $derived(scrollY > 80);
 
@@ -426,22 +437,35 @@
 							data-dominant={vert === result.dominant}
 							style:--bar-delay="{i * 90}ms"
 						>
-							<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
-							<span class="result__bar-track" aria-hidden="true">
-								<span
-									class="result__bar-fill"
-									style:--bar-width="{fit}%"
-									style:background="var(--vert-{vert}-mid)"
-								></span>
-							</span>
-							<span class="result__bar-pct">{fit.toFixed(1)}%</span>
+							<button
+								type="button"
+								class="result__bar-button"
+								data-archetype={vert}
+								data-testid="result-bar-button-{vert}"
+								aria-label="Read what it means to be {VERT_NAMES[
+									vert
+								].name.toLowerCase()} — {fit.toFixed(1)} percent fit"
+								onclick={() => openSheet(vert)}
+							>
+								<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
+								<span class="result__bar-track" aria-hidden="true">
+									<span
+										class="result__bar-fill"
+										style:--bar-width="{fit}%"
+										style:background="var(--vert-{vert}-mid)"
+									></span>
+								</span>
+								<span class="result__bar-pct">{fit.toFixed(1)}%</span>
+								<span class="result__bar-glyph" aria-hidden="true">→</span>
+							</button>
 						</li>
 					{/each}
 				</ul>
 
 				<p class="result__hint">
 					Each bar is independent — the five percentages do not sum to 100. A strong introverted
-					otrovert can legitimately score high on both axes.
+					otrovert can legitimately score high on both axes. Click any name to see what it means to
+					be one.
 				</p>
 
 				<div class="result__actions">
@@ -461,6 +485,8 @@
 		<div class="page-footer__version">{APP_VERSION}</div>
 	</footer>
 </main>
+
+<VertSheet open={sheetArchetype !== null} archetype={sheetArchetype} onclose={closeSheet} />
 
 <style>
 	.hero {
@@ -850,14 +876,68 @@
 	}
 
 	.result__bar {
-		display: grid;
-		grid-template-columns: minmax(96px, 120px) 1fr auto;
-		align-items: center;
-		gap: 16px;
-		font-family: var(--font-mono);
-		font-size: 12px;
 		opacity: 0;
 		animation: result-bar-in 520ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--bar-delay, 0ms) both;
+	}
+
+	/* Each bar is the actual click target. Reset the native button surface so
+	   it inherits the editorial paper backdrop, then re-do the grid layout.
+	   The trailing arrow glyph is the affordance — it slides on hover and
+	   becomes a coloured ink mark on focus. */
+	.result__bar-button {
+		display: grid;
+		grid-template-columns: minmax(96px, 120px) 1fr auto 18px;
+		align-items: center;
+		gap: 16px;
+		width: 100%;
+		padding: 8px 12px 8px 8px;
+		margin: -8px -12px -8px -8px;
+		background: transparent;
+		border: none;
+		border-radius: 12px;
+		color: inherit;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		text-align: left;
+		cursor: pointer;
+		transition:
+			background 0.18s ease,
+			transform 0.18s ease;
+	}
+
+	.result__bar-button:hover {
+		background: color-mix(in oklab, var(--ink-08) 55%, transparent);
+	}
+
+	.result__bar-button:focus-visible {
+		outline: 2px solid var(--dominant-mid, var(--ink));
+		outline-offset: 2px;
+		background: color-mix(in oklab, var(--ink-08) 55%, transparent);
+	}
+
+	.result__bar-glyph {
+		font-family: var(--font-sans);
+		font-size: 16px;
+		color: var(--ink-30);
+		transform: translateX(-4px);
+		opacity: 0;
+		transition:
+			opacity 0.18s ease,
+			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
+			color 0.18s ease;
+	}
+
+	.result__bar-button:hover .result__bar-glyph,
+	.result__bar-button:focus-visible .result__bar-glyph {
+		opacity: 1;
+		transform: none;
+		color: var(--ink-70);
+	}
+
+	.result__bar[data-dominant='true'] .result__bar-glyph {
+		color: var(--dominant-mid, var(--ink-70));
+		opacity: 0.6;
+		transform: none;
 	}
 
 	.result__bar[data-dominant='true'] .result__bar-name,
