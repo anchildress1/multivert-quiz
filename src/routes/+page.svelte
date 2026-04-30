@@ -202,7 +202,7 @@
 		const onTouchMove = (event: TouchEvent) => {
 			const currentY = event.touches[0]?.clientY ?? 0;
 			// Positive delta = finger swept up (i.e., trying to scroll forward).
-			// 8px is the noise threshold — below that, tiny finger jitter
+			// 0.5rem is the noise threshold — below that, tiny finger jitter
 			// during a tap on the slider would fire false positives.
 			if (touchStartY - currentY > 8 && atDocumentBottom()) fire();
 		};
@@ -410,8 +410,10 @@
 					<span class="swatch__lot">multivert · {store.total}/{store.total}</span>
 				</header>
 
-				<h2 id="result-title" class="swatch__name">{VERT_NAMES[dominant].name.toUpperCase()}</h2>
-				<p class="swatch__label">{VERT_NAMES[dominant].label}.</p>
+				<div class="swatch__title">
+					<h2 id="result-title" class="swatch__name">{VERT_NAMES[dominant].name.toUpperCase()}</h2>
+					<p class="swatch__label">{VERT_NAMES[dominant].label}.</p>
+				</div>
 
 				<div class="swatch__lede">
 					<p class="swatch__headline">{descriptions[dominant].headline}</p>
@@ -498,7 +500,6 @@
 	.hero {
 		background: var(--paper);
 		color: var(--ink);
-		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
 	}
@@ -507,15 +508,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 24px;
-		border-bottom: 1px solid var(--ink-08);
+		padding: 1.5rem;
+		border-bottom: 0.0625rem solid var(--ink-08);
 	}
 
 	.hero__nav {
 		display: flex;
 		align-items: center;
-		gap: 28px;
-		font-size: 13px;
+		gap: 1.75rem;
+		font-size: 0.8125rem;
 		color: var(--ink-70);
 	}
 
@@ -530,12 +531,11 @@
 	}
 
 	.hero__grid {
-		flex: 1;
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 56px;
-		padding: 64px 24px;
-		max-width: 1280px;
+		gap: 2.5rem;
+		padding: 2.5rem 1.5rem 3.5rem;
+		max-width: 80rem;
 		width: 100%;
 		margin: 0 auto;
 	}
@@ -543,27 +543,27 @@
 	.hero__eyebrow {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 0.75rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin-bottom: 28px;
+		margin-bottom: 1.75rem;
 	}
 
 	.hero__eyebrow-rule {
 		display: block;
-		width: 24px;
-		height: 1px;
+		width: 1.5rem;
+		height: 0.0625rem;
 		background: var(--ink-30);
 	}
 
 	.hero__headline {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(56px, 9vw, 116px);
-		line-height: 0.92;
+		font-size: clamp(2.75rem, 7vw, 5.5rem);
+		line-height: 0.94;
 		letter-spacing: -0.035em;
 		margin: 0;
 		text-wrap: balance;
@@ -575,33 +575,33 @@
 	}
 
 	.hero__lede {
-		margin: 36px 0 0;
-		max-width: 540px;
-		font-size: 17px;
+		margin: 2.25rem 0 0;
+		max-width: 33.75rem;
+		font-size: 1.0625rem;
 		line-height: 1.55;
 		color: var(--ink-70);
 	}
 
 	.hero__cta-row {
-		margin-top: 44px;
+		margin-top: 2.75rem;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 16px 20px;
+		gap: 1rem 1.25rem;
 	}
 
 	.hero__cta {
 		display: inline-flex;
 		align-items: center;
-		gap: 12px;
-		height: 60px;
-		padding: 0 28px;
+		gap: 0.75rem;
+		height: 3.75rem;
+		padding: 0 1.75rem;
 		background: var(--ink);
 		color: var(--paper);
 		border: none;
 		border-radius: var(--button-radius);
 		font-family: var(--font-sans);
-		font-size: 16px;
+		font-size: 1rem;
 		font-weight: 500;
 		letter-spacing: -0.005em;
 		cursor: pointer;
@@ -611,7 +611,7 @@
 	}
 
 	.hero__cta:hover {
-		transform: translateY(-1px);
+		transform: translateY(-0.0625rem);
 	}
 
 	.hero__cta:active {
@@ -619,14 +619,14 @@
 	}
 
 	.hero__cta:focus-visible {
-		outline: 2px solid var(--paper);
-		outline-offset: 3px;
-		box-shadow: 0 0 0 4px var(--ink);
+		outline: 0.125rem solid var(--paper);
+		outline-offset: 0.1875rem;
+		box-shadow: 0 0 0 0.25rem var(--ink);
 	}
 
 	.hero__cta-meta {
 		font-family: var(--font-mono);
-		font-size: 12px;
+		font-size: 0.75rem;
 		line-height: 1.55;
 		letter-spacing: 0.02em;
 		color: var(--ink-70);
@@ -635,19 +635,19 @@
 
 	.hero__card {
 		background: var(--paper-dk);
-		border: 1px solid var(--ink-08);
+		border: 0.0625rem solid var(--ink-08);
 		border-radius: var(--card-radius);
-		padding: 32px;
+		padding: 2rem;
 		align-self: start;
 	}
 
 	.hero__card-eyebrow {
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.625rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin-bottom: 20px;
+		margin-bottom: 1.25rem;
 	}
 
 	.hero__card-list {
@@ -660,11 +660,11 @@
 
 	.hero__card-item {
 		display: grid;
-		grid-template-columns: 14px 110px 1fr;
+		grid-template-columns: 0.875rem 6.875rem 1fr;
 		align-items: center;
-		gap: 14px;
-		padding: 14px 0;
-		border-top: 1px solid var(--ink-12);
+		gap: 0.875rem;
+		padding: 0.875rem 0;
+		border-top: 0.0625rem solid var(--ink-12);
 	}
 
 	.hero__card-item--first {
@@ -672,33 +672,33 @@
 	}
 
 	.hero__card-dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 999px;
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 99rem;
 	}
 
 	.hero__card-name {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: 22px;
+		font-size: 1.375rem;
 		letter-spacing: -0.02em;
 	}
 
 	.hero__card-label {
-		font-size: 13px;
+		font-size: 0.8125rem;
 		color: var(--ink-70);
 		line-height: 1.4;
 	}
 
-	@media (min-width: 960px) {
+	@media (min-width: 60rem) {
 		.hero__grid {
-			grid-template-columns: 1fr minmax(0, 480px);
-			gap: 80px;
-			padding: 96px 56px 96px;
+			grid-template-columns: 1fr minmax(0, 30rem);
+			gap: 5rem;
+			padding: 6rem 3.5rem 6rem;
 			align-items: start;
 		}
 		.hero__bar {
-			padding: 24px 56px;
+			padding: 1.5rem 3.5rem;
 		}
 	}
 
@@ -717,7 +717,7 @@
 		position: relative;
 		isolation: isolate;
 		background: var(--paper);
-		scroll-margin-top: 72px;
+		scroll-margin-top: 4.5rem;
 	}
 
 	/* ── Pantone-style swatch hero, behind glass ───────────────────────────
@@ -736,10 +736,10 @@
 			),
 			color-mix(in oklab, var(--swatch) 72%, var(--paper));
 		color: var(--swatch-ink);
-		/* Top padding stays lean (sticky chapter banner is already 72px).
+		/* Top padding stays lean (sticky chapter banner is already 4.5rem).
 		   Bottom is generous-but-bounded so the swatch doesn't dominate the
 		   page on tall viewports. */
-		padding: clamp(32px, 5vh, 64px) clamp(20px, 5vw, 96px) clamp(48px, 8vh, 96px);
+		padding: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 5vw, 6rem) clamp(3rem, 8vh, 6rem);
 		position: relative;
 		overflow: hidden;
 	}
@@ -771,11 +771,11 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 12px 24px;
+		gap: 0.75rem 1.5rem;
 		flex-wrap: wrap;
-		margin-bottom: clamp(32px, 6vh, 64px);
+		margin-bottom: clamp(2rem, 6vh, 4rem);
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--swatch-ink);
@@ -790,12 +790,22 @@
 		font-variant-numeric: tabular-nums;
 	}
 
+	/* Title block — shrinks to the width of the colour-name, so the tagline
+	   beneath right-aligns to the END OF THE WORD instead of the right edge
+	   of the swatch. The tagline reads as a quiet caption on the title
+	   itself, not a far-flung column of metadata. */
+	.swatch__title {
+		display: block;
+		width: max-content;
+		max-width: 100%;
+	}
+
 	/* The colour name — heavy sans-serif, all-caps. Sized to dominate but
 	   not so big it pushes the rest of the card off-screen. */
 	.swatch__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
-		font-size: clamp(56px, 11vw, 144px);
+		font-size: clamp(3.5rem, 11vw, 9rem);
 		line-height: 0.88;
 		letter-spacing: -0.04em;
 		color: var(--swatch-ink);
@@ -811,37 +821,37 @@
 	.swatch__label {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(18px, 2vw, 24px);
+		font-size: clamp(1.125rem, 2vw, 1.5rem);
 		line-height: 1.2;
 		color: var(--swatch-ink);
 		opacity: 0.78;
-		margin: clamp(8px, 1.4vh, 16px) 0 clamp(40px, 6vh, 64px);
+		margin: clamp(0.5rem, 1.4vh, 1rem) 0 clamp(2.5rem, 6vh, 4rem);
 		text-align: right;
 	}
 
 	.swatch__lede {
 		max-width: 60ch;
-		margin-bottom: clamp(28px, 4vh, 48px);
+		margin-bottom: clamp(1.75rem, 4vh, 3rem);
 	}
 
 	.swatch__headline {
 		font-family: var(--font-sans);
 		font-weight: 500;
-		font-size: clamp(22px, 2.6vw, 30px);
+		font-size: clamp(1.375rem, 2.6vw, 1.875rem);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
 		color: var(--swatch-ink);
-		margin: 0 0 24px;
+		margin: 0 0 1.5rem;
 		max-width: 28ch;
 		text-wrap: balance;
 	}
 
 	.swatch__body {
 		font-family: var(--font-sans);
-		font-size: clamp(15px, 1.4vw, 17px);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.6;
 		color: var(--swatch-ink);
-		margin: 0 0 14px;
+		margin: 0 0 0.875rem;
 		max-width: 60ch;
 		text-wrap: pretty;
 		opacity: 0.92;
@@ -854,15 +864,15 @@
 	.swatch__cta {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 12px;
-		padding: 8px 0;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
 		background: transparent;
 		border: none;
-		border-bottom: 1px solid var(--swatch-ink);
+		border-bottom: 0.0625rem solid var(--swatch-ink);
 		color: var(--swatch-ink);
 		font-family: var(--font-sans);
 		font-weight: 500;
-		font-size: clamp(15px, 1.4vw, 17px);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		letter-spacing: 0.01em;
 		cursor: pointer;
 		transition:
@@ -872,24 +882,24 @@
 
 	.swatch__cta-glyph {
 		font-family: var(--font-sans);
-		font-size: 18px;
+		font-size: 1.125rem;
 		transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
 	}
 
 	.swatch__cta:hover,
 	.swatch__cta:focus-visible {
-		gap: 18px;
+		gap: 1.125rem;
 		opacity: 0.7;
 	}
 
 	.swatch__cta:hover .swatch__cta-glyph,
 	.swatch__cta:focus-visible .swatch__cta-glyph {
-		transform: translateX(6px);
+		transform: translateX(0.375rem);
 	}
 
 	.swatch__cta:focus-visible {
-		outline: 2px solid var(--swatch-ink);
-		outline-offset: 6px;
+		outline: 0.125rem solid var(--swatch-ink);
+		outline-offset: 0.375rem;
 	}
 
 	/* ── Five-vert breakdown — a strip of swatch chips on paper ──────────
@@ -898,17 +908,17 @@
 	   dominant chip is ringed in its own ink so it ties back to the hero. */
 	.breakdown {
 		background: var(--paper);
-		padding: clamp(48px, 8vh, 96px) clamp(20px, 5vw, 64px);
+		padding: clamp(3rem, 8vh, 6rem) clamp(1.25rem, 5vw, 4rem);
 	}
 
 	.breakdown__caption {
 		display: flex;
 		align-items: center;
-		gap: 16px;
-		max-width: 1200px;
-		margin: 0 auto 24px;
+		gap: 1rem;
+		max-width: 75rem;
+		margin: 0 auto 1.5rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--ink-70);
@@ -916,7 +926,7 @@
 
 	.breakdown__caption-rule {
 		flex: 1;
-		height: 1px;
+		height: 0.0625rem;
 		background: var(--ink-12);
 	}
 
@@ -924,10 +934,10 @@
 		list-style: none;
 		margin: 0 auto;
 		padding: 0;
-		max-width: 1200px;
+		max-width: 75rem;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-		gap: 6px;
+		grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr));
+		gap: 0.375rem;
 	}
 
 	.breakdown__chip {
@@ -939,10 +949,10 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		gap: 24px;
+		gap: 1.5rem;
 		width: 100%;
-		min-height: 200px;
-		padding: 16px 18px 18px;
+		min-height: 12.5rem;
+		padding: 1rem 1.125rem 1.125rem;
 		background: var(--chip-color);
 		color: var(--chip-ink);
 		border: none;
@@ -955,23 +965,23 @@
 	}
 
 	.breakdown__chip-button:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 12px 28px -16px color-mix(in oklab, var(--chip-ink) 60%, transparent);
+		transform: translateY(-0.25rem);
+		box-shadow: 0 0.75rem 1.75rem -1rem color-mix(in oklab, var(--chip-ink) 60%, transparent);
 	}
 
 	.breakdown__chip-button:focus-visible {
-		outline: 2px solid var(--chip-ink);
-		outline-offset: 3px;
+		outline: 0.125rem solid var(--chip-ink);
+		outline-offset: 0.1875rem;
 	}
 
 	.breakdown__chip[data-dominant='true'] .breakdown__chip-button {
-		outline: 2px solid var(--chip-ink);
-		outline-offset: -8px;
+		outline: 0.125rem solid var(--chip-ink);
+		outline-offset: -0.5rem;
 	}
 
 	.breakdown__chip-num {
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.625rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		font-variant-numeric: tabular-nums;
@@ -981,7 +991,7 @@
 	.breakdown__chip-name {
 		font-family: var(--font-sans);
 		font-weight: 600;
-		font-size: clamp(14px, 1.4vw, 17px);
+		font-size: clamp(0.875rem, 1.4vw, 1.0625rem);
 		letter-spacing: -0.01em;
 		text-transform: uppercase;
 		line-height: 1;
@@ -990,14 +1000,14 @@
 	.breakdown__chip-fit {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 1px;
+		gap: 0.0625rem;
 		font-family: var(--font-mono);
 		font-variant-numeric: tabular-nums;
 		font-weight: 500;
 	}
 
 	.breakdown__chip-fit-num {
-		font-size: clamp(22px, 2.4vw, 28px);
+		font-size: clamp(1.375rem, 2.4vw, 1.75rem);
 		line-height: 1;
 	}
 
@@ -1012,7 +1022,7 @@
 	@keyframes chip-in {
 		from {
 			opacity: 0;
-			transform: translateY(8px);
+			transform: translateY(0.5rem);
 		}
 		to {
 			opacity: 1;
@@ -1036,14 +1046,14 @@
 	/* Colophon — sits under the breakdown on the paper background. Hairline
 	   rule above, retake reads as the page's quiet "turn over" gesture. */
 	.result__colophon {
-		max-width: 1200px;
+		max-width: 75rem;
 		margin: 0 auto;
-		padding: 32px clamp(20px, 5vw, 64px) clamp(48px, 8vh, 96px);
-		border-top: 1px solid var(--ink-08);
+		padding: 2rem clamp(1.25rem, 5vw, 4rem) clamp(3rem, 8vh, 6rem);
+		border-top: 0.0625rem solid var(--ink-08);
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
-		gap: 12px 28px;
+		gap: 0.75rem 1.75rem;
 	}
 
 	/* Editorial typographic retake — italic display serif rather than a
@@ -1052,19 +1062,19 @@
 	.result__retake {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 10px;
+		gap: 0.625rem;
 		padding: 0;
 		background: transparent;
 		color: var(--ink);
 		border: none;
-		border-bottom: 1px solid var(--ink-30);
+		border-bottom: 0.0625rem solid var(--ink-30);
 		border-radius: 0;
 		font-family: var(--font-display);
-		font-size: clamp(20px, 2.4vw, 28px);
+		font-size: clamp(1.25rem, 2.4vw, 1.75rem);
 		line-height: 1.1;
 		letter-spacing: -0.015em;
 		cursor: pointer;
-		padding-bottom: 4px;
+		padding-bottom: 0.25rem;
 		transition:
 			border-color 0.2s ease,
 			color 0.2s ease,
@@ -1077,7 +1087,7 @@
 
 	.result__retake-glyph {
 		font-family: var(--font-sans);
-		font-size: 18px;
+		font-size: 1.125rem;
 		font-style: normal;
 		color: var(--ink-70);
 		transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -1085,7 +1095,7 @@
 
 	.result__retake:hover {
 		border-bottom-color: var(--dominant-mid, var(--ink));
-		gap: 14px;
+		gap: 0.875rem;
 	}
 
 	.result__retake:hover .result__retake-glyph {
@@ -1094,13 +1104,13 @@
 	}
 
 	.result__retake:focus-visible {
-		outline: 2px solid var(--ink);
-		outline-offset: 6px;
+		outline: 0.125rem solid var(--ink);
+		outline-offset: 0.375rem;
 	}
 
 	.result__retake-meta {
 		font-family: var(--font-mono);
-		font-size: 12px;
+		font-size: 0.75rem;
 		color: var(--ink-70);
 		margin: 0;
 	}
@@ -1109,19 +1119,19 @@
 		display: flex;
 		align-items: flex-end;
 		justify-content: space-between;
-		padding: 24px;
-		gap: 16px;
+		padding: 1.5rem;
+		gap: 1rem;
 	}
 
 	.page-footer__version {
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.625rem;
 		color: var(--ink-70);
 	}
 
-	@media (min-width: 960px) {
+	@media (min-width: 60rem) {
 		.page-footer {
-			padding: 32px 56px;
+			padding: 2rem 3.5rem;
 		}
 	}
 </style>

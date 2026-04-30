@@ -203,8 +203,8 @@
 				transparent 70%
 			),
 			color-mix(in oklab, var(--ink) 56%, transparent);
-		backdrop-filter: blur(6px) saturate(0.96);
-		-webkit-backdrop-filter: blur(6px) saturate(0.96);
+		backdrop-filter: blur(0.375rem) saturate(0.96);
+		-webkit-backdrop-filter: blur(0.375rem) saturate(0.96);
 		cursor: pointer;
 	}
 
@@ -213,12 +213,12 @@
 		justify-self: center;
 		align-self: stretch;
 		width: 100%;
-		max-width: 880px;
+		max-width: 55rem;
 		max-height: 100vh;
 		overflow-y: auto;
 		background: var(--paper);
 		color: var(--ink);
-		box-shadow: 0 40px 120px -40px color-mix(in oklab, var(--ink) 70%, transparent);
+		box-shadow: 0 2.5rem 7.5rem -2.5rem color-mix(in oklab, var(--ink) 70%, transparent);
 		animation: card-in 320ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 		outline: none;
 	}
@@ -228,7 +228,7 @@
 	   light catch) so it visually quotes the result hero, but kept thin
 	   enough that it reads as a header strip rather than a full card. */
 	.sheet__banner {
-		padding: clamp(14px, 2.4vh, 22px) clamp(20px, 5vw, 72px) clamp(16px, 2.6vh, 24px);
+		padding: clamp(0.875rem, 2.4vh, 1.375rem) clamp(1.25rem, 5vw, 4.5rem) clamp(1rem, 2.6vh, 1.5rem);
 		background:
 			radial-gradient(
 				ellipse 70% 55% at 18% 0%,
@@ -242,16 +242,16 @@
 	/* Body section — paper, generous side and bottom padding to read like
 	   a printed brief once the banner identifies the type at the top. */
 	.sheet__content {
-		padding: clamp(32px, 5vh, 64px) clamp(20px, 5vw, 72px) clamp(48px, 8vh, 96px);
+		padding: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 5vw, 4.5rem) clamp(3rem, 8vh, 6rem);
 	}
 
-	@media (min-width: 760px) {
+	@media (min-width: 47.5rem) {
 		.sheet {
-			padding: clamp(20px, 4vh, 56px);
+			padding: clamp(1.25rem, 4vh, 3.5rem);
 			place-items: center;
 		}
 		.sheet__card {
-			max-height: min(92vh, 960px);
+			max-height: min(92vh, 60rem);
 			border-radius: var(--card-radius);
 		}
 	}
@@ -263,11 +263,11 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 8px 24px;
+		gap: 0.5rem 1.5rem;
 		flex-wrap: wrap;
-		margin-bottom: 6px;
+		margin-bottom: 0.375rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
@@ -284,14 +284,14 @@
 	.sheet__close {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 8px;
-		padding: 4px 2px;
+		gap: 0.5rem;
+		padding: 0.25rem 0.125rem;
 		background: transparent;
 		border: none;
-		border-bottom: 1px solid transparent;
+		border-bottom: 0.0625rem solid transparent;
 		color: var(--sheet-ink);
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		line-height: 1;
@@ -308,12 +308,12 @@
 		font-style: italic;
 		text-transform: none;
 		letter-spacing: 0;
-		font-size: 14px;
+		font-size: 0.875rem;
 	}
 
 	.sheet__close-glyph {
 		font-family: var(--font-sans);
-		font-size: 16px;
+		font-size: 1rem;
 		text-transform: none;
 		letter-spacing: 0;
 		transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -323,7 +323,7 @@
 	.sheet__close:focus-visible {
 		opacity: 1;
 		border-bottom-color: var(--sheet-ink);
-		gap: 12px;
+		gap: 0.75rem;
 	}
 
 	.sheet__close:hover .sheet__close-glyph,
@@ -341,11 +341,11 @@
 	.sheet__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
-		font-size: clamp(48px, 8vw, 96px);
+		font-size: clamp(3rem, 8vw, 6rem);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
 		color: var(--sheet-ink);
-		margin: 0 0 clamp(24px, 4vh, 40px);
+		margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
 		text-transform: uppercase;
 		text-wrap: balance;
 	}
@@ -355,7 +355,7 @@
 	.sheet__tagline {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(15px, 1.6vw, 19px);
+		font-size: clamp(0.9375rem, 1.6vw, 1.1875rem);
 		line-height: 1.2;
 		color: var(--sheet-ink);
 		opacity: 0.78;
@@ -364,25 +364,25 @@
 	}
 
 	.sheet__lede {
-		margin-bottom: clamp(40px, 7vh, 72px);
+		margin-bottom: clamp(2.5rem, 7vh, 4.5rem);
 		max-width: 60ch;
 	}
 
 	.sheet__headline {
 		font-family: var(--font-sans);
 		font-weight: 500;
-		font-size: clamp(22px, 2.6vw, 30px);
+		font-size: clamp(1.375rem, 2.6vw, 1.875rem);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
 		color: var(--ink);
-		margin: 0 0 24px;
+		margin: 0 0 1.5rem;
 		max-width: 28ch;
 		text-wrap: balance;
 	}
 
 	.sheet__body {
 		font-family: var(--font-sans);
-		font-size: clamp(15px, 1.4vw, 17px);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.6;
 		color: var(--ink-70);
 		margin: 0;
@@ -395,16 +395,16 @@
 	   chrome above) plus its body content. No more italic-display H3s —
 	   the surface is a colour card now, sans is the natural register. */
 	.sheet__section {
-		margin-bottom: clamp(40px, 7vh, 72px);
+		margin-bottom: clamp(2.5rem, 7vh, 4.5rem);
 	}
 
 	.sheet__section-label {
 		display: flex;
 		align-items: baseline;
-		gap: 12px;
-		margin: 0 0 20px;
+		gap: 0.75rem;
+		margin: 0 0 1.25rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
@@ -413,7 +413,7 @@
 
 	.sheet__section-num {
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.1em;
 		text-transform: lowercase;
 		color: var(--sheet-ink);
@@ -427,7 +427,7 @@
 	.sheet__day-text {
 		max-width: 60ch;
 		font-family: var(--font-sans);
-		font-size: clamp(16px, 1.5vw, 18px);
+		font-size: clamp(1rem, 1.5vw, 1.125rem);
 		line-height: 1.6;
 		color: var(--ink);
 		margin: 0;
@@ -454,16 +454,16 @@
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: 1rem;
 	}
 
 	.sheet__truth {
 		display: grid;
-		grid-template-columns: 36px 1fr;
+		grid-template-columns: 2.25rem 1fr;
 		align-items: baseline;
-		gap: 18px;
-		padding-top: 16px;
-		border-top: 1px solid var(--ink-08);
+		gap: 1.125rem;
+		padding-top: 1rem;
+		border-top: 0.0625rem solid var(--ink-08);
 	}
 
 	.sheet__truth:first-child {
@@ -473,7 +473,7 @@
 
 	.sheet__truth-num {
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.1em;
 		color: var(--sheet-ink);
 		font-variant-numeric: tabular-nums;
@@ -482,7 +482,7 @@
 
 	.sheet__truth-text {
 		font-family: var(--font-sans);
-		font-size: clamp(15px, 1.4vw, 17px);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.55;
 		color: var(--ink);
 		text-wrap: pretty;
@@ -496,15 +496,15 @@
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 0.75rem;
 	}
 
 	.sheet__giveaway {
 		position: relative;
-		padding: 4px 0 4px 24px;
+		padding: 0.25rem 0 0.25rem 1.5rem;
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(17px, 1.7vw, 20px);
+		font-size: clamp(1.0625rem, 1.7vw, 1.25rem);
 		line-height: 1.4;
 		color: var(--ink);
 		text-wrap: pretty;
@@ -526,26 +526,26 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 0;
-		margin: 0 0 clamp(40px, 6vh, 64px);
-		padding: 28px 0;
-		border-top: 1px solid var(--ink-08);
-		border-bottom: 1px solid var(--ink-08);
+		margin: 0 0 clamp(2.5rem, 6vh, 4rem);
+		padding: 1.75rem 0;
+		border-top: 0.0625rem solid var(--ink-08);
+		border-bottom: 0.0625rem solid var(--ink-08);
 	}
 
 	.sheet__def {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 6px;
-		padding: 18px 0;
+		gap: 0.375rem;
+		padding: 1.125rem 0;
 	}
 
 	.sheet__def + .sheet__def {
-		border-top: 1px dashed var(--ink-12);
+		border-top: 0.0625rem dashed var(--ink-12);
 	}
 
 	.sheet__def dt {
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
@@ -555,17 +555,17 @@
 	.sheet__def dd {
 		margin: 0;
 		font-family: var(--font-sans);
-		font-size: clamp(15px, 1.4vw, 17px);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.6;
 		color: var(--ink);
 		max-width: 60ch;
 		text-wrap: pretty;
 	}
 
-	@media (min-width: 720px) {
+	@media (min-width: 45rem) {
 		.sheet__def {
-			grid-template-columns: 200px 1fr;
-			gap: 32px;
+			grid-template-columns: 12.5rem 1fr;
+			gap: 2rem;
 			align-items: baseline;
 		}
 	}
@@ -579,17 +579,17 @@
 	.sheet__pull-label {
 		display: block;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
-		margin-bottom: 14px;
+		margin-bottom: 0.875rem;
 	}
 
 	.sheet__pull-text {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(22px, 2.8vw, 32px);
+		font-size: clamp(1.375rem, 2.8vw, 2rem);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
 		color: var(--ink);
@@ -610,7 +610,7 @@
 	@keyframes card-in {
 		from {
 			opacity: 0;
-			transform: translateY(28px);
+			transform: translateY(1.75rem);
 		}
 		to {
 			opacity: 1;
