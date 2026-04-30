@@ -331,13 +331,26 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await page.goto('/');
 		await expect(page.locator('#result')).toBeAttached();
 		// The result section sits at the bottom of a long scroll-snapped page.
-		// Scroll the bars into view before interacting — auto-scroll on click
-		// fights the snap container.
+		// Scroll the verdict block into view before interacting — auto-scroll
+		// on click fights the snap container.
 		await scrollToElement(page, 'result');
 
-		// The bars are buttons — click introvert and assert the dialog mounts
-		// with the right archetype, the canonical headline lands, and dismissal
-		// returns focus to the trigger.
+		// Primary affordance: the "Read your full field guide" CTA at the foot
+		// of the Verdict block. Opens the dominant archetype's sheet.
+		const primary = page.locator('[data-testid="result-read-guide-button"]');
+		await primary.scrollIntoViewIfNeeded();
+		const dominantArchetype = await page.locator('#result').getAttribute('data-dominant');
+		await primary.click();
+		const primaryDialog = page.locator('[role="dialog"][aria-modal="true"]');
+		await expect(primaryDialog).toBeVisible();
+		await expect(primaryDialog).toHaveAttribute('data-archetype', dominantArchetype ?? '');
+		await page.keyboard.press('Escape');
+		await expect(primaryDialog).toHaveCount(0);
+		await expect(primary).toBeFocused();
+
+		// Secondary affordance: per-vert bar buttons. Click introvert directly,
+		// assert the dialog mounts for that archetype, and that escape returns
+		// focus to the bar trigger.
 		const trigger = page.locator('[data-testid="result-bar-button-introvert"]');
 		await trigger.scrollIntoViewIfNeeded();
 		await trigger.click();

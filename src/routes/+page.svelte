@@ -438,6 +438,15 @@
 					{#each bodyParas as para, i (i)}
 						<p class="result__prose">{para}</p>
 					{/each}
+					<button
+						type="button"
+						class="block__cta"
+						onclick={() => openSheet(dominant)}
+						data-testid="result-read-guide-button"
+					>
+						<em>Read your full field guide</em>
+						<span class="block__cta-glyph" aria-hidden="true">→</span>
+					</button>
 				</header>
 
 				<section class="block" aria-labelledby="result-breakdown">
@@ -876,6 +885,61 @@
 	.block__meta {
 		letter-spacing: 0.12em;
 		color: var(--ink-50);
+	}
+
+	/* Block-level call-to-action — italic display + arrow glyph, archetype-
+	   tinted underline. Sits at the foot of a block as the natural "read on"
+	   gesture. Same primitive shape as the sheet's close button so the two
+	   ends of the editorial loop feel related. */
+	.block__cta {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 12px;
+		margin-top: 36px;
+		padding: 6px 0 8px;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid var(--dominant-mid, var(--ink));
+		color: var(--ink);
+		font-family: var(--font-display);
+		font-size: clamp(20px, 2.4vw, 26px);
+		line-height: 1.1;
+		cursor: pointer;
+		transition:
+			gap 0.2s ease,
+			color 0.2s ease;
+	}
+
+	.block__cta em {
+		font-style: italic;
+	}
+
+	.block__cta-glyph {
+		font-family: var(--font-sans);
+		font-style: normal;
+		font-size: 18px;
+		color: var(--dominant-mid, var(--ink-70));
+		transition:
+			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
+			color 0.18s ease;
+	}
+
+	.block__cta:hover,
+	.block__cta:focus-visible {
+		gap: 18px;
+		color: var(--dominant-ink, var(--ink));
+	}
+
+	.block__cta:hover .block__cta-glyph,
+	.block__cta:focus-visible .block__cta-glyph {
+		transform: translateX(6px);
+		color: var(--dominant-ink, var(--ink));
+	}
+
+	.block__cta:focus-visible {
+		outline: 2px solid var(--dominant-mid, var(--ink));
+		outline-offset: 4px;
+		border-radius: 2px;
 	}
 
 	.result__title {
