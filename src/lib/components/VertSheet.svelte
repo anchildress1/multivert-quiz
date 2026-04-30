@@ -92,8 +92,8 @@
 		<article class="sheet__paper" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
 			<header class="sheet__head">
 				<span class="sheet__eyebrow">
-					<span class="sheet__eyebrow-mark" aria-hidden="true">§</span>
-					on being &nbsp;<em>a {meta.name.toLowerCase()}</em>
+					<span class="sheet__eyebrow-mark" aria-hidden="true">№</span>
+					a field guide to <em>the {meta.name.toLowerCase()}</em>
 				</span>
 				<button
 					type="button"
@@ -117,51 +117,58 @@
 				<p class="sheet__body">{desc.body}</p>
 			</div>
 
-			<section class="sheet__signs" aria-labelledby="vert-sheet-signs">
-				<h3 id="vert-sheet-signs" class="sheet__h3">
+			<section class="sheet__day" aria-labelledby="vert-sheet-day">
+				<h3 id="vert-sheet-day" class="sheet__h3">
 					<span class="sheet__h3-mark" aria-hidden="true">i.</span>
-					Signs you might be one
+					<span>A day in the life</span>
 				</h3>
-				<ol class="sheet__signs-list">
-					{#each desc.deep.signs as sign, i (sign)}
-						<li class="sheet__sign">
-							<span class="sheet__sign-num" aria-hidden="true">
+				<p class="sheet__day-text">{desc.deep.dayInTheLife}</p>
+			</section>
+
+			<section class="sheet__truths" aria-labelledby="vert-sheet-truths">
+				<h3 id="vert-sheet-truths" class="sheet__h3">
+					<span class="sheet__h3-mark" aria-hidden="true">ii.</span>
+					<span>Five things that are true and you've never told anyone</span>
+				</h3>
+				<ol class="sheet__truth-list">
+					{#each desc.deep.trueThings as line, i (line)}
+						<li class="sheet__truth">
+							<span class="sheet__truth-num" aria-hidden="true">
 								{String(i + 1).padStart(2, '0')}
 							</span>
-							<span class="sheet__sign-text">{sign}</span>
+							<span class="sheet__truth-text">{line}</span>
 						</li>
 					{/each}
 				</ol>
 			</section>
 
-			<section class="sheet__pull" aria-labelledby="vert-sheet-pull">
-				<span id="vert-sheet-pull" class="sheet__pull-eyebrow">Often mistaken for</span>
-				<p class="sheet__pull-text">{desc.deep.mistakenFor}</p>
+			<section class="sheet__saints" aria-labelledby="vert-sheet-saints">
+				<h3 id="vert-sheet-saints" class="sheet__h3">
+					<span class="sheet__h3-mark" aria-hidden="true">iii.</span>
+					<span>Patron saints, unofficial</span>
+				</h3>
+				<ul class="sheet__saint-list">
+					{#each desc.deep.patronSaints as saint (saint)}
+						<li class="sheet__saint">{saint}</li>
+					{/each}
+				</ul>
 			</section>
 
 			<dl class="sheet__defs">
 				<div class="sheet__def">
-					<dt>What you're actually good at</dt>
-					<dd>{desc.deep.gifts}</dd>
+					<dt>What helps</dt>
+					<dd>{desc.deep.whatHelps}</dd>
 				</div>
 				<div class="sheet__def">
-					<dt>What this costs you</dt>
-					<dd>{desc.deep.costs}</dd>
-				</div>
-				<div class="sheet__def">
-					<dt>How you come back online</dt>
-					<dd>{desc.deep.recharge}</dd>
+					<dt>What kills you</dt>
+					<dd>{desc.deep.whatKillsYou}</dd>
 				</div>
 			</dl>
 
-			<footer class="sheet__credits" aria-labelledby="vert-sheet-credits">
-				<span id="vert-sheet-credits" class="sheet__credits-eyebrow">The receipts</span>
-				<ul class="sheet__credits-list">
-					{#each desc.deep.sources as src (src)}
-						<li>{src}</li>
-					{/each}
-				</ul>
-			</footer>
+			<aside class="sheet__pull" aria-label="closing line">
+				<span class="sheet__pull-eyebrow">You'll never admit it, but —</span>
+				<p class="sheet__pull-text">{desc.deep.youllNeverAdmit}</p>
+			</aside>
 		</article>
 	</div>
 {/if}
@@ -252,7 +259,8 @@
 	.sheet__eyebrow {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 10px;
+		flex-wrap: wrap;
+		gap: 6px 10px;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;
@@ -271,7 +279,7 @@
 
 	.sheet__eyebrow-mark {
 		font-family: var(--font-display);
-		font-size: 16px;
+		font-size: 17px;
 		color: var(--sheet-mid);
 	}
 
@@ -328,7 +336,7 @@
 	}
 
 	.sheet__lede {
-		margin-bottom: 48px;
+		margin-bottom: 56px;
 	}
 
 	.sheet__name-line {
@@ -397,7 +405,7 @@
 	.sheet__h3 {
 		display: flex;
 		align-items: baseline;
-		gap: 12px;
+		gap: 14px;
 		font-family: var(--font-display);
 		font-weight: 400;
 		font-style: italic;
@@ -405,6 +413,7 @@
 		letter-spacing: -0.015em;
 		color: var(--ink);
 		margin: 0 0 24px;
+		text-wrap: balance;
 	}
 
 	.sheet__h3-mark {
@@ -412,39 +421,65 @@
 		font-style: normal;
 		font-size: 13px;
 		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		text-transform: lowercase;
 		color: var(--sheet-mid);
-		min-width: 18px;
+		min-width: 22px;
 	}
 
-	.sheet__signs {
+	/* "A day in the life" — the centrepiece. Larger display-serif paragraph
+	   with a subtle drop-cap and tighter measure than the body. */
+	.sheet__day {
+		margin: 0 0 56px;
+	}
+
+	.sheet__day-text {
+		max-width: 60ch;
+		font-family: var(--font-display);
+		font-size: clamp(18px, 1.7vw, 21px);
+		line-height: 1.55;
+		color: var(--ink);
+		margin: 0;
+		text-wrap: pretty;
+	}
+
+	.sheet__day-text::first-letter {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: 3.4em;
+		line-height: 0.9;
+		float: left;
+		padding: 0.05em 0.12em 0 0;
+		color: var(--sheet-ink);
+	}
+
+	.sheet__truths {
 		margin-bottom: 56px;
 	}
 
-	.sheet__signs-list {
+	.sheet__truth-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 18px;
+		gap: 16px;
 	}
 
-	.sheet__sign {
+	.sheet__truth {
 		display: grid;
 		grid-template-columns: 36px 1fr;
 		align-items: baseline;
 		gap: 18px;
-		padding-top: 18px;
+		padding-top: 16px;
 		border-top: 1px solid var(--ink-08);
 	}
 
-	.sheet__sign:first-child {
+	.sheet__truth:first-child {
 		padding-top: 0;
 		border-top: none;
 	}
 
-	.sheet__sign-num {
+	.sheet__truth-num {
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.1em;
@@ -452,62 +487,69 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.sheet__sign-text {
+	.sheet__truth-text {
 		font-size: 16px;
 		line-height: 1.55;
 		color: var(--ink);
 		text-wrap: pretty;
 	}
 
-	/* Pull-quote callout that sits as a clear break between the signs and the
-	   "what you're good at / costs / recharge" definition list. */
-	.sheet__pull {
-		margin: 0 0 56px;
-		padding: 28px 28px 28px 32px;
-		background: color-mix(in oklab, var(--sheet-soft) 60%, var(--paper));
-		border-left: 3px solid var(--sheet-mid);
-		border-radius: 0 var(--card-radius) var(--card-radius) 0;
+	/* Patron saints — the magazine equivalent of fan-cast credits. Each item
+	   reads as a hand-set entry rather than a bulleted list. */
+	.sheet__saints {
+		margin-bottom: 56px;
 	}
 
-	.sheet__pull-eyebrow {
-		display: block;
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--sheet-ink);
-		margin-bottom: 10px;
+	.sheet__saint-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 
-	.sheet__pull-text {
+	.sheet__saint {
+		position: relative;
+		padding: 4px 0 4px 24px;
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(20px, 2.4vw, 26px);
-		line-height: 1.3;
+		font-size: clamp(17px, 1.7vw, 19px);
+		line-height: 1.4;
 		color: var(--ink);
-		margin: 0;
-		text-wrap: balance;
+		text-wrap: pretty;
+	}
+
+	.sheet__saint::before {
+		content: '✦';
+		position: absolute;
+		left: 0;
+		top: 0.35em;
+		font-family: var(--font-sans);
+		font-style: normal;
+		font-size: 11px;
+		color: var(--sheet-mid);
 	}
 
 	.sheet__defs {
-		display: flex;
-		flex-direction: column;
-		gap: 28px;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0;
 		margin: 0 0 56px;
-		padding: 0;
+		padding: 28px 0;
+		border-top: 1px solid var(--ink-08);
+		border-bottom: 1px solid var(--ink-08);
 	}
 
 	.sheet__def {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 8px;
-		padding-bottom: 28px;
-		border-bottom: 1px dashed var(--ink-12);
+		gap: 6px;
+		padding: 18px 0;
 	}
 
-	.sheet__def:last-child {
-		padding-bottom: 0;
-		border-bottom: none;
+	.sheet__def + .sheet__def {
+		border-top: 1px dashed var(--ink-12);
 	}
 
 	.sheet__def dt {
@@ -536,35 +578,34 @@
 		}
 	}
 
-	.sheet__credits {
-		padding-top: 24px;
-		border-top: 1px solid var(--ink-08);
+	/* Closing pull-quote — the "you'll never admit it" line. Big, italic,
+	   tinted with the archetype's mid hue. The eyebrow above keeps the
+	   editorial frame. */
+	.sheet__pull {
+		margin: 0;
+		padding: 32px 0 0;
 	}
 
-	.sheet__credits-eyebrow {
+	.sheet__pull-eyebrow {
 		display: block;
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 11px;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--ink-70);
-		margin-bottom: 12px;
+		color: var(--sheet-ink);
+		margin-bottom: 14px;
 	}
 
-	.sheet__credits-list {
-		list-style: none;
+	.sheet__pull-text {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(22px, 2.8vw, 30px);
+		line-height: 1.25;
+		letter-spacing: -0.015em;
+		color: var(--ink);
 		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.sheet__credits-list li {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		line-height: 1.55;
-		color: var(--ink-70);
+		text-wrap: balance;
+		max-width: 32ch;
 	}
 
 	@keyframes sheet-in {

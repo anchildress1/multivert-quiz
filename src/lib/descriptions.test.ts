@@ -23,12 +23,12 @@ describe('descriptions registry — invariants', () => {
 	});
 });
 
-describe('descriptions registry — deep editorial copy', () => {
+describe('descriptions registry — field-guide deep block', () => {
 	const requiredScalarFields: readonly (keyof DeepDescription)[] = [
-		'mistakenFor',
-		'gifts',
-		'costs',
-		'recharge'
+		'dayInTheLife',
+		'whatHelps',
+		'whatKillsYou',
+		'youllNeverAdmit'
 	];
 
 	it.each(TYPES)('%s has a populated deep block', (t) => {
@@ -36,13 +36,27 @@ describe('descriptions registry — deep editorial copy', () => {
 		expect(deep).toBeDefined();
 	});
 
-	it.each(TYPES)('%s deep block has 4–5 distinct, non-empty signs', (t) => {
-		const { signs } = descriptions[t].deep;
-		expect(signs.length).toBeGreaterThanOrEqual(4);
-		expect(signs.length).toBeLessThanOrEqual(5);
-		expect(new Set(signs).size).toBe(signs.length);
-		for (const sign of signs) {
-			expect(sign.trim().length).toBeGreaterThanOrEqual(20);
+	it.each(TYPES)('%s.dayInTheLife is a substantial vignette (≥220 chars)', (t) => {
+		const text = descriptions[t].deep.dayInTheLife;
+		expect(text.trim().length).toBeGreaterThanOrEqual(220);
+	});
+
+	it.each(TYPES)('%s has exactly five distinct, non-trivial trueThings', (t) => {
+		const { trueThings } = descriptions[t].deep;
+		expect(trueThings.length).toBe(5);
+		expect(new Set(trueThings).size).toBe(trueThings.length);
+		for (const line of trueThings) {
+			expect(line.trim().length).toBeGreaterThanOrEqual(20);
+		}
+	});
+
+	it.each(TYPES)('%s has 3-4 distinct patronSaints', (t) => {
+		const { patronSaints } = descriptions[t].deep;
+		expect(patronSaints.length).toBeGreaterThanOrEqual(3);
+		expect(patronSaints.length).toBeLessThanOrEqual(4);
+		expect(new Set(patronSaints).size).toBe(patronSaints.length);
+		for (const saint of patronSaints) {
+			expect(saint.trim().length).toBeGreaterThanOrEqual(8);
 		}
 	});
 
@@ -55,21 +69,20 @@ describe('descriptions registry — deep editorial copy', () => {
 		}
 	);
 
-	it.each(TYPES)('%s deep block has at least two sources', (t) => {
-		const { sources } = descriptions[t].deep;
-		expect(sources.length).toBeGreaterThanOrEqual(2);
-		for (const src of sources) {
-			expect(src.trim().length).toBeGreaterThan(0);
+	it('the deep block exposes only the field-guide sections (no encyclopedia leftovers)', () => {
+		// The previous schema had `signs`, `mistakenFor`, `gifts`, `costs`,
+		// `recharge`, `sources`. Pin the new shape so a future revert can't
+		// silently re-introduce the personality-test article voice.
+		const expectedKeys = [
+			'dayInTheLife',
+			'patronSaints',
+			'trueThings',
+			'whatHelps',
+			'whatKillsYou',
+			'youllNeverAdmit'
+		];
+		for (const t of TYPES) {
+			expect(Object.keys(descriptions[t].deep).sort()).toEqual(expectedKeys);
 		}
-	});
-
-	it("otrovert sources reference Rami Kaminski (the construct's coiner)", () => {
-		const text = descriptions.otrovert.deep.sources.join(' ').toLowerCase();
-		expect(text).toContain('kaminski');
-	});
-
-	it('ambivert sources reference Adam Grant (the canonical study)', () => {
-		const text = descriptions.ambivert.deep.sources.join(' ').toLowerCase();
-		expect(text).toContain('grant');
 	});
 });

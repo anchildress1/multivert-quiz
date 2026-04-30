@@ -43,26 +43,58 @@ describe('VertSheet — render gating', () => {
 	});
 });
 
-describe('VertSheet — archetype content', () => {
-	it.each(ARCHETYPES)('renders the canonical headline + body for %s', (archetype) => {
+describe('VertSheet — field-guide content', () => {
+	it.each(ARCHETYPES)('renders the canonical headline for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
 		const text = container.textContent ?? '';
 		expect(text).toContain(VERT_NAMES[archetype].name);
 		expect(text).toContain(descriptions[archetype].headline);
-		// Pull a stable substring of the body that won't change between minor edits.
-		expect(text.length).toBeGreaterThan(descriptions[archetype].body.length / 2);
 	});
 
-	it.each(ARCHETYPES)('renders all signs for %s as a numbered list', (archetype) => {
+	it.each(ARCHETYPES)('renders the day-in-the-life vignette for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
-		const items = container.querySelectorAll('.sheet__sign');
-		expect(items.length).toBe(descriptions[archetype].deep.signs.length);
+		const day = container.querySelector('.sheet__day-text');
+		expect(day).not.toBeNull();
+		// Pin a stable substring from each vignette so a future copy revert is
+		// caught here, not just by the data-shape test next to it.
+		const expectedFragment = descriptions[archetype].deep.dayInTheLife.slice(0, 40);
+		expect(day?.textContent).toContain(expectedFragment);
 	});
 
-	it.each(ARCHETYPES)('renders the credits roll for %s', (archetype) => {
+	it.each(ARCHETYPES)('renders all five trueThings for %s as a numbered list', (archetype) => {
 		const { container } = renderSheet({ archetype });
-		const credits = container.querySelectorAll('.sheet__credits-list li');
-		expect(credits.length).toBe(descriptions[archetype].deep.sources.length);
+		const items = container.querySelectorAll('.sheet__truth');
+		expect(items.length).toBe(descriptions[archetype].deep.trueThings.length);
+		expect(items.length).toBe(5);
+	});
+
+	it.each(ARCHETYPES)('renders the patron saints for %s', (archetype) => {
+		const { container } = renderSheet({ archetype });
+		const saints = container.querySelectorAll('.sheet__saint');
+		expect(saints.length).toBe(descriptions[archetype].deep.patronSaints.length);
+	});
+
+	it.each(ARCHETYPES)('renders whatHelps and whatKillsYou definitions for %s', (archetype) => {
+		const { container } = renderSheet({ archetype });
+		const text = container.textContent ?? '';
+		expect(text).toContain(descriptions[archetype].deep.whatHelps);
+		expect(text).toContain(descriptions[archetype].deep.whatKillsYou);
+	});
+
+	it.each(ARCHETYPES)('renders the closing pull-quote for %s', (archetype) => {
+		const { container } = renderSheet({ archetype });
+		const pull = container.querySelector('.sheet__pull-text');
+		expect(pull).not.toBeNull();
+		expect(pull?.textContent?.trim()).toBe(descriptions[archetype].deep.youllNeverAdmit);
+	});
+
+	it('does not render an encyclopedia "sources/receipts" credits roll', () => {
+		// Regression pin: the v2 layout had a `.sheet__credits` block with a
+		// "The receipts" label. The field-guide rewrite drops it — make sure
+		// nobody walks it back in.
+		const { container } = renderSheet();
+		expect(container.querySelector('.sheet__credits')).toBeNull();
+		expect(container.textContent ?? '').not.toMatch(/the receipts/i);
 	});
 
 	it('writes the archetype to data-archetype on the dialog', () => {
