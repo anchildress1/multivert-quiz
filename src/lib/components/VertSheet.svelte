@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { VERT_NAMES, type Archetype } from '$lib/archetypes';
+	import { VERT_NAMES, VERT_ORDER, type Archetype } from '$lib/archetypes';
 	import { descriptions } from '$lib/descriptions';
 
 	interface Props {
@@ -71,6 +71,7 @@
 {#if open && archetype}
 	{@const meta = VERT_NAMES[archetype]}
 	{@const desc = descriptions[archetype]}
+	{@const archetypeIndex = VERT_ORDER.indexOf(archetype)}
 	<div
 		class="sheet"
 		role="dialog"
@@ -89,9 +90,11 @@
 			ontouchend={onclose}
 		></div>
 
-		<article class="sheet__paper" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
-			<header class="sheet__head">
-				<span class="sheet__eyebrow">on being <em>an {meta.name.toLowerCase()}</em></span>
+		<article class="sheet__card" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
+			<header class="sheet__chrome">
+				<span class="sheet__ref">
+					№ {String(archetypeIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; on being an {meta.name.toLowerCase()}
+				</span>
 				<button
 					type="button"
 					class="sheet__close"
@@ -103,24 +106,27 @@
 				</button>
 			</header>
 
+			<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
+			<p class="sheet__tagline">{meta.label}.</p>
+
 			<div class="sheet__lede">
-				<h2 id="vert-sheet-title" class="sheet__headline">{desc.headline}</h2>
+				<p class="sheet__headline">{desc.headline}</p>
 				<p class="sheet__body">{desc.body}</p>
 			</div>
 
-			<section class="sheet__day" aria-labelledby="vert-sheet-day">
-				<h3 id="vert-sheet-day" class="sheet__h3">
-					<span class="sheet__h3-mark" aria-hidden="true">i.</span>
-					<span>A day in the life</span>
-				</h3>
+			<section class="sheet__section sheet__section--day" aria-labelledby="vert-sheet-day">
+				<p id="vert-sheet-day" class="sheet__section-label">
+					<span class="sheet__section-num">i.</span>
+					A day in the life
+				</p>
 				<p class="sheet__day-text">{desc.deep.dayInTheLife}</p>
 			</section>
 
-			<section class="sheet__truths" aria-labelledby="vert-sheet-truths">
-				<h3 id="vert-sheet-truths" class="sheet__h3">
-					<span class="sheet__h3-mark" aria-hidden="true">ii.</span>
-					<span>Five things that are true and you've never told anyone</span>
-				</h3>
+			<section class="sheet__section" aria-labelledby="vert-sheet-truths">
+				<p id="vert-sheet-truths" class="sheet__section-label">
+					<span class="sheet__section-num">ii.</span>
+					Five things that are true and you've never told anyone
+				</p>
 				<ol class="sheet__truth-list">
 					{#each desc.deep.trueThings as line, i (line)}
 						<li class="sheet__truth">
@@ -133,11 +139,11 @@
 				</ol>
 			</section>
 
-			<section class="sheet__giveaways" aria-labelledby="vert-sheet-giveaways">
-				<h3 id="vert-sheet-giveaways" class="sheet__h3">
-					<span class="sheet__h3-mark" aria-hidden="true">iii.</span>
-					<span>The giveaways</span>
-				</h3>
+			<section class="sheet__section" aria-labelledby="vert-sheet-giveaways">
+				<p id="vert-sheet-giveaways" class="sheet__section-label">
+					<span class="sheet__section-num">iii.</span>
+					The giveaways
+				</p>
 				<ul class="sheet__giveaway-list">
 					{#each desc.deep.giveaways as tell (tell)}
 						<li class="sheet__giveaway">{tell}</li>
@@ -157,7 +163,7 @@
 			</dl>
 
 			<aside class="sheet__pull" aria-label="closing line">
-				<span class="sheet__pull-eyebrow">You'll never admit it, but —</span>
+				<span class="sheet__pull-label">You'll never admit it, but —</span>
 				<p class="sheet__pull-text">{desc.deep.youllNeverAdmit}</p>
 			</aside>
 		</article>
@@ -165,11 +171,12 @@
 {/if}
 
 <style>
-	/* Sheet is a fixed-position editorial spread that overlays the entire
-	   viewport. The `.sheet__paper` article is the actual content surface;
-	   the scrim sits behind it and dismisses on click. Everything is bound to
-	   `--sheet-{soft|mid|ink}` set inline from the active archetype so
-	   colours match the bar the user clicked. */
+	/* The sheet is a per-archetype Pantone-style swatch card overlaid on
+	   the page. Same glass-card surface as the result hero — colour mixed
+	   into paper for a softer field, plus radial highlights for the glass
+	   sheen. Type prints in the deep tone-on-tone ink. The whole card
+	   reads as the SAME visual material as the swatch hero you tapped
+	   from, just expanded into a deeper view. */
 	.sheet {
 		position: fixed;
 		inset: 0;
@@ -194,35 +201,45 @@
 		cursor: pointer;
 	}
 
-	.sheet__paper {
+	.sheet__card {
 		position: relative;
 		justify-self: center;
 		align-self: stretch;
 		width: 100%;
-		max-width: 760px;
+		max-width: 880px;
 		max-height: 100vh;
 		overflow-y: auto;
-		padding: clamp(40px, 6vh, 88px) clamp(20px, 5vw, 64px) clamp(48px, 8vh, 96px);
-		background: var(--paper);
-		color: var(--ink);
+		padding: clamp(28px, 4vh, 56px) clamp(20px, 5vw, 72px) clamp(48px, 8vh, 96px);
+		background:
+			radial-gradient(
+				ellipse 70% 55% at 18% 8%,
+				color-mix(in oklab, white 30%, transparent) 0%,
+				transparent 65%
+			),
+			color-mix(in oklab, var(--sheet-mid) 72%, var(--paper));
+		color: var(--sheet-ink);
 		box-shadow: 0 40px 120px -40px color-mix(in oklab, var(--ink) 70%, transparent);
-		animation: paper-in 320ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+		animation: card-in 320ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 		outline: none;
 	}
 
-	/* Subtle archetype-tinted radial wash on the paper itself, anchored
-	   top-left. Echoes the result page's `.result::before`. */
-	.sheet__paper::before {
+	/* Bottom-right glass sheen — same gesture as the result hero. */
+	.sheet__card::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		z-index: -1;
-		background: radial-gradient(
-			ellipse 60% 50% at 8% 6%,
-			color-mix(in oklab, var(--sheet-soft) 80%, transparent) 0%,
-			transparent 70%
-		);
 		pointer-events: none;
+		background: radial-gradient(
+			ellipse 50% 40% at 88% 92%,
+			color-mix(in oklab, var(--sheet-ink) 14%, transparent) 0%,
+			transparent 60%
+		);
+	}
+
+	/* Lift the content above the bottom-right sheen. */
+	.sheet__card > * {
+		position: relative;
+		z-index: 1;
 	}
 
 	@media (min-width: 760px) {
@@ -230,42 +247,37 @@
 			padding: clamp(20px, 4vh, 56px);
 			place-items: center;
 		}
-		.sheet__paper {
-			max-height: min(92vh, 920px);
+		.sheet__card {
+			max-height: min(92vh, 960px);
 			border-radius: var(--card-radius);
-			border: 1px solid var(--ink-08);
 		}
 	}
 
-	/* Calm header band — eyebrow on the left, close on the right, no rule
-	   beneath. The `.sheet__lede` provides its own breathing room before the
-	   headline lands, so a horizontal divider here just chops the spread up. */
-	.sheet__head {
+	/* Pantone chrome — same shape as the swatch hero's chrome row, so
+	   opening the sheet feels like turning the colour-card over to read
+	   the back. */
+	.sheet__chrome {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 16px;
-		margin-bottom: 40px;
-	}
-
-	/* One typographic register for the eyebrow — italic display reading
-	   naturally ("on being an otrovert"), with the archetype name picked out
-	   in the dominant ink. No mono CAPS, no ornate № mark. */
-	.sheet__eyebrow {
-		font-family: var(--font-display);
-		font-size: clamp(15px, 1.4vw, 17px);
-		line-height: 1.1;
-		color: var(--ink-70);
-	}
-
-	.sheet__eyebrow em {
-		font-style: italic;
+		gap: 12px 24px;
+		flex-wrap: wrap;
+		margin-bottom: clamp(24px, 4vh, 48px);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 		color: var(--sheet-ink);
+		opacity: 0.85;
 	}
 
-	/* Editorial close — italic display word with a small sans glyph beside it,
-	   mirroring the retake button on the result page. Underline appears on
-	   hover/focus so the affordance is unmistakable without shouting. */
+	.sheet__ref {
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Close button — a small mono ALL-CAPS gesture so it sits in the same
+	   chrome register as the № reference, instead of fighting it with a
+	   different typeface. */
 	.sheet__close {
 		display: inline-flex;
 		align-items: baseline;
@@ -274,119 +286,151 @@
 		background: transparent;
 		border: none;
 		border-bottom: 1px solid transparent;
-		color: var(--ink);
-		font-family: var(--font-display);
-		font-size: 18px;
+		color: var(--sheet-ink);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 		line-height: 1;
 		cursor: pointer;
 		transition:
 			border-color 0.18s ease,
-			color 0.18s ease,
-			gap 0.2s ease;
+			gap 0.2s ease,
+			opacity 0.18s ease;
+		opacity: 0.85;
 	}
 
 	.sheet__close em {
+		font-family: var(--font-display);
 		font-style: italic;
+		text-transform: none;
+		letter-spacing: 0;
+		font-size: 14px;
 	}
 
 	.sheet__close-glyph {
 		font-family: var(--font-sans);
-		font-size: 18px;
-		color: var(--ink-70);
-		transition:
-			color 0.18s ease,
-			transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+		font-size: 16px;
+		text-transform: none;
+		letter-spacing: 0;
+		transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
 	}
 
 	.sheet__close:hover,
 	.sheet__close:focus-visible {
-		border-bottom-color: var(--sheet-mid);
+		opacity: 1;
+		border-bottom-color: var(--sheet-ink);
 		gap: 12px;
 	}
 
 	.sheet__close:hover .sheet__close-glyph,
 	.sheet__close:focus-visible .sheet__close-glyph {
-		color: var(--sheet-mid);
 		transform: rotate(90deg);
 	}
 
 	.sheet__close:focus-visible {
 		outline: none;
+	}
+
+	/* Archetype name as the colour-card label — heavy sans, all-caps,
+	   sized smaller than the result hero (this is the back of the card,
+	   not the front). */
+	.sheet__name {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		font-size: clamp(48px, 8vw, 96px);
+		line-height: 0.9;
+		letter-spacing: -0.04em;
 		color: var(--sheet-ink);
+		margin: 0;
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
+
+	/* Tagline right-aligned to the card edge — mirrors the swatch hero's
+	   right-aligned label. */
+	.sheet__tagline {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(16px, 1.8vw, 22px);
+		line-height: 1.2;
+		color: var(--sheet-ink);
+		opacity: 0.78;
+		margin: clamp(8px, 1.2vh, 14px) 0 clamp(32px, 5vh, 56px);
+		text-align: right;
 	}
 
 	.sheet__lede {
-		margin-bottom: 56px;
+		margin-bottom: clamp(40px, 7vh, 72px);
+		max-width: 60ch;
 	}
 
 	.sheet__headline {
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(34px, 5.6vw, 60px);
-		line-height: 1.02;
-		letter-spacing: -0.025em;
-		margin: 0 0 28px;
+		font-family: var(--font-sans);
+		font-weight: 500;
+		font-size: clamp(22px, 2.6vw, 30px);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		color: var(--sheet-ink);
+		margin: 0 0 24px;
+		max-width: 28ch;
 		text-wrap: balance;
-		color: var(--ink);
 	}
 
 	.sheet__body {
-		max-width: 56ch;
-		font-family: var(--font-display);
-		font-size: clamp(17px, 1.6vw, 19px);
-		line-height: 1.55;
-		color: var(--ink-70);
+		font-family: var(--font-sans);
+		font-size: clamp(15px, 1.4vw, 17px);
+		line-height: 1.6;
+		color: var(--sheet-ink);
 		margin: 0;
 		text-wrap: pretty;
 		white-space: pre-wrap;
+		opacity: 0.92;
 	}
 
-	.sheet__h3 {
+	/* ── Section blocks ───────────────────────────────────────────────────
+	   Each section gets a mono Pantone-card label (same shape as the
+	   chrome above) plus its body content. No more italic-display H3s —
+	   the surface is a colour card now, sans is the natural register. */
+	.sheet__section {
+		margin-bottom: clamp(40px, 7vh, 72px);
+	}
+
+	.sheet__section-label {
 		display: flex;
 		align-items: baseline;
-		gap: 14px;
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-style: italic;
-		font-size: clamp(22px, 2.4vw, 28px);
-		letter-spacing: -0.015em;
-		color: var(--ink);
-		margin: 0 0 24px;
+		gap: 12px;
+		margin: 0 0 20px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--sheet-ink);
+		opacity: 0.85;
 		text-wrap: balance;
 	}
 
-	.sheet__h3-mark {
+	.sheet__section-num {
 		font-family: var(--font-mono);
-		font-style: normal;
-		font-size: 13px;
+		font-size: 11px;
 		letter-spacing: 0.1em;
 		text-transform: lowercase;
-		color: var(--sheet-mid);
-		min-width: 22px;
+		opacity: 0.7;
 	}
 
-	/* "A day in the life" — the centrepiece. Larger display-serif paragraph
-	   with a subtle drop-cap and tighter measure than the body. */
-	.sheet__day {
-		margin: 0 0 56px;
-	}
-
+	/* Day-in-the-life — the centrepiece. Sans body, drop-cap on the first
+	   letter (Y, T, etc.) sized via `initial-letter` so it snaps to three
+	   lines cleanly. */
 	.sheet__day-text {
 		max-width: 60ch;
-		font-family: var(--font-display);
-		font-size: clamp(18px, 1.7vw, 21px);
-		line-height: 1.55;
-		color: var(--ink);
+		font-family: var(--font-sans);
+		font-size: clamp(16px, 1.5vw, 18px);
+		line-height: 1.6;
+		color: var(--sheet-ink);
 		margin: 0;
 		text-wrap: pretty;
 	}
 
-	/* Drop-cap on the day-in-the-life vignette. `initial-letter: 3` is the
-	   spec'd way to say "drop the cap exactly three lines deep with proper
-	   baseline alignment" — the float-based approach we had before couldn't
-	   snap to integer line counts and always landed half-off. The Safari
-	   prefix is still required as of 2026. Browsers without support fall
-	   back to a plain italic tinted first letter, which is unobtrusive. */
 	.sheet__day-text::first-letter {
 		font-family: var(--font-display);
 		font-style: italic;
@@ -397,10 +441,10 @@
 		margin-right: 0.08em;
 	}
 
-	.sheet__truths {
-		margin-bottom: 56px;
-	}
-
+	/* Five things — numbered list with mono numerals in a left gutter,
+	   each item separated by a hairline rule in the deep ink at low
+	   opacity (so it reads on the glass card without looking like a
+	   form). */
 	.sheet__truth-list {
 		list-style: none;
 		margin: 0;
@@ -416,7 +460,7 @@
 		align-items: baseline;
 		gap: 18px;
 		padding-top: 16px;
-		border-top: 1px solid var(--ink-08);
+		border-top: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
 	}
 
 	.sheet__truth:first-child {
@@ -428,24 +472,21 @@
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.1em;
-		color: var(--sheet-mid);
+		color: var(--sheet-ink);
 		font-variant-numeric: tabular-nums;
+		opacity: 0.7;
 	}
 
 	.sheet__truth-text {
-		font-size: 16px;
+		font-family: var(--font-sans);
+		font-size: clamp(15px, 1.4vw, 17px);
 		line-height: 1.55;
-		color: var(--ink);
+		color: var(--sheet-ink);
 		text-wrap: pretty;
 	}
 
-	/* The giveaways — observable tells, set as a hand-typed list with a small
-	   tinted bullet rather than a generic disc. Italic display so they read
-	   as voice, not data. */
-	.sheet__giveaways {
-		margin-bottom: 56px;
-	}
-
+	/* Giveaways — italic display, em-dash bullet. The voice register
+	   shifts here on purpose: signals are scenic, not data. */
 	.sheet__giveaway-list {
 		list-style: none;
 		margin: 0;
@@ -460,9 +501,9 @@
 		padding: 4px 0 4px 24px;
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(17px, 1.7vw, 19px);
+		font-size: clamp(17px, 1.7vw, 20px);
 		line-height: 1.4;
-		color: var(--ink);
+		color: var(--sheet-ink);
 		text-wrap: pretty;
 	}
 
@@ -471,19 +512,21 @@
 		position: absolute;
 		left: 0;
 		top: 0;
-		font-family: var(--font-display);
 		font-style: normal;
-		color: var(--sheet-mid);
+		opacity: 0.6;
 	}
 
+	/* What helps / What kills you — definition pair set in two columns on
+	   wide screens, stacked on narrow. Mono labels match the section
+	   chrome. */
 	.sheet__defs {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 0;
-		margin: 0 0 56px;
+		margin: 0 0 clamp(40px, 6vh, 64px);
 		padding: 28px 0;
-		border-top: 1px solid var(--ink-08);
-		border-bottom: 1px solid var(--ink-08);
+		border-top: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
+		border-bottom: 1px solid color-mix(in oklab, var(--sheet-ink) 14%, transparent);
 	}
 
 	.sheet__def {
@@ -494,7 +537,7 @@
 	}
 
 	.sheet__def + .sheet__def {
-		border-top: 1px dashed var(--ink-12);
+		border-top: 1px dashed color-mix(in oklab, var(--sheet-ink) 16%, transparent);
 	}
 
 	.sheet__def dt {
@@ -503,14 +546,16 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
+		opacity: 0.85;
 		margin: 0;
 	}
 
 	.sheet__def dd {
 		margin: 0;
-		font-size: 16px;
+		font-family: var(--font-sans);
+		font-size: clamp(15px, 1.4vw, 17px);
 		line-height: 1.6;
-		color: var(--ink);
+		color: var(--sheet-ink);
 		max-width: 60ch;
 		text-wrap: pretty;
 	}
@@ -523,34 +568,33 @@
 		}
 	}
 
-	/* Closing pull-quote — the "you'll never admit it" line. Big, italic,
-	   tinted with the archetype's mid hue. The eyebrow above keeps the
-	   editorial frame. */
+	/* Closing pull-quote — italic display, the closing voice gesture. */
 	.sheet__pull {
 		margin: 0;
-		padding: 32px 0 0;
+		padding: 0;
 	}
 
-	.sheet__pull-eyebrow {
+	.sheet__pull-label {
 		display: block;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
+		opacity: 0.75;
 		margin-bottom: 14px;
 	}
 
 	.sheet__pull-text {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(22px, 2.8vw, 30px);
-		line-height: 1.25;
+		font-size: clamp(22px, 2.8vw, 32px);
+		line-height: 1.2;
 		letter-spacing: -0.015em;
-		color: var(--ink);
+		color: var(--sheet-ink);
 		margin: 0;
 		text-wrap: balance;
-		max-width: 32ch;
+		max-width: 28ch;
 	}
 
 	@keyframes sheet-in {
@@ -562,7 +606,7 @@
 		}
 	}
 
-	@keyframes paper-in {
+	@keyframes card-in {
 		from {
 			opacity: 0;
 			transform: translateY(28px);
@@ -575,7 +619,7 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.sheet,
-		.sheet__paper {
+		.sheet__card {
 			animation: none;
 		}
 		.sheet__close-glyph {

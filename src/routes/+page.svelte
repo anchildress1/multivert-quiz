@@ -736,10 +736,10 @@
 			),
 			color-mix(in oklab, var(--swatch) 72%, var(--paper));
 		color: var(--swatch-ink);
-		/* Top padding kept lean — the sticky chapter banner is already 72px,
-		   so adding a giant top gap on the swatch leaves the colour-card
-		   feeling pushed off-screen. Bottom keeps generous breathing room. */
-		padding: clamp(32px, 5vh, 72px) clamp(20px, 5vw, 96px) clamp(72px, 12vh, 160px);
+		/* Top padding stays lean (sticky chapter banner is already 72px).
+		   Bottom is generous-but-bounded so the swatch doesn't dominate the
+		   page on tall viewports. */
+		padding: clamp(32px, 5vh, 64px) clamp(20px, 5vw, 96px) clamp(48px, 8vh, 96px);
 		position: relative;
 		overflow: hidden;
 	}
@@ -790,13 +790,13 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* The colour name — heavy sans-serif, all-caps, set as huge as the
-	   viewport will hold. This IS the swatch label. */
+	/* The colour name — heavy sans-serif, all-caps. Sized to dominate but
+	   not so big it pushes the rest of the card off-screen. */
 	.swatch__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
-		font-size: clamp(72px, 14vw, 200px);
-		line-height: 0.86;
+		font-size: clamp(56px, 11vw, 144px);
+		line-height: 0.88;
 		letter-spacing: -0.04em;
 		color: var(--swatch-ink);
 		margin: 0;
@@ -804,20 +804,24 @@
 		text-transform: uppercase;
 	}
 
+	/* Tagline right-aligned to the swatch's right edge — mirrors the
+	   chrome row's right column ("multivert · 35/35"), so the card reads
+	   with two clean text columns: name on the left, identity strip on
+	   the right. */
 	.swatch__label {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(20px, 2.4vw, 28px);
+		font-size: clamp(18px, 2vw, 24px);
 		line-height: 1.2;
 		color: var(--swatch-ink);
 		opacity: 0.78;
-		margin: clamp(16px, 2vh, 24px) 0 clamp(56px, 9vh, 96px);
-		max-width: 32ch;
+		margin: clamp(8px, 1.4vh, 16px) 0 clamp(40px, 6vh, 64px);
+		text-align: right;
 	}
 
 	.swatch__lede {
 		max-width: 60ch;
-		margin-bottom: clamp(40px, 6vh, 64px);
+		margin-bottom: clamp(28px, 4vh, 48px);
 	}
 
 	.swatch__headline {
