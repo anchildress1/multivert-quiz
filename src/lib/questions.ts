@@ -107,7 +107,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'e-04',
-		text: "At a group dinner, I'd rather sit at the end of the table than in the middle of it.",
+		text: "At a group dinner, I'd rather sit at the quiet end than in the busy middle.",
 		dimension: 'extraversion',
 		reverse: true,
 		source: 'IPIP-NEO (adapted)'
@@ -172,7 +172,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-02',
-		text: "When I introduce myself, I mention what I'm part of (team, church, company) before what I do.",
+		text: "When I introduce myself, I lead with what I'm part of — team, church, neighborhood — before I get to what I do for work.",
 		dimension: 'belonging',
 		reverse: false,
 		source: 'custom'
@@ -186,21 +186,21 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-04',
-		text: "The recurring events tied to groups I'm in (reunions, traditions, annual gatherings) are some of my favorite things on the calendar.",
+		text: 'Reunions, traditions, annual gatherings — that kind of recurring group event is some of my favorite stuff on the calendar.',
 		dimension: 'belonging',
 		reverse: false,
 		source: 'custom'
 	},
 	{
 		id: 'b-05',
-		text: "If you took away every group I'm part of, I'd feel like a smaller version of myself.",
+		text: "Belonging somewhere is a big part of what makes me feel like me — without it, I'd feel like a smaller version of myself.",
 		dimension: 'belonging',
 		reverse: false,
 		source: 'custom'
 	},
 	{
 		id: 'b-06',
-		text: 'At my recurring ritual — Sunday dinner, standing meetup, weekly hangout — I feel the most like myself.',
+		text: "I'm most myself at recurring rituals — Sunday dinner, standing meetup, weekly hangout, the kinds of things that anchor a week.",
 		dimension: 'belonging',
 		reverse: false,
 		source: 'custom'
