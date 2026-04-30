@@ -310,13 +310,17 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		// `{#if store.result}` mounts the result section once the store has a
 		// computed verdict — there is no intermediary submit panel.
 		await expect(page.locator('#result')).toBeAttached();
-		await expect(page.locator('#result-title')).toContainText(/^You are an/i);
-		await expect(page.locator('.result__bar')).toHaveCount(5);
+		// The Pantone-style swatch hero prints just the archetype name in caps —
+		// e.g. "OTROVERT" — as the colour name. No "You are an" prefix.
+		await expect(page.locator('#result-title')).toHaveText(
+			/^(INTROVERT|EXTROVERT|AMBIVERT|OMNIVERT|OTROVERT)$/
+		);
+		await expect(page.locator('.breakdown__chip')).toHaveCount(5);
 		// The body paragraphs come from `descriptions[dominant].body` — confirm
 		// at least one renders with substantive copy.
-		await expect(page.locator('.result__prose').first()).toBeAttached();
-		const proseText = (await page.locator('.result__prose').first().textContent()) ?? '';
-		expect(proseText.trim().length).toBeGreaterThanOrEqual(40);
+		await expect(page.locator('.swatch__body').first()).toBeAttached();
+		const bodyText = (await page.locator('.swatch__body').first().textContent()) ?? '';
+		expect(bodyText.trim().length).toBeGreaterThanOrEqual(40);
 		// The result section carries data-dominant matching the headline archetype,
 		// which the radial accent wash binds to via inline custom properties.
 		const dominant = await page.locator('#result').getAttribute('data-dominant');

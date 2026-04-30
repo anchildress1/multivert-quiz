@@ -382,93 +382,107 @@
 	{#if store.result}
 		{@const result = store.result}
 		{@const dominant = result.dominant}
+		{@const dominantFit = result.fits.find((f) => f.archetype === dominant)?.fit ?? 0}
+		{@const dominantIndex = VERT_ORDER.indexOf(dominant)}
 		{@const bodyParas = descriptions[dominant].body.split('\n\n')}
 		<section
 			id="result"
 			class="result"
 			aria-labelledby="result-title"
 			data-dominant={dominant}
-			style:--dominant-soft="var(--vert-{dominant}-soft)"
 			style:--dominant-mid="var(--vert-{dominant}-mid)"
 			style:--dominant-ink="var(--vert-{dominant}-ink)"
 		>
-			<div class="result__inner">
-				<header class="block">
-					<p class="block__eyebrow">
-						<span class="block__num" aria-hidden="true">i.</span>
-						<span class="block__label">Verdict</span>
-						<span class="block__meta">— {store.total} of {store.total} answered</span>
-					</p>
-					<h2 id="result-title" class="result__title">
-						You are an <em>{VERT_NAMES[dominant].name}</em>.
-					</h2>
-					<p class="result__headline">{descriptions[dominant].headline}</p>
-					{#each bodyParas as para, i (i)}
-						<p class="result__prose">{para}</p>
-					{/each}
-					<div class="block__cta-row">
-						<button
-							type="button"
-							class="block__cta"
-							onclick={() => openSheet(dominant)}
-							data-testid="result-read-guide-button"
-						>
-							<em>Read all about it</em>
-							<span class="block__cta-glyph" aria-hidden="true">→</span>
-						</button>
-					</div>
+			<!-- Pantone-style swatch hero — full-bleed dominant hue, archetype name as
+			     the "color name," reference numerals top, swatch ink throughout. -->
+			<div
+				class="swatch"
+				style:--swatch="var(--vert-{dominant}-mid)"
+				style:--swatch-ink="var(--vert-{dominant}-ink)"
+				style:--swatch-soft="var(--vert-{dominant}-soft)"
+			>
+				<header class="swatch__chrome">
+					<span class="swatch__ref">
+						№ {String(dominantIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; FIT {dominantFit.toFixed(
+							1
+						)}%
+					</span>
+					<span class="swatch__lot">multivert · {store.total}/{store.total}</span>
 				</header>
 
-				<section class="block" aria-labelledby="result-breakdown">
-					<p id="result-breakdown" class="block__eyebrow">
-						<span class="block__num" aria-hidden="true">ii.</span>
-						<span class="block__label">Five-vert breakdown</span>
-						<span class="block__meta">— independent fits, tap any vert to read its guide</span>
-					</p>
-					<ul class="result__bars">
-						{#each VERT_ORDER as vert, i (vert)}
-							{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
-							<li
-								class="result__bar"
-								data-dominant={vert === dominant}
-								style:--bar-delay="{i * 90}ms"
-							>
-								<button
-									type="button"
-									class="result__bar-button"
-									data-archetype={vert}
-									data-testid="result-bar-button-{vert}"
-									aria-label="Read what it means to be {VERT_NAMES[
-										vert
-									].name.toLowerCase()} — {fit.toFixed(1)} percent fit"
-									onclick={() => openSheet(vert)}
-								>
-									<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
-									<span class="result__bar-track" aria-hidden="true">
-										<span
-											class="result__bar-fill"
-											style:--bar-width="{fit}%"
-											style:background="var(--vert-{vert}-mid)"
-										></span>
-									</span>
-									<span class="result__bar-pct">{fit.toFixed(1)}%</span>
-									<span class="result__bar-glyph" aria-hidden="true">→</span>
-								</button>
-							</li>
-						{/each}
-					</ul>
-				</section>
+				<h2 id="result-title" class="swatch__name">{VERT_NAMES[dominant].name.toUpperCase()}</h2>
+				<p class="swatch__label">{VERT_NAMES[dominant].label}.</p>
 
-				<footer class="result__colophon">
-					<button class="result__retake" type="button" onclick={handleRetake}>
-						<em>Start over.</em>
-						<span class="result__retake-glyph" aria-hidden="true">↺</span>
-					</button>
-					<p class="result__retake-meta">
-						Clears your answers on this device and rolls the page back to the top.
-					</p>
-				</footer>
+				<div class="swatch__lede">
+					<p class="swatch__headline">{descriptions[dominant].headline}</p>
+					{#each bodyParas as para, i (i)}
+						<p class="swatch__body">{para}</p>
+					{/each}
+				</div>
+
+				<button
+					type="button"
+					class="swatch__cta"
+					onclick={() => openSheet(dominant)}
+					data-testid="result-read-guide-button"
+				>
+					<span>Read all about it</span>
+					<span class="swatch__cta-glyph" aria-hidden="true">→</span>
+				</button>
 			</div>
+
+			<!-- Breakdown — five swatch chips on paper. Click to open that vert's
+			     sheet. Dominant chip carries an outlined ring that ties it back
+			     to the hero above. -->
+			<section class="breakdown" aria-label="Five-vert breakdown">
+				<p class="breakdown__caption">
+					<span>five-vert breakdown</span>
+					<span class="breakdown__caption-rule" aria-hidden="true"></span>
+					<span>tap any swatch to read its entry</span>
+				</p>
+				<ol class="breakdown__row">
+					{#each VERT_ORDER as vert, i (vert)}
+						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
+						<li
+							class="breakdown__chip"
+							data-dominant={vert === dominant}
+							style:--chip-color="var(--vert-{vert}-mid)"
+							style:--chip-ink="var(--vert-{vert}-ink)"
+							style:--chip-delay="{i * 60}ms"
+						>
+							<button
+								type="button"
+								class="breakdown__chip-button"
+								data-archetype={vert}
+								data-testid="result-bar-button-{vert}"
+								aria-label="Read the entry for {VERT_NAMES[vert].name.toLowerCase()} — {fit.toFixed(
+									1
+								)} percent fit"
+								onclick={() => openSheet(vert)}
+							>
+								<span class="breakdown__chip-num">№ {String(i + 1).padStart(2, '0')}</span>
+								<span class="breakdown__chip-name">
+									{VERT_NAMES[vert].name.toUpperCase()}
+								</span>
+								<span class="breakdown__chip-fit">
+									<span class="breakdown__chip-fit-num">{fit.toFixed(1)}</span>
+									<span class="breakdown__chip-fit-pct">%</span>
+								</span>
+							</button>
+						</li>
+					{/each}
+				</ol>
+			</section>
+
+			<footer class="result__colophon">
+				<button class="result__retake" type="button" onclick={handleRetake}>
+					<em>Start over.</em>
+					<span class="result__retake-glyph" aria-hidden="true">↺</span>
+				</button>
+				<p class="result__retake-meta">
+					Clears your answers on this device and rolls the page back to the top.
+				</p>
+			</footer>
 		</section>
 	{/if}
 
@@ -704,52 +718,160 @@
 		isolation: isolate;
 		background: var(--paper);
 		scroll-margin-top: 72px;
-		/* No `overflow: hidden` — sticky descendants need an unclipped
-		   ancestor, and the global `<ChapterIntro>` sits at the top of
-		   `<main>` outside this section either way. The radial-gradient
-		   `::before` is bounded by `inset: 0` and fades to transparent
-		   before the section edges, so clipping isn't required. */
 	}
 
-	.result__inner {
-		max-width: 760px;
-		margin: 0 auto;
-		padding: clamp(56px, 9vh, 112px) clamp(16px, 4vw, 64px);
+	/* ── Pantone-style swatch hero ─────────────────────────────────────────
+	   Full-bleed dominant hue; the archetype name reads as the colour name.
+	   Reference numerals top, swatch ink throughout (tone-on-tone deep ink
+	   over saturated mid — the same printing logic a Pantone chip uses).
+	   The hue, ink, and soft tints are bound from the dominant archetype
+	   tokens via inline custom properties so each archetype prints itself. */
+	.swatch {
+		background: var(--swatch);
+		color: var(--swatch-ink);
+		padding: clamp(56px, 10vh, 144px) clamp(20px, 5vw, 96px) clamp(72px, 12vh, 160px);
+		position: relative;
+		overflow: hidden;
 	}
 
-	/* Soft archetype-tinted wash anchored top-left, fading to nothing.
-	   Bound to `--dominant-soft` (set inline from result.dominant) so the
-	   atmosphere matches the user's headline result. */
-	.result::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		background:
-			radial-gradient(
-				ellipse 70% 60% at 12% 8%,
-				color-mix(in oklab, var(--dominant-soft, var(--paper)) 75%, transparent) 0%,
-				transparent 70%
-			),
-			var(--paper);
-		pointer-events: none;
-	}
-
-	/* The result section is one editorial spread, three blocks (verdict /
-	   breakdown / colophon). Each block carries the same eyebrow shape so
-	   the typographic system stays uniform. The block stack is the only
-	   spacing rhythm — content inside a block uses tighter, intentional
-	   margins and never invents its own gap with the next section. */
-	.block + .block {
-		margin-top: clamp(72px, 10vh, 120px);
-	}
-
-	.block__eyebrow {
+	/* Swatch chrome — the small mono band of "reference numbers" running
+	   across the top of a Pantone card. Two columns, baseline aligned. */
+	.swatch__chrome {
 		display: flex;
 		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px 24px;
 		flex-wrap: wrap;
-		gap: 4px 10px;
-		margin: 0 0 28px;
+		margin-bottom: clamp(48px, 10vh, 112px);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--swatch-ink);
+		opacity: 0.85;
+	}
+
+	.swatch__ref {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.swatch__lot {
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* The colour name — heavy sans-serif, all-caps, set as huge as the
+	   viewport will hold. This IS the swatch label. */
+	.swatch__name {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		font-size: clamp(72px, 14vw, 200px);
+		line-height: 0.86;
+		letter-spacing: -0.04em;
+		color: var(--swatch-ink);
+		margin: 0;
+		text-wrap: balance;
+		text-transform: uppercase;
+	}
+
+	.swatch__label {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(20px, 2.4vw, 28px);
+		line-height: 1.2;
+		color: var(--swatch-ink);
+		opacity: 0.78;
+		margin: clamp(16px, 2vh, 24px) 0 clamp(56px, 9vh, 96px);
+		max-width: 32ch;
+	}
+
+	.swatch__lede {
+		max-width: 60ch;
+		margin-bottom: clamp(40px, 6vh, 64px);
+	}
+
+	.swatch__headline {
+		font-family: var(--font-sans);
+		font-weight: 500;
+		font-size: clamp(22px, 2.6vw, 30px);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		color: var(--swatch-ink);
+		margin: 0 0 24px;
+		max-width: 28ch;
+		text-wrap: balance;
+	}
+
+	.swatch__body {
+		font-family: var(--font-sans);
+		font-size: clamp(15px, 1.4vw, 17px);
+		line-height: 1.6;
+		color: var(--swatch-ink);
+		margin: 0 0 14px;
+		max-width: 60ch;
+		text-wrap: pretty;
+		opacity: 0.92;
+	}
+
+	.swatch__body:last-of-type {
+		margin-bottom: 0;
+	}
+
+	.swatch__cta {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 12px;
+		padding: 8px 0;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid var(--swatch-ink);
+		color: var(--swatch-ink);
+		font-family: var(--font-sans);
+		font-weight: 500;
+		font-size: clamp(15px, 1.4vw, 17px);
+		letter-spacing: 0.01em;
+		cursor: pointer;
+		transition:
+			gap 0.2s ease,
+			opacity 0.2s ease;
+	}
+
+	.swatch__cta-glyph {
+		font-family: var(--font-sans);
+		font-size: 18px;
+		transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.swatch__cta:hover,
+	.swatch__cta:focus-visible {
+		gap: 18px;
+		opacity: 0.7;
+	}
+
+	.swatch__cta:hover .swatch__cta-glyph,
+	.swatch__cta:focus-visible .swatch__cta-glyph {
+		transform: translateX(6px);
+	}
+
+	.swatch__cta:focus-visible {
+		outline: 2px solid var(--swatch-ink);
+		outline-offset: 6px;
+	}
+
+	/* ── Five-vert breakdown — a strip of swatch chips on paper ──────────
+	   Each chip is its own miniature Pantone card: solid colour, mono № ref,
+	   archetype name as the colour name, fit % as the swatch's "value." The
+	   dominant chip is ringed in its own ink so it ties back to the hero. */
+	.breakdown {
+		background: var(--paper);
+		padding: clamp(48px, 8vh, 96px) clamp(20px, 5vw, 64px);
+	}
+
+	.breakdown__caption {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		max-width: 1200px;
+		margin: 0 auto 24px;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;
@@ -757,242 +879,99 @@
 		color: var(--ink-70);
 	}
 
-	.block__num {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: 15px;
-		letter-spacing: 0;
-		text-transform: none;
-		color: var(--dominant-ink, var(--ink));
+	.breakdown__caption-rule {
+		flex: 1;
+		height: 1px;
+		background: var(--ink-12);
 	}
 
-	.block__label {
-		color: var(--ink);
-	}
-
-	.block__meta {
-		letter-spacing: 0.12em;
-		color: var(--ink-50);
-	}
-
-	/* Right-aligned CTA row — sits opposite the body paragraphs (which hang
-	   on the left margin), so the "read on" gesture lands at the corner you
-	   naturally finish reading at. */
-	.block__cta-row {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 32px;
-	}
-
-	/* Block-level call-to-action — italic display + arrow glyph, archetype-
-	   tinted underline. Sits at the foot of a block as the natural "read on"
-	   gesture. Same primitive shape as the sheet's close button so the two
-	   ends of the editorial loop feel related. */
-	.block__cta {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 12px;
-		padding: 6px 0 8px;
-		background: transparent;
-		border: none;
-		border-bottom: 1px solid var(--dominant-mid, var(--ink));
-		color: var(--ink);
-		font-family: var(--font-display);
-		font-size: clamp(20px, 2.4vw, 26px);
-		line-height: 1.1;
-		cursor: pointer;
-		transition:
-			gap 0.2s ease,
-			color 0.2s ease;
-	}
-
-	.block__cta em {
-		font-style: italic;
-	}
-
-	.block__cta-glyph {
-		font-family: var(--font-sans);
-		font-style: normal;
-		font-size: 18px;
-		color: var(--dominant-mid, var(--ink-70));
-		transition:
-			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
-			color 0.18s ease;
-	}
-
-	.block__cta:hover,
-	.block__cta:focus-visible {
-		gap: 18px;
-		color: var(--dominant-ink, var(--ink));
-	}
-
-	.block__cta:hover .block__cta-glyph,
-	.block__cta:focus-visible .block__cta-glyph {
-		transform: translateX(6px);
-		color: var(--dominant-ink, var(--ink));
-	}
-
-	.block__cta:focus-visible {
-		outline: 2px solid var(--dominant-mid, var(--ink));
-		outline-offset: 4px;
-		border-radius: 2px;
-	}
-
-	.result__title {
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(48px, 8vw, 96px);
-		line-height: 1;
-		letter-spacing: -0.03em;
-		margin: 0 0 24px;
-		text-wrap: balance;
-	}
-
-	.result__title em {
-		font-style: italic;
-		color: var(--dominant-ink, var(--ink));
-	}
-
-	/* Voice-led headline from `descriptions[archetype].headline`. Italic
-	   display, metaphor-first — the visual bridge between the title and the
-	   body paragraphs. */
-	.result__headline {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: clamp(22px, 2.8vw, 30px);
-		line-height: 1.25;
-		letter-spacing: -0.015em;
-		color: var(--ink);
-		margin: 0 0 28px;
-		max-width: 32ch;
-		text-wrap: balance;
-	}
-
-	.result__prose {
-		max-width: 56ch;
-		font-family: var(--font-display);
-		font-size: clamp(17px, 1.5vw, 19px);
-		line-height: 1.55;
-		color: var(--ink-70);
-		margin: 0 0 18px;
-		text-wrap: pretty;
-	}
-
-	.result__prose:last-of-type {
-		margin-bottom: 0;
-	}
-
-	.result__bars {
+	.breakdown__row {
 		list-style: none;
-		margin: 0;
+		margin: 0 auto;
 		padding: 0;
+		max-width: 1200px;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+		gap: 6px;
+	}
+
+	.breakdown__chip {
+		opacity: 0;
+		animation: chip-in 480ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--chip-delay, 0ms) both;
+	}
+
+	.breakdown__chip-button {
 		display: flex;
 		flex-direction: column;
-		gap: 18px;
-	}
-
-	.result__bar {
-		opacity: 0;
-		animation: result-bar-in 520ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--bar-delay, 0ms) both;
-	}
-
-	/* Each bar is the actual click target. Reset the native button surface so
-	   it inherits the editorial paper backdrop, then re-do the grid layout.
-	   The trailing arrow glyph is the affordance — it slides on hover and
-	   becomes a coloured ink mark on focus. */
-	.result__bar-button {
-		display: grid;
-		grid-template-columns: minmax(96px, 120px) 1fr auto 18px;
-		align-items: center;
-		gap: 16px;
+		justify-content: space-between;
+		gap: 24px;
 		width: 100%;
-		padding: 8px 12px 8px 8px;
-		margin: -8px -12px -8px -8px;
-		background: transparent;
+		min-height: 200px;
+		padding: 16px 18px 18px;
+		background: var(--chip-color);
+		color: var(--chip-ink);
 		border: none;
-		border-radius: 12px;
-		color: inherit;
-		font-family: var(--font-mono);
-		font-size: 12px;
-		text-align: left;
 		cursor: pointer;
+		text-align: left;
+		font: inherit;
 		transition:
-			background 0.18s ease,
-			transform 0.18s ease;
-	}
-
-	.result__bar-button:hover {
-		background: color-mix(in oklab, var(--ink-08) 55%, transparent);
-	}
-
-	.result__bar-button:focus-visible {
-		outline: 2px solid var(--dominant-mid, var(--ink));
-		outline-offset: 2px;
-		background: color-mix(in oklab, var(--ink-08) 55%, transparent);
-	}
-
-	/* Affordance arrow — visible at rest so the bar reads as a clickable
-	   link, not a static stat. Brightens and slides on hover/focus. */
-	.result__bar-glyph {
-		font-family: var(--font-sans);
-		font-size: 16px;
-		color: var(--ink-30);
-		opacity: 0.55;
-		transform: translateX(0);
-		transition:
-			opacity 0.18s ease,
 			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
-			color 0.18s ease;
+			box-shadow 0.22s ease;
 	}
 
-	.result__bar-button:hover .result__bar-glyph,
-	.result__bar-button:focus-visible .result__bar-glyph {
-		opacity: 1;
-		transform: translateX(4px);
-		color: var(--ink);
+	.breakdown__chip-button:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 28px -16px color-mix(in oklab, var(--chip-ink) 60%, transparent);
 	}
 
-	.result__bar[data-dominant='true'] .result__bar-glyph {
-		color: var(--dominant-mid, var(--ink-70));
-		opacity: 0.6;
-		transform: none;
+	.breakdown__chip-button:focus-visible {
+		outline: 2px solid var(--chip-ink);
+		outline-offset: 3px;
 	}
 
-	.result__bar[data-dominant='true'] .result__bar-name,
-	.result__bar[data-dominant='true'] .result__bar-pct {
+	.breakdown__chip[data-dominant='true'] .breakdown__chip-button {
+		outline: 2px solid var(--chip-ink);
+		outline-offset: -8px;
+	}
+
+	.breakdown__chip-num {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		font-variant-numeric: tabular-nums;
+		opacity: 0.85;
+	}
+
+	.breakdown__chip-name {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		font-size: clamp(14px, 1.4vw, 17px);
+		letter-spacing: -0.01em;
+		text-transform: uppercase;
+		line-height: 1;
+	}
+
+	.breakdown__chip-fit {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 1px;
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
 		font-weight: 500;
-		color: var(--ink);
 	}
 
-	.result__bar-name {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: 18px;
-		color: var(--ink-70);
+	.breakdown__chip-fit-num {
+		font-size: clamp(22px, 2.4vw, 28px);
+		line-height: 1;
 	}
 
-	.result__bar-track {
-		height: 8px;
-		border-radius: 999px;
-		background: var(--ink-08);
-		overflow: hidden;
-		position: relative;
+	.breakdown__chip-fit-pct {
+		font-size: 0.55em;
+		opacity: 0.75;
 	}
 
-	.result__bar[data-dominant='true'] .result__bar-track {
-		height: 12px;
-	}
-
-	.result__bar-fill {
-		display: block;
-		height: 100%;
-		width: 0;
-		border-radius: 999px;
-		animation: result-bar-fill 720ms cubic-bezier(0.2, 0.7, 0.3, 1)
-			calc(var(--bar-delay, 0ms) + 120ms) both;
-	}
-
-	@keyframes result-bar-in {
+	@keyframes chip-in {
 		from {
 			opacity: 0;
 			transform: translateY(8px);
@@ -1003,39 +982,25 @@
 		}
 	}
 
-	@keyframes result-bar-fill {
-		from {
-			width: 0;
-		}
-		to {
-			width: var(--bar-width, 0%);
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.result__bar {
+		.breakdown__chip {
 			opacity: 1;
 			animation: none;
 		}
-		.result__bar-fill {
-			width: var(--bar-width, 0%);
-			animation: none;
+		.breakdown__chip-button {
+			transition: none;
+		}
+		.swatch__cta-glyph {
+			transition: none;
 		}
 	}
 
-	.result__bar-pct {
-		font-variant-numeric: tabular-nums;
-		color: var(--ink-70);
-		min-width: 56px;
-		text-align: right;
-	}
-
-	/* Colophon — the third block. Sits below the breakdown with the same
-	   block-rhythm spacing the other two follow, plus a hairline rule above
-	   so the retake reads as the page's quiet "turn over" gesture. */
+	/* Colophon — sits under the breakdown on the paper background. Hairline
+	   rule above, retake reads as the page's quiet "turn over" gesture. */
 	.result__colophon {
-		margin-top: clamp(72px, 10vh, 120px);
-		padding-top: 32px;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 32px clamp(20px, 5vw, 64px) clamp(48px, 8vh, 96px);
 		border-top: 1px solid var(--ink-08);
 		display: flex;
 		flex-wrap: wrap;
