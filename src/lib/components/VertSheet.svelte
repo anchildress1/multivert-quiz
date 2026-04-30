@@ -93,7 +93,7 @@
 			<header class="sheet__head">
 				<span class="sheet__eyebrow">
 					<span class="sheet__eyebrow-mark" aria-hidden="true">№</span>
-					a field guide to <em>the {meta.name.toLowerCase()}</em>
+					on being &nbsp;<em>an {meta.name.toLowerCase()}</em>
 				</span>
 				<button
 					type="button"

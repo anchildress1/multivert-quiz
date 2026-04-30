@@ -406,15 +406,17 @@
 					{#each bodyParas as para, i (i)}
 						<p class="result__prose">{para}</p>
 					{/each}
-					<button
-						type="button"
-						class="block__cta"
-						onclick={() => openSheet(dominant)}
-						data-testid="result-read-guide-button"
-					>
-						<em>Read your full field guide</em>
-						<span class="block__cta-glyph" aria-hidden="true">→</span>
-					</button>
+					<div class="block__cta-row">
+						<button
+							type="button"
+							class="block__cta"
+							onclick={() => openSheet(dominant)}
+							data-testid="result-read-guide-button"
+						>
+							<em>Read all about it</em>
+							<span class="block__cta-glyph" aria-hidden="true">→</span>
+						</button>
+					</div>
 				</header>
 
 				<section class="block" aria-labelledby="result-breakdown">
@@ -773,6 +775,15 @@
 		color: var(--ink-50);
 	}
 
+	/* Right-aligned CTA row — sits opposite the body paragraphs (which hang
+	   on the left margin), so the "read on" gesture lands at the corner you
+	   naturally finish reading at. */
+	.block__cta-row {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 32px;
+	}
+
 	/* Block-level call-to-action — italic display + arrow glyph, archetype-
 	   tinted underline. Sits at the foot of a block as the natural "read on"
 	   gesture. Same primitive shape as the sheet's close button so the two
@@ -781,7 +792,6 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: 12px;
-		margin-top: 36px;
 		padding: 6px 0 8px;
 		background: transparent;
 		border: none;
@@ -861,10 +871,10 @@
 	.result__prose {
 		max-width: 56ch;
 		font-family: var(--font-display);
-		font-size: clamp(17px, 1.5vw, 19px);
+		font-size: clamp(15px, 1.2vw, 16px);
 		line-height: 1.55;
 		color: var(--ink-70);
-		margin: 0 0 18px;
+		margin: 0 0 14px;
 		text-wrap: pretty;
 	}
 
