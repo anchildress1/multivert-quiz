@@ -91,10 +91,7 @@
 
 		<article class="sheet__paper" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
 			<header class="sheet__head">
-				<span class="sheet__eyebrow">
-					<span class="sheet__eyebrow-mark" aria-hidden="true">№</span>
-					on being &nbsp;<em>an {meta.name.toLowerCase()}</em>
-				</span>
+				<span class="sheet__eyebrow">on being <em>an {meta.name.toLowerCase()}</em></span>
 				<button
 					type="button"
 					class="sheet__close"
@@ -107,12 +104,6 @@
 			</header>
 
 			<div class="sheet__lede">
-				<p class="sheet__name-line">
-					<span class="sheet__dot" aria-hidden="true"></span>
-					<span class="sheet__name">{meta.name}</span>
-					<span class="sheet__sep" aria-hidden="true">·</span>
-					<span class="sheet__label">{meta.label}</span>
-				</p>
 				<h2 id="vert-sheet-title" class="sheet__headline">{desc.headline}</h2>
 				<p class="sheet__body">{desc.body}</p>
 			</div>
@@ -142,14 +133,14 @@
 				</ol>
 			</section>
 
-			<section class="sheet__saints" aria-labelledby="vert-sheet-saints">
-				<h3 id="vert-sheet-saints" class="sheet__h3">
+			<section class="sheet__giveaways" aria-labelledby="vert-sheet-giveaways">
+				<h3 id="vert-sheet-giveaways" class="sheet__h3">
 					<span class="sheet__h3-mark" aria-hidden="true">iii.</span>
-					<span>Patron saints, unofficial</span>
+					<span>The giveaways</span>
 				</h3>
-				<ul class="sheet__saint-list">
-					{#each desc.deep.patronSaints as saint (saint)}
-						<li class="sheet__saint">{saint}</li>
+				<ul class="sheet__giveaway-list">
+					{#each desc.deep.giveaways as tell (tell)}
+						<li class="sheet__giveaway">{tell}</li>
 					{/each}
 				</ul>
 			</section>
@@ -246,41 +237,30 @@
 		}
 	}
 
+	/* Calm header band — eyebrow on the left, close on the right, no rule
+	   beneath. The `.sheet__lede` provides its own breathing room before the
+	   headline lands, so a horizontal divider here just chops the spread up. */
 	.sheet__head {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 16px;
-		margin-bottom: 28px;
-		padding-bottom: 16px;
-		border-bottom: 1px solid var(--ink-08);
+		margin-bottom: 40px;
 	}
 
+	/* One typographic register for the eyebrow — italic display reading
+	   naturally ("on being an otrovert"), with the archetype name picked out
+	   in the dominant ink. No mono CAPS, no ornate № mark. */
 	.sheet__eyebrow {
-		display: inline-flex;
-		align-items: baseline;
-		flex-wrap: wrap;
-		gap: 6px 10px;
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
+		font-family: var(--font-display);
+		font-size: clamp(15px, 1.4vw, 17px);
+		line-height: 1.1;
 		color: var(--ink-70);
 	}
 
 	.sheet__eyebrow em {
-		font-family: var(--font-display);
 		font-style: italic;
-		font-size: 13px;
-		letter-spacing: 0;
-		text-transform: none;
 		color: var(--sheet-ink);
-	}
-
-	.sheet__eyebrow-mark {
-		font-family: var(--font-display);
-		font-size: 17px;
-		color: var(--sheet-mid);
 	}
 
 	/* Editorial close — italic display word with a small sans glyph beside it,
@@ -337,47 +317,6 @@
 
 	.sheet__lede {
 		margin-bottom: 56px;
-	}
-
-	.sheet__name-line {
-		display: inline-flex;
-		align-items: center;
-		gap: 10px;
-		margin: 0 0 18px;
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-	}
-
-	.sheet__dot {
-		width: 9px;
-		height: 9px;
-		border-radius: 999px;
-		background: var(--sheet-mid);
-	}
-
-	.sheet__name {
-		font-family: var(--font-display);
-		font-size: 16px;
-		letter-spacing: 0;
-		text-transform: none;
-		color: var(--ink);
-		font-style: italic;
-	}
-
-	.sheet__sep {
-		color: var(--ink-30);
-	}
-
-	.sheet__label {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: 14px;
-		letter-spacing: 0;
-		text-transform: none;
-		color: var(--ink-70);
 	}
 
 	.sheet__headline {
@@ -442,14 +381,20 @@
 		text-wrap: pretty;
 	}
 
+	/* Drop-cap on the day-in-the-life vignette. `initial-letter: 3` is the
+	   spec'd way to say "drop the cap exactly three lines deep with proper
+	   baseline alignment" — the float-based approach we had before couldn't
+	   snap to integer line counts and always landed half-off. The Safari
+	   prefix is still required as of 2026. Browsers without support fall
+	   back to a plain italic tinted first letter, which is unobtrusive. */
 	.sheet__day-text::first-letter {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: 3.4em;
-		line-height: 0.9;
-		float: left;
-		padding: 0.05em 0.12em 0 0;
+		font-weight: 400;
 		color: var(--sheet-ink);
+		-webkit-initial-letter: 3;
+		initial-letter: 3;
+		margin-right: 0.08em;
 	}
 
 	.sheet__truths {
@@ -494,13 +439,14 @@
 		text-wrap: pretty;
 	}
 
-	/* Patron saints — the magazine equivalent of fan-cast credits. Each item
-	   reads as a hand-set entry rather than a bulleted list. */
-	.sheet__saints {
+	/* The giveaways — observable tells, set as a hand-typed list with a small
+	   tinted bullet rather than a generic disc. Italic display so they read
+	   as voice, not data. */
+	.sheet__giveaways {
 		margin-bottom: 56px;
 	}
 
-	.sheet__saint-list {
+	.sheet__giveaway-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -509,7 +455,7 @@
 		gap: 12px;
 	}
 
-	.sheet__saint {
+	.sheet__giveaway {
 		position: relative;
 		padding: 4px 0 4px 24px;
 		font-family: var(--font-display);
@@ -520,14 +466,13 @@
 		text-wrap: pretty;
 	}
 
-	.sheet__saint::before {
-		content: '✦';
+	.sheet__giveaway::before {
+		content: '—';
 		position: absolute;
 		left: 0;
-		top: 0.35em;
-		font-family: var(--font-sans);
+		top: 0;
+		font-family: var(--font-display);
 		font-style: normal;
-		font-size: 11px;
 		color: var(--sheet-mid);
 	}
 

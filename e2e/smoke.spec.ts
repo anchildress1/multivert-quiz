@@ -357,7 +357,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(dialog).toHaveAttribute('data-archetype', 'introvert');
 		await expect(page.locator('#vert-sheet-title')).toContainText(/battery-operated/i);
 		await expect(page.locator('.sheet__truth')).toHaveCount(5);
-		await expect(page.locator('.sheet__saint').first()).toBeVisible();
+		await expect(page.locator('.sheet__giveaway').first()).toBeVisible();
 		await expect(page.locator('.sheet__pull-text')).toBeVisible();
 
 		// Escape dismisses; the trigger button reclaims focus.

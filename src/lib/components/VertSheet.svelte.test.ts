@@ -44,10 +44,12 @@ describe('VertSheet — render gating', () => {
 });
 
 describe('VertSheet — field-guide content', () => {
-	it.each(ARCHETYPES)('renders the canonical headline for %s', (archetype) => {
+	it.each(ARCHETYPES)('renders the canonical headline + eyebrow for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
 		const text = container.textContent ?? '';
-		expect(text).toContain(VERT_NAMES[archetype].name);
+		// Eyebrow reads "on being an {lowercase-name}" — single calm beat,
+		// no separate capitalised name-line restating the title.
+		expect(text).toContain(`on being an ${VERT_NAMES[archetype].name.toLowerCase()}`);
 		expect(text).toContain(descriptions[archetype].headline);
 	});
 
@@ -68,10 +70,10 @@ describe('VertSheet — field-guide content', () => {
 		expect(items.length).toBe(5);
 	});
 
-	it.each(ARCHETYPES)('renders the patron saints for %s', (archetype) => {
+	it.each(ARCHETYPES)('renders the giveaways for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
-		const saints = container.querySelectorAll('.sheet__saint');
-		expect(saints.length).toBe(descriptions[archetype].deep.patronSaints.length);
+		const tells = container.querySelectorAll('.sheet__giveaway');
+		expect(tells.length).toBe(descriptions[archetype].deep.giveaways.length);
 	});
 
 	it.each(ARCHETYPES)('renders whatHelps and whatKillsYou definitions for %s', (archetype) => {

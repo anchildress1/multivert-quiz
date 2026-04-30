@@ -50,13 +50,12 @@ describe('descriptions registry — field-guide deep block', () => {
 		}
 	});
 
-	it.each(TYPES)('%s has 3-4 distinct patronSaints', (t) => {
-		const { patronSaints } = descriptions[t].deep;
-		expect(patronSaints.length).toBeGreaterThanOrEqual(3);
-		expect(patronSaints.length).toBeLessThanOrEqual(4);
-		expect(new Set(patronSaints).size).toBe(patronSaints.length);
-		for (const saint of patronSaints) {
-			expect(saint.trim().length).toBeGreaterThanOrEqual(8);
+	it.each(TYPES)('%s has exactly 3 distinct, non-trivial giveaways', (t) => {
+		const { giveaways } = descriptions[t].deep;
+		expect(giveaways.length).toBe(3);
+		expect(new Set(giveaways).size).toBe(giveaways.length);
+		for (const tell of giveaways) {
+			expect(tell.trim().length).toBeGreaterThanOrEqual(20);
 		}
 	});
 
@@ -75,7 +74,7 @@ describe('descriptions registry — field-guide deep block', () => {
 		// silently re-introduce the personality-test article voice.
 		const expectedKeys = [
 			'dayInTheLife',
-			'patronSaints',
+			'giveaways',
 			'trueThings',
 			'whatHelps',
 			'whatKillsYou',

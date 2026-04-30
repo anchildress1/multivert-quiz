@@ -10,8 +10,8 @@
  *   - headline + body  : the result-page summary (kept compact, voice-led)
  *   - dayInTheLife     : a vivid 4–6 sentence vignette of a real day
  *   - trueThings       : five interior lines you'd never put on a résumé
- *   - patronSaints     : 3–4 idiosyncratic anchors — fictional, historical,
- *                        domestic. Not the predictable celebrity roll-call.
+ *   - giveaways        : 3 observable, exterior tells — the way someone else
+ *                        spots the type from across a room or a group chat
  *   - whatHelps        : one specific scenic remedy
  *   - whatKillsYou     : the drain you keep refusing to admit drains you
  *   - youllNeverAdmit  : a closing pull-quote — surprising, true, voicy
@@ -25,7 +25,9 @@ export type VertType = Archetype;
 export interface DeepDescription {
 	dayInTheLife: string;
 	trueThings: readonly string[];
-	patronSaints: readonly string[];
+	/** External observables — short specific things others would notice that
+	    betray the type. A different register from `trueThings` (interior). */
+	giveaways: readonly string[];
 	whatHelps: string;
 	whatKillsYou: string;
 	youllNeverAdmit: string;
@@ -53,11 +55,10 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				'The phrase "let\'s hop on a quick call" lands in your stomach like a mild administrative crime.',
 				"You've felt closer to someone after they stopped talking than while they were talking."
 			],
-			patronSaints: [
-				'the friend who texts back two days late, but always with thought',
-				'Bill Murray alone at the hotel bar in *Lost in Translation*',
-				'whoever first added a "leave silently" button to a group chat',
-				'a librarian on a Tuesday afternoon, no questions asked'
+			giveaways: [
+				'Their headphones are a permanent accessory, even indoors.',
+				'They leave the party with the same volume they arrived with — most people leave louder.',
+				"They've owned the same three mugs for five years, and use only one."
 			],
 			whatHelps:
 				'A whole afternoon nobody can reach you, and nobody is in the next room either. Not even a good one.',
@@ -81,11 +82,10 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"Voice notes don't intimidate you. Silence does.",
 				"You've cried because nobody was free on a Sunday, and you'd cry for that reason again."
 			],
-			patronSaints: [
-				'the bartender who remembers your name after one visit',
-				'whoever invented the after-party',
-				'Dolly Parton on basically any podcast',
-				"the cousin who organises every reunion and isn't even tired"
+			giveaways: [
+				"They know the bartender's name within twenty minutes.",
+				'They start the story before anyone asked for it.',
+				'Their phone is face-up on the dinner table, and somehow nobody minds.'
 			],
 			whatHelps:
 				'One more dinner, even though everyone in the chat already said no. Especially because they did.',
@@ -108,11 +108,10 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				'Your true social currency is moving people toward each other and then leaving the room.',
 				"You've performed competence so often that competence has become performance, and you can't always tell which week you're in."
 			],
-			patronSaints: [
-				'the friend who can talk to your boss and your nephew at the same wedding',
-				"whoever it is that always somehow gets the bartender's attention",
-				'Frank Ocean releasing an album from a stairwell',
-				"the host who quietly clears your plate before you notice you're done"
+			giveaways: [
+				'They show up first, or last, never in the middle.',
+				"Their voice changes register slightly with the room — they don't notice it doing it.",
+				'They read the room before they read the menu.'
 			],
 			whatHelps:
 				"Whatever the last week wasn't. If it was loud, this one is novels. If it was novels, this one is dinner for ten.",
@@ -137,11 +136,10 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"You don't drift between modes. You teleport.",
 				'You\'ve apologised for being "moody" your whole life when actually you were just being correctly calibrated to which week it was.'
 			],
-			patronSaints: [
-				'the cat who loves you on Tuesday and is feral by Friday',
-				'the friend whose Instagram is either every day or two months of nothing',
-				'the lighthouse keeper on shift change',
-				'every musician who put out two albums in a year and then disappeared for five'
+			giveaways: [
+				'Their texts arrive in clusters: silence for a week, then forty in an hour.',
+				'A four-photo carousel of brunch on Saturday; phone untouched by Tuesday.',
+				'Their group chat avatar changes roughly every season.'
 			],
 			whatHelps:
 				'A literal door, closed, for a literal weekend, with permission from no one. Then you come back loud.',
@@ -169,11 +167,10 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				"You've quietly agreed with the cause and quietly declined to wear the t-shirt.",
 				'The deepest friendships of your life have been one person at a time, with no overlapping witnesses.'
 			],
-			patronSaints: [
-				'the editor who shapes the book and never appears in the credits',
-				'the long-running side character on a sitcom who knows everyone and lives alone',
-				"the photographer at someone else's wedding",
-				'whoever wrote the introduction to your favourite novel and never said a word about themselves in it'
+			giveaways: [
+				'They host the dinner and clear the plates, both.',
+				'Their entire participation in the group chat is a heart react and the word "thanks!"',
+				"They've kept the same haircut for nine years without considering changing it."
 			],
 			whatHelps:
 				"A real two-hour conversation with one person you don't see often enough. Not a phone call. In a kitchen.",
