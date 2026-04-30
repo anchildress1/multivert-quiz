@@ -44,12 +44,14 @@ describe('VertSheet — render gating', () => {
 });
 
 describe('VertSheet — field-guide content', () => {
-	it.each(ARCHETYPES)('renders the canonical headline + eyebrow for %s', (archetype) => {
+	it.each(ARCHETYPES)('renders the title + headline for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
 		const text = container.textContent ?? '';
-		// Eyebrow reads "on being an {lowercase-name}" — single calm beat,
-		// no separate capitalised name-line restating the title.
-		expect(text).toContain(`on being an ${VERT_NAMES[archetype].name.toLowerCase()}`);
+		// Banner now carries the archetype TITLE (uppercase) + tagline; the
+		// chrome row is just "№ XX/05". The voice headline lives below the
+		// banner on paper.
+		expect(text).toContain(VERT_NAMES[archetype].name.toUpperCase());
+		expect(text).toContain(VERT_NAMES[archetype].label);
 		expect(text).toContain(descriptions[archetype].headline);
 	});
 

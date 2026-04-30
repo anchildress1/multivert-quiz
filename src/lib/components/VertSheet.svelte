@@ -91,13 +91,14 @@
 		></div>
 
 		<article class="sheet__card" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
-			<!-- Narrow colour strip — the only piece of the card that wears the
-			     archetype hue. Holds the Pantone chrome row (№ + identity) and
-			     the italic tagline beneath. Everything else prints on paper. -->
+			<!-- Title banner — the colour strip holds the archetype TITLE
+			     (OTROVERT), the chrome № reference, the close button, and the
+			     italic tagline aligned to the right edge of the title word.
+			     The body of the card prints on paper below. -->
 			<header class="sheet__banner">
 				<div class="sheet__chrome">
 					<span class="sheet__ref">
-						№ {String(archetypeIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; on being an {meta.name.toLowerCase()}
+						№ {String(archetypeIndex + 1).padStart(2, '0')}/05
 					</span>
 					<button
 						type="button"
@@ -109,12 +110,13 @@
 						<span class="sheet__close-glyph" aria-hidden="true">×</span>
 					</button>
 				</div>
-				<p class="sheet__tagline">{meta.label}.</p>
+				<div class="sheet__title">
+					<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
+					<p class="sheet__tagline">{meta.label}.</p>
+				</div>
 			</header>
 
 			<div class="sheet__content">
-				<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
-
 				<div class="sheet__lede">
 					<p class="sheet__headline">{desc.headline}</p>
 					<p class="sheet__body">{desc.body}</p>
@@ -223,12 +225,13 @@
 		outline: none;
 	}
 
-	/* Narrow colour banner — the only piece of the card that wears the
-	   archetype hue. Glass-card finish (colour mixed into paper, top-left
-	   light catch) so it visually quotes the result hero, but kept thin
-	   enough that it reads as a header strip rather than a full card. */
+	/* Title banner — colour strip holds the archetype TITLE (OTROVERT),
+	   the small mono № chrome, the close button, and the tagline aligned
+	   to the right edge of the title word. Glass-card finish (colour mixed
+	   into paper, top-left light catch) visually quotes the result hero. */
 	.sheet__banner {
-		padding: clamp(0.875rem, 2.4vh, 1.375rem) clamp(1.25rem, 5vw, 4.5rem) clamp(1rem, 2.6vh, 1.5rem);
+		padding: clamp(0.875rem, 2.4vh, 1.375rem) clamp(1.25rem, 5vw, 4.5rem)
+			clamp(1.5rem, 3.5vh, 2.5rem);
 		background:
 			radial-gradient(
 				ellipse 70% 55% at 18% 0%,
@@ -237,6 +240,16 @@
 			),
 			color-mix(in oklab, var(--sheet-mid) 70%, var(--paper));
 		color: var(--sheet-ink);
+	}
+
+	/* Title block — sized to `width: max-content` so the tagline beneath
+	   right-aligns to the END OF THE TITLE WORD instead of the banner edge.
+	   Mirrors the swatch hero pattern. */
+	.sheet__title {
+		display: block;
+		width: max-content;
+		max-width: 100%;
+		margin-top: clamp(0.5rem, 1.5vh, 1rem);
 	}
 
 	/* Body section — paper, generous side and bottom padding to read like
@@ -335,23 +348,25 @@
 		outline: none;
 	}
 
-	/* Archetype name as the colour-card label — heavy sans, all-caps. On
-	   paper now, but printed in `--sheet-ink` (the deep archetype tone)
-	   so it ties back to the colour banner above. */
+	/* Archetype name as the title in the colour banner — heavy sans,
+	   all-caps, deep tone-on-tone ink. Sized smaller than the result hero
+	   because this is the "deeper view" — banner identifies the type, body
+	   on paper carries the substance. */
 	.sheet__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
-		font-size: clamp(3rem, 8vw, 6rem);
+		font-size: clamp(2.5rem, 7vw, 5rem);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
 		color: var(--sheet-ink);
-		margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
+		margin: 0;
 		text-transform: uppercase;
 		text-wrap: balance;
 	}
 
-	/* Tagline right-aligned inside the colour banner — mirrors the swatch
-	   hero's right-aligned label. */
+	/* Tagline aligned to the right edge of the title word (its parent
+	   `.sheet__title` is `width: max-content`). Reads as a quiet caption
+	   on the colour-name itself. */
 	.sheet__tagline {
 		font-family: var(--font-display);
 		font-style: italic;
@@ -359,7 +374,7 @@
 		line-height: 1.2;
 		color: var(--sheet-ink);
 		opacity: 0.78;
-		margin: 0;
+		margin: clamp(0.25rem, 0.6vh, 0.5rem) 0 0;
 		text-align: right;
 	}
 
