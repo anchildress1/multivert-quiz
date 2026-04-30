@@ -62,11 +62,11 @@ const waitForNudgeArmed = (page: Page) =>
 
 const dispatchForwardWheel = (page: Page) =>
 	page.evaluate(() => {
-		window.scrollTo({
+		globalThis.scrollTo({
 			top: document.documentElement.scrollHeight,
 			behavior: 'instant' as ScrollBehavior
 		});
-		window.dispatchEvent(
+		globalThis.dispatchEvent(
 			new WheelEvent('wheel', {
 				deltaY: 60,
 				deltaMode: 0,
@@ -203,8 +203,8 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await waitForNudgeArmed(page);
 		await page.evaluate(() => {
-			window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-			window.dispatchEvent(
+			globalThis.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+			globalThis.dispatchEvent(
 				new WheelEvent('wheel', {
 					deltaY: 60,
 					deltaMode: 0,
@@ -252,7 +252,7 @@ test.describe('landing + scroll quiz — navigation', () => {
 			const btn = Array.from(document.querySelectorAll('button')).find((b) =>
 				/^\s*begin/i.test(b.textContent ?? '')
 			);
-			(btn as HTMLButtonElement | undefined)?.click();
+			btn?.click();
 		});
 		// Anchor on the scrollY actually moving past the hero rather than a
 		// sleep — works across slow runners.
