@@ -105,9 +105,9 @@ describe('createAnswersStore', () => {
 		store.setAnswer(firstE.id, { value: 1, state: 'answered' });
 		const counts = store.answeredByDimension;
 		expect(counts.extraversion.answered).toBe(1);
-		expect(counts.belonging.answered).toBe(0);
+		expect(counts.otherness.answered).toBe(0);
 		expect(counts.extraversion.total).toBe(10);
-		expect(counts.belonging.total).toBe(15);
+		expect(counts.otherness.total).toBe(15);
 		expect(counts.group_size.total).toBe(5);
 		expect(counts.swings.total).toBe(5);
 	});
@@ -244,14 +244,14 @@ describe('createAnswersStore', () => {
 
 	it('answeredByDimension increments the correct dimension when each is partially answered', () => {
 		const store = createAnswersStore();
-		const oneFromEach: Dimension[] = ['extraversion', 'belonging', 'group_size', 'swings'];
+		const oneFromEach: Dimension[] = ['extraversion', 'otherness', 'group_size', 'swings'];
 		for (const dim of oneFromEach) {
 			const q = firstWhere((qq) => qq.dimension === dim);
 			store.setAnswer(q.id, { state: 'answered', value: 0.2 });
 		}
 		const counts = store.answeredByDimension;
 		expect(counts.extraversion.answered).toBe(1);
-		expect(counts.belonging.answered).toBe(1);
+		expect(counts.otherness.answered).toBe(1);
 		expect(counts.group_size.answered).toBe(1);
 		expect(counts.swings.answered).toBe(1);
 	});
@@ -307,20 +307,20 @@ describe('QUESTIONS_BY_DIMENSION', () => {
 	it('groups questions by their dimension and preserves source order', () => {
 		const grouped = QUESTIONS_BY_DIMENSION;
 		expect(grouped.extraversion).toHaveLength(10);
-		expect(grouped.belonging).toHaveLength(15);
+		expect(grouped.otherness).toHaveLength(15);
 		expect(grouped.group_size).toHaveLength(5);
 		expect(grouped.swings).toHaveLength(5);
 
 		const flatIds = [
 			...grouped.extraversion,
-			...grouped.belonging,
+			...grouped.otherness,
 			...grouped.group_size,
 			...grouped.swings
 		].map((q) => q.id);
 
 		const order: Record<Dimension, number> = {
 			extraversion: 0,
-			belonging: 1,
+			otherness: 1,
 			group_size: 2,
 			swings: 3
 		};

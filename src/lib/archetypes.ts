@@ -14,7 +14,7 @@
  *   - Introvert / Ambivert / Extrovert — three points on the *extraversion*
  *     axis at -1, 0, +1. Group-size acts as a secondary correlate (introverts
  *     usually prefer small, extroverts large).
- *   - Otrovert — projection along the *belonging* axis (toward -1 = "high
+ *   - Otrovert — projection along the *otherness* axis (toward +1 = "high
  *     otherness"). Independent of the extraversion line; an otrovert can
  *     also be intro / extro / ambi.
  *   - Omnivert — driven by explicit positive answers on the swings items
@@ -23,7 +23,7 @@
  * The math itself lives in `scoring.ts`. PRD changes pair with code changes.
  */
 
-export type Dimension = 'extraversion' | 'belonging' | 'group_size' | 'swings';
+export type Dimension = 'extraversion' | 'otherness' | 'group_size' | 'swings';
 
 export type Archetype = 'introvert' | 'extrovert' | 'ambivert' | 'omnivert' | 'otrovert';
 
@@ -32,7 +32,7 @@ export type DimensionVector = Record<Dimension, number>;
 /** Stable iteration order for question-level loops (chapters, counters). */
 export const DIMENSIONS: readonly Dimension[] = [
 	'extraversion',
-	'belonging',
+	'otherness',
 	'group_size',
 	'swings'
 ];
@@ -98,7 +98,7 @@ export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object
 		description:
 			'How casual, unstructured social settings actually feel — the kind without a defined role.'
 	},
-	belonging: {
+	otherness: {
 		description:
 			'Whether you carry a "we" with you, or whether you watch from just outside the circle.'
 	},
@@ -135,7 +135,7 @@ export const CHAPTERS: readonly Chapter[] = Object.freeze([
 	},
 	{
 		id: 'chapter-belonging',
-		dimension: 'belonging',
+		dimension: 'otherness',
 		numeral: 'II',
 		title: 'Belonging',
 		archetype: 'otrovert'

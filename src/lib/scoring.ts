@@ -15,8 +15,8 @@
  *     -1, 0, +1. A user vector is projected onto each of those three points
  *     linearly. Group-size is a secondary correlate (small ↔ large mirrors
  *     intro ↔ extro).
- *   - Otrovert is a one-sided projection along the *belonging* axis (toward
- *     -1 = "high otherness"). Independent of every other axis: an otrovert
+ *   - Otrovert is a one-sided projection along the *otherness* axis (toward
+ *     +1 = "high otherness"). Independent of every other axis: an otrovert
  *     can also be intro / extro / ambi.
  *   - Omnivert is driven by explicit positive swings answers (self-reported
  *     oscillation across time / situation). Neutral or negative swings are
@@ -108,7 +108,7 @@ const normalize = (item: AnsweredItem): number =>
 export const computeDimensions = (items: readonly AnsweredItem[]): DimensionVector => {
 	const buckets: Record<Dimension, number[]> = {
 		extraversion: [],
-		belonging: [],
+		otherness: [],
 		group_size: [],
 		swings: []
 	};
@@ -125,7 +125,7 @@ export const computeDimensions = (items: readonly AnsweredItem[]): DimensionVect
 
 	return {
 		extraversion: mean(buckets.extraversion),
-		belonging: mean(buckets.belonging),
+		otherness: mean(buckets.otherness),
 		group_size: mean(buckets.group_size),
 		swings: mean(buckets.swings)
 	};
@@ -156,13 +156,13 @@ export const archetypeFit = (user: DimensionVector, archetype: Archetype): numbe
 			return clamp01(raw) * 100;
 		}
 		case 'otrovert': {
-			// One-sided ramp: only negative belonging produces non-zero otrovert.
-			// belong = +1 (full group identification) → 0%; belong = 0 (no
-			// otherness signal) → 0%; belong = -1 (full otherness) → 100%.
+			// One-sided ramp: only positive otherness produces non-zero otrovert.
+			// otherness = -1 (full group identification) → 0%; otherness = 0
+			// (no otherness signal) → 0%; otherness = +1 (full otherness) → 100%.
 			// There is no opposite-named archetype on this axis, so a neutral
-			// belonging answer is "absence of otrovert evidence," not "halfway
+			// otherness answer is "absence of otrovert evidence," not "halfway
 			// to otrovert."
-			return clamp01(-user.belonging) * 100;
+			return clamp01(user.otherness) * 100;
 		}
 		case 'omnivert': {
 			// One-sided ramp: only positive swings produce non-zero omnivert.
