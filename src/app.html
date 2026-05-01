@@ -14,6 +14,24 @@
 		<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
 		<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
 		<title>Multivert — what vert are you?</title>
+		<!-- Read the persisted theme override before first paint so users who
+		     chose a non-system theme do not see a one-frame flash of the
+		     system default. The reactive ThemeToggle component reads the
+		     same key on mount and keeps its own state in sync. -->
+		<script>
+			(function () {
+				try {
+					var v = localStorage.getItem('multivert:theme');
+					if (v === 'light' || v === 'dark') {
+						document.documentElement.setAttribute('data-theme', v);
+					}
+				} catch (_) {
+					/* localStorage blocked (private browsing) — fall back to the
+					   system preference, which the CSS already handles via
+					   `color-scheme: light dark`. */
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="antialiased">
