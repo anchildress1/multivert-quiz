@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 
 	interface Props {
@@ -44,18 +45,23 @@
 			</span>
 			<span class="meter__pct" aria-hidden="true">{pct}%</span>
 		</div>
+		<div class="meter__toggle">
+			<ThemeToggle />
+		</div>
 	</div>
 </div>
 
 <style>
 	.meter {
-		position: sticky;
+		position: fixed;
 		top: 0;
+		left: 0;
+		right: 0;
 		z-index: 30;
-		background: color-mix(in oklab, var(--paper) 88%, transparent);
-		backdrop-filter: blur(14px);
-		-webkit-backdrop-filter: blur(14px);
-		border-bottom: 1px solid transparent;
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border-bottom: 0.0625rem solid transparent;
 		transform: translateY(-100%);
 		transition:
 			transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -64,17 +70,25 @@
 
 	.meter[data-visible='true'] {
 		transform: translateY(0);
-		border-bottom-color: var(--ink-08);
+		border-bottom-color: color-mix(in oklab, var(--ink) 8%, transparent);
 	}
 
 	.meter__inner {
-		max-width: 1160px;
-		margin: 0 auto;
-		padding: 14px 24px;
+		/* No max-width here — the chapter banner spans the full viewport, so
+		   capping the meter's inner width to 72.5rem made the meter look
+		   "pushed inward" relative to the chapter banner sitting just
+		   beneath it. Both bars now use the same horizontal clamp, so the
+		   wordmark left-aligns with the chapter numeral. */
+		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
 		display: grid;
-		grid-template-columns: auto 1fr auto;
+		grid-template-columns: auto 1fr auto auto;
 		align-items: center;
-		gap: 24px;
+		gap: clamp(1rem, 2vw, 1.5rem);
+	}
+
+	.meter__toggle {
+		display: flex;
+		align-items: center;
 	}
 
 	.meter__brand {
@@ -85,10 +99,10 @@
 	.meter__chapter {
 		display: flex;
 		align-items: baseline;
-		gap: 8px;
+		gap: 0.5rem;
 		min-width: 0;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--ink-70);
@@ -112,11 +126,11 @@
 
 	.meter__progress {
 		display: grid;
-		grid-template-columns: auto minmax(60px, 200px) auto;
+		grid-template-columns: auto minmax(3.75rem, 12.5rem) auto;
 		align-items: center;
-		gap: 12px;
+		gap: 0.75rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		color: var(--ink-70);
 	}
 
@@ -132,8 +146,8 @@
 
 	.meter__bar {
 		display: block;
-		height: 3px;
-		border-radius: 999px;
+		height: 0.1875rem;
+		border-radius: 99rem;
 		background: var(--ink-08);
 		overflow: hidden;
 		position: relative;
@@ -149,19 +163,19 @@
 	.meter__pct {
 		font-variant-numeric: tabular-nums;
 		color: var(--ink-70);
-		min-width: 36px;
+		min-width: 2.25rem;
 		text-align: right;
 	}
 
 	/* Narrow screens: drop the brand (the user just scrolled past it in the
 	   hero) and keep the chapter context, which is the actual wayfinding. */
-	@media (max-width: 720px) {
+	@media (max-width: 45rem) {
 		.meter__brand {
 			display: none;
 		}
 		.meter__inner {
-			grid-template-columns: minmax(0, 1fr) auto;
-			gap: 16px;
+			grid-template-columns: minmax(0, 1fr) auto auto;
+			gap: 1rem;
 		}
 	}
 </style>

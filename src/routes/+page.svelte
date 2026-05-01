@@ -14,6 +14,7 @@
 	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
 	import QuestionRow from '$lib/components/QuestionRow.svelte';
 	import Tagline from '$lib/components/Tagline.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import VertSheet from '$lib/components/VertSheet.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 	import { descriptions } from '$lib/descriptions';
@@ -292,6 +293,7 @@
 				The five verts
 			</a>
 			<FiveDots />
+			<ThemeToggle />
 		</nav>
 	</div>
 
@@ -310,10 +312,11 @@
 
 			<p class="hero__lede">
 				Most quizzes only know two: introvert, extrovert. There are three more —
-				<em>ambivert</em> (context-flexible),
-				<em>omnivert</em> (oscillates between extremes), and
-				<em>otrovert</em> (a 2025 term coined by psychiatrist Rami Kaminski; belongs without
-				belonging). {questions.length} statements, one quiet slider, a five-way breakdown at the end.
+				<em data-vert="ambivert">ambivert</em> (context-flexible),
+				<em data-vert="omnivert">omnivert</em> (oscillates between extremes), and
+				<em data-vert="otrovert">otrovert</em> (a 2025 term coined by psychiatrist Rami Kaminski;
+				belongs without belonging). {questions.length} statements, one quiet slider, a five-way breakdown
+				at the end.
 			</p>
 
 			<div class="hero__cta-row">
@@ -502,9 +505,41 @@
 		color: var(--ink);
 		display: flex;
 		flex-direction: column;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero::before {
+		content: '';
+		position: absolute;
+		top: -20%;
+		left: -10%;
+		width: 120%;
+		height: 140%;
+		background:
+			radial-gradient(
+				circle at 70% 10%,
+				color-mix(in oklab, var(--vert-extrovert-mid) 12%, transparent),
+				transparent 45%
+			),
+			radial-gradient(
+				circle at 20% 80%,
+				color-mix(in oklab, var(--vert-omnivert-mid) 12%, transparent),
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 50% 50%,
+				color-mix(in oklab, var(--vert-introvert-mid) 8%, transparent),
+				transparent 60%
+			);
+		pointer-events: none;
+		z-index: 0;
+		filter: blur(80px);
 	}
 
 	.hero__bar {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -531,6 +566,8 @@
 	}
 
 	.hero__grid {
+		position: relative;
+		z-index: 1;
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 2.5rem;
@@ -582,6 +619,22 @@
 		color: var(--ink-70);
 	}
 
+	/* The three "new" verts get tinted with their archetype inks so the
+	   names read as coloured chips that tie back to the breakdown strip on
+	   the result page. Introvert/extrovert are left in plain ink — the
+	   sentence frames them as "the boring two everyone knows" and a tinted
+	   colour would muddy that voice. The -ink tokens already shift in dark
+	   mode (oklch lightness flips) so contrast holds in both schemes. */
+	.hero__lede em[data-vert='ambivert'] {
+		color: var(--vert-ambivert-ink);
+	}
+	.hero__lede em[data-vert='omnivert'] {
+		color: var(--vert-omnivert-ink);
+	}
+	.hero__lede em[data-vert='otrovert'] {
+		color: var(--vert-otrovert-ink);
+	}
+
 	.hero__cta-row {
 		margin-top: 2.75rem;
 		display: flex;
@@ -605,13 +658,16 @@
 		font-weight: 500;
 		letter-spacing: -0.005em;
 		cursor: pointer;
+		box-shadow: 0 4px 12px color-mix(in oklab, var(--ink) 16%, transparent);
 		transition:
-			transform 0.2s ease,
-			background 0.2s ease;
+			transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+			background 0.3s ease,
+			box-shadow 0.3s ease;
 	}
 
 	.hero__cta:hover {
-		transform: translateY(-0.0625rem);
+		transform: translateY(-0.125rem);
+		box-shadow: 0 8px 24px -6px color-mix(in oklab, var(--ink) 40%, transparent);
 	}
 
 	.hero__cta:active {
@@ -634,11 +690,14 @@
 	}
 
 	.hero__card {
-		background: var(--paper-dk);
-		border: 0.0625rem solid var(--ink-08);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: var(--glass-border);
 		border-radius: var(--card-radius);
 		padding: 2rem;
 		align-self: start;
+		box-shadow: var(--glass-shadow);
 	}
 
 	.hero__card-eyebrow {
@@ -718,6 +777,7 @@
 		isolation: isolate;
 		background: var(--paper);
 		scroll-margin-top: 4.5rem;
+		padding: clamp(2rem, 5vh, 4rem) clamp(1rem, 4vw, 2rem) 0;
 	}
 
 	/* ── Pantone-style swatch hero, behind glass ───────────────────────────
@@ -728,20 +788,21 @@
 	   The archetype name still functions as the colour name; type prints
 	   in the deep tone-on-tone ink (`--vert-{name}-ink`). */
 	.swatch {
-		background:
-			radial-gradient(
-				ellipse 70% 55% at 18% 8%,
-				color-mix(in oklab, white 30%, transparent) 0%,
-				transparent 65%
-			),
-			color-mix(in oklab, var(--swatch) 72%, var(--paper));
-		color: var(--swatch-ink);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: 0.0625rem solid color-mix(in oklab, var(--swatch) 30%, transparent);
+		border-radius: var(--card-radius);
+		box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in oklab, var(--ink) 16%, transparent);
+		color: var(--ink);
 		/* Top padding stays lean (sticky chapter banner is already 4.5rem).
 		   Bottom is generous-but-bounded so the swatch doesn't dominate the
 		   page on tall viewports. */
 		padding: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 5vw, 6rem) clamp(3rem, 8vh, 6rem);
 		position: relative;
 		overflow: hidden;
+		max-width: 80rem;
+		margin: 0 auto;
 	}
 
 	/* A second, very faint glass sheen at the bottom-right — lifts the card
@@ -754,7 +815,7 @@
 		pointer-events: none;
 		background: radial-gradient(
 			ellipse 50% 40% at 88% 92%,
-			color-mix(in oklab, var(--swatch-ink) 14%, transparent) 0%,
+			color-mix(in oklab, var(--swatch) 30%, transparent) 0%,
 			transparent 60%
 		);
 	}
@@ -778,7 +839,7 @@
 		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--swatch-ink);
+		color: var(--ink-70);
 		opacity: 0.85;
 	}
 
@@ -808,7 +869,7 @@
 		font-size: clamp(3.5rem, 11vw, 9rem);
 		line-height: 0.88;
 		letter-spacing: -0.04em;
-		color: var(--swatch-ink);
+		color: var(--ink);
 		margin: 0;
 		text-wrap: balance;
 		text-transform: uppercase;
@@ -823,7 +884,7 @@
 		font-style: italic;
 		font-size: clamp(1.125rem, 2vw, 1.5rem);
 		line-height: 1.2;
-		color: var(--swatch-ink);
+		color: var(--ink-70);
 		opacity: 0.78;
 		margin: clamp(0.5rem, 1.4vh, 1rem) 0 clamp(2.5rem, 6vh, 4rem);
 		text-align: right;
@@ -840,7 +901,7 @@
 		font-size: clamp(1.375rem, 2.6vw, 1.875rem);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
-		color: var(--swatch-ink);
+		color: var(--ink);
 		margin: 0 0 1.5rem;
 		max-width: 28ch;
 		text-wrap: balance;
@@ -850,7 +911,7 @@
 		font-family: var(--font-sans);
 		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.6;
-		color: var(--swatch-ink);
+		color: var(--ink-70);
 		margin: 0 0 0.875rem;
 		max-width: 60ch;
 		text-wrap: pretty;
@@ -868,8 +929,8 @@
 		padding: 0.5rem 0;
 		background: transparent;
 		border: none;
-		border-bottom: 0.0625rem solid var(--swatch-ink);
-		color: var(--swatch-ink);
+		border-bottom: 0.0625rem solid var(--ink);
+		color: var(--ink);
 		font-family: var(--font-sans);
 		font-weight: 500;
 		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
@@ -898,7 +959,7 @@
 	}
 
 	.swatch__cta:focus-visible {
-		outline: 0.125rem solid var(--swatch-ink);
+		outline: 0.125rem solid var(--ink);
 		outline-offset: 0.375rem;
 	}
 
@@ -953,29 +1014,36 @@
 		width: 100%;
 		min-height: 12.5rem;
 		padding: 1rem 1.125rem 1.125rem;
-		background: var(--chip-color);
-		color: var(--chip-ink);
-		border: none;
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: 0.0625rem solid color-mix(in oklab, var(--chip-color) 30%, transparent);
+		border-radius: var(--card-radius);
+		color: var(--ink);
 		cursor: pointer;
 		text-align: left;
 		font: inherit;
 		transition:
 			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
-			box-shadow 0.22s ease;
+			box-shadow 0.22s ease,
+			border-color 0.22s ease,
+			background 0.22s ease;
 	}
 
 	.breakdown__chip-button:hover {
 		transform: translateY(-0.25rem);
-		box-shadow: 0 0.75rem 1.75rem -1rem color-mix(in oklab, var(--chip-ink) 60%, transparent);
+		box-shadow: 0 0.75rem 1.75rem -1rem color-mix(in oklab, var(--chip-color) 40%, transparent);
+		background: color-mix(in oklab, var(--chip-color) 10%, var(--glass-bg-heavy));
+		border-color: color-mix(in oklab, var(--chip-color) 60%, transparent);
 	}
 
 	.breakdown__chip-button:focus-visible {
-		outline: 0.125rem solid var(--chip-ink);
+		outline: 0.125rem solid var(--chip-color);
 		outline-offset: 0.1875rem;
 	}
 
 	.breakdown__chip[data-dominant='true'] .breakdown__chip-button {
-		outline: 0.125rem solid var(--chip-ink);
+		outline: 0.125rem solid color-mix(in oklab, var(--chip-color) 80%, transparent);
 		outline-offset: -0.5rem;
 	}
 

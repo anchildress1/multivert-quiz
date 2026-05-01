@@ -91,34 +91,32 @@
 		></div>
 
 		<article class="sheet__card" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
-			<!-- Close button on its own paper row — kept off the title strip
-			     so the strip stays a single uninterrupted horizontal band. -->
-			<div class="sheet__head">
-				<button
-					type="button"
-					class="sheet__close"
-					onclick={onclose}
-					aria-label="Close — return to results"
-				>
-					<em>close.</em>
-					<span class="sheet__close-glyph" aria-hidden="true">×</span>
-				</button>
-			</div>
-
-			<!-- Title strip — a single horizontal colour band, one line, just
-			     the archetype name. The strip IS the title header. -->
-			<header class="sheet__strip">
-				<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
+			<!-- Title banner — the colour strip holds the archetype TITLE
+			     (OTROVERT), the chrome № reference, the close button, and the
+			     italic tagline aligned to the right edge of the title word.
+			     The body of the card prints on paper below. -->
+			<header class="sheet__banner">
+				<div class="sheet__chrome">
+					<span class="sheet__ref">
+						№ {String(archetypeIndex + 1).padStart(2, '0')}/05
+					</span>
+					<button
+						type="button"
+						class="sheet__close"
+						onclick={onclose}
+						aria-label="Close — return to results"
+					>
+						<em>close.</em>
+						<span class="sheet__close-glyph" aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="sheet__title">
+					<h2 id="vert-sheet-title" class="sheet__name">{meta.name.toUpperCase()}</h2>
+					<p class="sheet__tagline">{meta.label}.</p>
+				</div>
 			</header>
 
 			<div class="sheet__content">
-				<!-- Tagline sits on paper, right-aligned, directly under the strip
-				     so it reads as a quiet caption on the title above. -->
-				<p class="sheet__tagline">
-					№ {String(archetypeIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp;
-					<em>{meta.label}.</em>
-				</p>
-
 				<div class="sheet__lede">
 					<p class="sheet__headline">{desc.headline}</p>
 					<p class="sheet__body">{desc.body}</p>
@@ -136,9 +134,9 @@
 				<section class="sheet__section" aria-labelledby="vert-sheet-truths">
 					<p id="vert-sheet-truths" class="sheet__section-label">
 						<span class="sheet__section-num">ii.</span>
-						<span class="sheet__section-text"
-							>Five things that are true and you've never told anyone</span
-						>
+						<span class="sheet__section-text">
+							Five things that are true and you've never told anyone
+						</span>
 						<span class="sheet__section-rule" aria-hidden="true"></span>
 					</p>
 					<ol class="sheet__truth-list">
@@ -178,10 +176,7 @@
 				</dl>
 
 				<aside class="sheet__pull" aria-label="closing line">
-					<p class="sheet__pull-label">
-						<span>You'll never admit it, but —</span>
-						<span class="sheet__section-rule" aria-hidden="true"></span>
-					</p>
+					<span class="sheet__pull-label">You'll never admit it, but —</span>
 					<p class="sheet__pull-text">{desc.deep.youllNeverAdmit}</p>
 				</aside>
 			</div>
@@ -214,7 +209,7 @@
 				color-mix(in oklab, var(--sheet-soft) 48%, transparent) 0%,
 				transparent 70%
 			),
-			color-mix(in oklab, var(--ink) 56%, transparent);
+			color-mix(in oklab, #000 56%, transparent);
 		backdrop-filter: blur(0.375rem) saturate(0.96);
 		-webkit-backdrop-filter: blur(0.375rem) saturate(0.96);
 		cursor: pointer;
@@ -226,44 +221,43 @@
 		align-self: stretch;
 		width: 100%;
 		max-width: 55rem;
-		max-height: 100vh;
+		max-height: 100dvh;
 		overflow-y: auto;
-		background: var(--paper);
+		background: var(--glass-bg-heavy);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: 0.0625rem solid color-mix(in oklab, var(--sheet-mid) 30%, transparent);
 		color: var(--ink);
-		box-shadow: 0 2.5rem 7.5rem -2.5rem color-mix(in oklab, var(--ink) 70%, transparent);
+		box-shadow: 0 2.5rem 7.5rem -2.5rem color-mix(in oklab, var(--ink) 40%, transparent);
 		animation: card-in 320ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 		outline: none;
 	}
 
-	/* Close-button strip — a thin paper row above the title strip. Keeps
-	   the close gesture off the title's line so the colour strip stays
-	   visually a single uninterrupted band. */
-	.sheet__head {
-		display: flex;
-		justify-content: flex-end;
-		padding: clamp(0.5rem, 1.5vh, 1rem) clamp(1rem, 4vw, 3rem);
+	/* Title banner — colour strip holds the archetype TITLE (OTROVERT),
+	   the small mono № chrome, the close button, and the tagline aligned
+	   to the right edge of the title word. */
+	.sheet__banner {
+		padding: clamp(0.875rem, 2.4vh, 1.375rem) clamp(1.25rem, 5vw, 4.5rem)
+			clamp(1.5rem, 3.5vh, 2.5rem);
+		background: transparent;
+		color: var(--sheet-ink);
+		border-bottom: 1px solid color-mix(in oklab, var(--sheet-mid) 20%, transparent);
 	}
 
-	/* Title strip — single horizontal colour band, one line, the archetype
-	   name only. Glass-card finish (colour mixed into paper, top-left light
-	   catch) visually quotes the result hero. The strip IS the title
-	   header. */
-	.sheet__strip {
-		padding: clamp(1rem, 2.6vh, 1.5rem) clamp(1.25rem, 5vw, 4.5rem);
-		background:
-			radial-gradient(
-				ellipse 70% 55% at 18% 0%,
-				color-mix(in oklab, white 30%, transparent) 0%,
-				transparent 70%
-			),
-			color-mix(in oklab, var(--sheet-mid) 70%, var(--paper));
-		color: var(--sheet-ink);
+	/* Title block — sized to `width: max-content` so the tagline beneath
+	   right-aligns to the END OF THE TITLE WORD instead of the banner edge.
+	   Mirrors the swatch hero pattern. */
+	.sheet__title {
+		display: block;
+		width: max-content;
+		max-width: 100%;
+		margin-top: clamp(0.5rem, 1.5vh, 1rem);
 	}
 
 	/* Body section — paper, generous side and bottom padding to read like
-	   a printed brief once the strip identifies the type at the top. */
+	   a printed brief once the banner identifies the type at the top. */
 	.sheet__content {
-		padding: clamp(1.25rem, 3vh, 2rem) clamp(1.25rem, 5vw, 4.5rem) clamp(3rem, 8vh, 6rem);
+		padding: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 5vw, 4.5rem) clamp(3rem, 8vh, 6rem);
 	}
 
 	@media (min-width: 47.5rem) {
@@ -275,6 +269,28 @@
 			max-height: min(92vh, 60rem);
 			border-radius: var(--card-radius);
 		}
+	}
+
+	/* Pantone chrome — same shape as the swatch hero's chrome row, so
+	   opening the sheet feels like turning the colour-card over to read
+	   the back. Sits inside the banner now (colour bg, sheet-ink type). */
+	.sheet__chrome {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem 1.5rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.375rem;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--sheet-ink);
+		opacity: 0.85;
+	}
+
+	.sheet__ref {
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* Close button — a small mono ALL-CAPS gesture so it sits in the same
@@ -334,14 +350,15 @@
 		outline: none;
 	}
 
-	/* Archetype name — the only content of the strip. Heavy sans, all-caps,
-	   deep tone-on-tone ink. Sized smaller than the result hero because
-	   this is the "deeper view." */
+	/* Archetype name as the title in the colour banner — heavy sans,
+	   all-caps, deep tone-on-tone ink. Sized smaller than the result hero
+	   because this is the "deeper view" — banner identifies the type, body
+	   on paper carries the substance. */
 	.sheet__name {
 		font-family: var(--font-sans);
 		font-weight: 600;
 		font-size: clamp(2.5rem, 7vw, 5rem);
-		line-height: 0.95;
+		line-height: 0.9;
 		letter-spacing: -0.04em;
 		color: var(--sheet-ink);
 		margin: 0;
@@ -349,28 +366,18 @@
 		text-wrap: balance;
 	}
 
-	/* Tagline lives on paper directly under the strip, right-aligned so it
-	   reads as a quiet caption on the colour-name above. Includes the
-	   small mono № reference inline (the chrome was its own row before;
-	   merged here so the strip itself stays clean). */
+	/* Tagline aligned to the right edge of the title word (its parent
+	   `.sheet__title` is `width: max-content`). Reads as a quiet caption
+	   on the colour-name itself. */
 	.sheet__tagline {
-		font-family: var(--font-mono);
-		font-size: clamp(0.6875rem, 1vw, 0.75rem);
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: var(--sheet-ink);
-		opacity: 0.85;
-		margin: 0 0 clamp(2rem, 5vh, 3rem);
-		text-align: right;
-	}
-
-	.sheet__tagline em {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: 1.4em;
-		letter-spacing: 0;
-		text-transform: none;
+		font-size: clamp(0.9375rem, 1.6vw, 1.1875rem);
+		line-height: 1.2;
 		color: var(--sheet-ink);
+		opacity: 0.78;
+		margin: clamp(0.25rem, 0.6vh, 0.5rem) 0 0;
+		text-align: right;
 	}
 
 	.sheet__lede {
@@ -411,13 +418,41 @@
 	.sheet__section-label {
 		display: flex;
 		align-items: center;
-		gap: 0.875rem;
+		flex-wrap: wrap;
+		column-gap: 0.75rem;
+		row-gap: 0.375rem;
 		margin: 0 0 1.25rem;
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
+		text-wrap: balance;
+	}
+
+	.sheet__section-text {
+		/* Allow internal wrapping when the label is long ("Five things…")
+		   on narrow viewports. Without `min-width: 0` a flex item refuses to
+		   shrink below its content min-width, so the label would overflow
+		   instead of breaking onto a new line cleanly. */
+		min-width: 0;
+	}
+
+	/* Accent rule echoing the chapter banner's gradient line. Sits to the
+	   right of the section text on wide viewports and pushes onto its own
+	   line on narrow ones (flex-wrap), so the long "Five things…" label
+	   never has to compete with the rule. `min-width` gives the rule a
+	   floor so it always reads as a deliberate hairline rather than a
+	   collapsed dot. */
+	.sheet__section-rule {
+		flex: 1;
+		min-width: 2.5rem;
+		height: 0.0625rem;
+		background: linear-gradient(
+			to right,
+			color-mix(in oklab, var(--sheet-mid) 50%, transparent),
+			transparent 80%
+		);
 	}
 
 	.sheet__section-num {
@@ -427,25 +462,6 @@
 		text-transform: lowercase;
 		color: var(--sheet-ink);
 		opacity: 0.7;
-	}
-
-	.sheet__section-text {
-		text-wrap: balance;
-	}
-
-	/* Fading hairline rule on the right of every section header — same
-	   gradient gesture the chapter banners use to break up walls of text.
-	   Tinted with the archetype's deep ink so it carries colour identity
-	   without shouting. */
-	.sheet__section-rule {
-		flex: 1;
-		min-width: 1.5rem;
-		height: 0.0625rem;
-		background: linear-gradient(
-			to right,
-			color-mix(in oklab, var(--sheet-ink) 32%, transparent),
-			transparent 85%
-		);
 	}
 
 	/* Day-in-the-life — the centrepiece. Sans body, drop-cap on the first
@@ -605,27 +621,32 @@
 	}
 
 	.sheet__pull-label {
-		display: flex;
-		align-items: center;
-		gap: 0.875rem;
-		margin: 0 0 0.875rem;
+		display: block;
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--sheet-ink);
+		margin-bottom: 0.875rem;
 	}
 
 	.sheet__pull-text {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: clamp(1.375rem, 2.8vw, 2rem);
+		/* Bumped one notch larger now that the line is allowed to run; the
+		   closing line is the louder typographic gesture in the sheet. */
+		font-size: clamp(1.5rem, 3.4vw, 2.5rem);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
 		color: var(--ink);
 		margin: 0;
 		text-wrap: balance;
-		max-width: 28ch;
+		/* The earlier 28ch cap left the right half of the card empty on
+		   wide viewports — the closing line read as orphaned. Letting it
+		   span the content column (~50ch worth before the sheet body's
+		   own padding-bound) fills the card without becoming a wall of
+		   text; `text-wrap: balance` keeps short lines symmetric. */
+		max-width: 50ch;
 	}
 
 	@keyframes sheet-in {

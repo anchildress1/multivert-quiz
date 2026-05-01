@@ -14,22 +14,22 @@
 :root {
 	color-scheme: light dark;
 
-	--paper: light-dark(#f8f7f4, #1a1815);
-	--paper-dk: light-dark(#ecebe6, #23201c);
-	--surface: light-dark(#fcfbf8, #221f1b);
-	--ink: light-dark(#1c1a17, #f3ede1);
-	--ink-70: light-dark(rgba(28, 26, 23, 0.7), rgba(243, 237, 225, 0.74));
-	--ink-50: light-dark(rgba(28, 26, 23, 0.5), rgba(243, 237, 225, 0.52));
-	--ink-30: light-dark(rgba(28, 26, 23, 0.3), rgba(243, 237, 225, 0.32));
-	--ink-12: light-dark(rgba(28, 26, 23, 0.12), rgba(243, 237, 225, 0.14));
-	--ink-08: light-dark(rgba(28, 26, 23, 0.08), rgba(243, 237, 225, 0.09));
-	--rule: light-dark(rgba(28, 26, 23, 0.18), rgba(243, 237, 225, 0.22));
+	--paper: light-dark(#fcfbfb, #09090b);
+	--paper-dk: light-dark(#f3f3f2, #121214);
+	--surface: light-dark(#ffffff, #18181b);
+	--ink: light-dark(#09090b, #fafafa);
+	--ink-70: light-dark(rgba(9, 9, 11, 0.7), rgba(250, 250, 250, 0.74));
+	--ink-50: light-dark(rgba(9, 9, 11, 0.5), rgba(250, 250, 250, 0.52));
+	--ink-30: light-dark(rgba(9, 9, 11, 0.3), rgba(250, 250, 250, 0.32));
+	--ink-12: light-dark(rgba(9, 9, 11, 0.12), rgba(250, 250, 250, 0.14));
+	--ink-08: light-dark(rgba(9, 9, 11, 0.08), rgba(250, 250, 250, 0.09));
+	--rule: light-dark(rgba(9, 9, 11, 0.18), rgba(250, 250, 250, 0.22));
 
 	/* oklch() lightness/chroma anchors. The chroma values match across
 	   themes; only the lightness scalars shift. `light-dark()` only takes
 	   colors, so the scalars themselves still need a media-query branch. */
 	--vert-mid-l: 0.62;
-	--vert-mid-c: 0.16;
+	--vert-mid-c: 0.22;
 	--vert-soft-l: 0.95;
 	--vert-soft-c: 0.04;
 	--vert-ink-l: 0.32;
@@ -57,8 +57,56 @@
 	--vert-otrovert-soft: oklch(var(--vert-soft-l) var(--vert-soft-c) var(--hue-otrovert));
 	--vert-otrovert-ink: oklch(var(--vert-ink-l) var(--vert-ink-c) var(--hue-otrovert));
 
-	--button-radius: 14px;
-	--card-radius: 18px;
+	--button-radius: 9999px;
+	--card-radius: 24px;
+
+	/* ── Glass surface tokens ─────────────────────────────────────────────
+	   The frosted-glass treatment is used everywhere (hero card, sticky
+	   chapter head, progress meter, swatch hero, breakdown chips, row
+	   cards, sheets). Keeping it as tokens — instead of the same
+	   color-mix/backdrop-filter triplet copy-pasted nine places — means
+	   one knob to turn when the surface needs to shift in either mode.
+	   `light-dark()` only takes colors, so the alpha is folded into the
+	   color-mix percentage, and the filter chain is a single token. */
+	--glass-bg: color-mix(in oklab, var(--surface) 75%, transparent);
+	/* The "heavy" variant is used by surfaces that float over a dimmed
+	   scrim (the VertSheet) rather than over paper — at 85% the dark
+	   scrim showed through enough to grey-out the card in light mode.
+	   96% keeps a sliver of backdrop-blur character while reading as a
+	   crisp paper card in light, and still resolves cleanly into the
+	   dark surface (#18181b) in dark mode. */
+	--glass-bg-heavy: color-mix(in oklab, var(--surface) 96%, transparent);
+	--glass-filter: blur(32px) saturate(1.2);
+	--glass-border: 0.0625rem solid color-mix(in oklab, var(--ink) 8%, transparent);
+	--glass-shadow: 0 1rem 2.5rem -0.75rem color-mix(in oklab, var(--ink) 12%, transparent);
+
+	/* Sticky chapter banner height — referenced by `scroll-padding-top` so
+	   snapped questions sit below the banner instead of being hidden under
+	   it. The banner's own `min-height` matches this. */
+	--chapter-head-h: 4.5rem;
+
+	/* Sticky progress meter height — used by the chapter banner to pin
+	   itself BELOW the meter when both are visible, so they stack cleanly
+	   instead of fighting for top:0. Roughly the meter's
+	   padding (0.875rem × 2) + content (~1.5rem) ≈ 3.25rem; round up to
+	   give a 0.25rem seam. */
+	--meter-h: 3.5rem;
+}
+
+/* ── Glassmorphism System ────────────────────────────────────────────────
+   A cohesive set of frosted-glass utilities used across the entire app
+   (sticky headers, cards, sheets). Replaces scattered color-mix hacks
+   and ensures consistent depth and blur in both light and dark modes. */
+@utility glass-panel {
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-filter);
+	-webkit-backdrop-filter: var(--glass-filter);
+}
+
+@utility glass-panel-heavy {
+	background: var(--glass-bg-heavy);
+	backdrop-filter: var(--glass-filter);
+	-webkit-backdrop-filter: var(--glass-filter);
 }
 
 [data-theme='light'] {
@@ -72,18 +120,18 @@
    selector, so the duplication of these four lines is forced. */
 [data-theme='dark'] {
 	color-scheme: dark;
-	--vert-mid-l: 0.74;
-	--vert-soft-l: 0.3;
-	--vert-soft-c: 0.06;
-	--vert-ink-l: 0.86;
+	--vert-mid-l: 0.78;
+	--vert-soft-l: 0.24;
+	--vert-soft-c: 0.08;
+	--vert-ink-l: 0.92;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']) {
-		--vert-mid-l: 0.74;
-		--vert-soft-l: 0.3;
-		--vert-soft-c: 0.06;
-		--vert-ink-l: 0.86;
+		--vert-mid-l: 0.78;
+		--vert-soft-l: 0.24;
+		--vert-soft-c: 0.08;
+		--vert-ink-l: 0.92;
 	}
 }
 
@@ -110,7 +158,16 @@ body {
    snapped question sits below it. */
 html {
 	scroll-snap-type: y proximity;
-	scroll-padding-top: var(--chapter-head-h, 72px);
+	/* When the progress meter is also pinned (i.e., the user has scrolled
+	   into the quiz), reserve room for both bars so a snapped question
+	   doesn't hide under them. The `:has()` test is on `body` because
+	   `<html>` does not contain `.meter` — it is fixed-positioned out of
+	   flow but still a descendant of body. */
+	scroll-padding-top: var(--chapter-head-h, 4.5rem);
+}
+
+html:has(body .meter[data-visible='true']) {
+	scroll-padding-top: calc(var(--meter-h, 3.5rem) + var(--chapter-head-h, 4.5rem));
 }
 
 /* ── Forward-progress lock (declarative) ──────────────────────────────

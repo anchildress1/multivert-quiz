@@ -52,42 +52,51 @@
 		display: grid;
 		grid-template-columns: auto 1fr auto auto;
 		align-items: center;
-		gap: clamp(12px, 2vw, 20px);
-		padding: 14px clamp(16px, 4vw, 56px);
-		min-height: 72px;
-		background: color-mix(in oklab, var(--paper) 88%, transparent);
-		backdrop-filter: blur(18px) saturate(1.05);
-		-webkit-backdrop-filter: blur(18px) saturate(1.05);
-		border-bottom: 1px solid var(--ink-08);
+		gap: clamp(0.75rem, 2vw, 1.25rem);
+		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
+		min-height: var(--chapter-head-h, 4.5rem);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border-bottom: var(--glass-border);
+		transition: top 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+
+	/* Stack below the progress meter when the meter is visible. The meter
+	   slides in once the user has scrolled past the hero, so before that
+	   the banner sits flush at top:0. The transition matches the meter's
+	   own translate timing so the two bars feel like one chained motion. */
+	:global(body:has(.meter[data-visible='true'])) .chapter-head {
+		top: var(--meter-h, 3.5rem);
 	}
 
 	.chapter-head__numeral {
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(28px, 3vw, 36px);
+		font-size: clamp(1.75rem, 3vw, 2.25rem);
 		line-height: 1;
 		color: var(--accent-ink);
-		min-width: 32px;
+		min-width: 2rem;
 		text-align: center;
 	}
 
 	.chapter-head__rule {
-		height: 1px;
+		height: 0.0625rem;
 		background: linear-gradient(to right, var(--accent), transparent 80%);
 	}
 
 	.chapter-head__copy {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 0.25rem;
 		min-width: 0;
 	}
 
 	.chapter-head__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(20px, 2.4vw, 28px);
+		font-size: clamp(1.25rem, 2.4vw, 1.75rem);
 		line-height: 1;
 		letter-spacing: -0.02em;
 		margin: 0;
@@ -103,7 +112,7 @@
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(13px, 1.3vw, 15px);
+		font-size: clamp(0.8125rem, 1.3vw, 0.9375rem);
 		line-height: 1.35;
 		color: var(--ink-70);
 		margin: 0;
@@ -113,14 +122,14 @@
 
 	.chapter-head__count {
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--ink-70);
 		white-space: nowrap;
 	}
 
-	@media (max-width: 760px) {
+	@media (max-width: 47.5rem) {
 		.chapter-head__count {
 			display: none;
 		}
@@ -129,7 +138,7 @@
 		}
 	}
 
-	@media (max-width: 540px) {
+	@media (max-width: 33.75rem) {
 		.chapter-head__description {
 			display: none;
 		}
