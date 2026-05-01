@@ -276,12 +276,12 @@
 		height: calc(var(--thumb-r) * 2);
 		margin: calc(var(--thumb-r) * -1) 0 0 calc(var(--thumb-r) * -1);
 		border-radius: 999px;
-		background: var(--surface, var(--paper));
-		border: 2px solid var(--ink);
+		background: var(--surface);
+		border: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 2px 8px color-mix(in oklab, var(--ink) 16%, transparent);
+		box-shadow: 0 4px 12px color-mix(in oklab, var(--ink) 12%, transparent);
 		transition:
 			left 0.2s cubic-bezier(0.2, 0.7, 0.3, 1),
 			border-color 0.2s ease,
@@ -291,8 +291,31 @@
 
 	.slider[data-state='in-progress'] .slider__thumb {
 		box-shadow:
-			0 0 0 8px var(--ink-08),
-			0 4px 14px color-mix(in oklab, var(--ink) 20%, transparent);
+			0 0 0 0.5rem var(--ink-08),
+			0 0.25rem 0.875rem color-mix(in oklab, var(--ink) 20%, transparent);
+	}
+
+	/* Keyboard focus a11y. The native range input is opacity:0 over the
+	   visual track so all input modalities reach it, but that means the
+	   browser's default focus ring lands on an invisible element. WCAG 2.2
+	   needs a visible indicator with ≥3:1 contrast against the adjacent
+	   surface. `:has()` scopes the rule to the slider that owns the focused
+	   input. Two cases:
+	   - phase ≠ unset: the visual thumb exists, so ring the thumb in --ink.
+	   - phase = unset: the thumb is not rendered yet (the user has not
+	     interacted), so the rail itself becomes the focus target — without
+	     this the very first tab into the slider lands on nothing visible. */
+	.slider:has(.slider__input:focus-visible) .slider__thumb {
+		box-shadow:
+			0 0 0 0.1875rem var(--paper),
+			0 0 0 0.3125rem var(--ink),
+			0 0.25rem 0.875rem color-mix(in oklab, var(--ink) 24%, transparent);
+	}
+
+	.slider[data-state='unset']:has(.slider__input:focus-visible) .slider__rail {
+		box-shadow:
+			0 0 0 0.1875rem var(--paper),
+			0 0 0 0.3125rem var(--ink);
 	}
 
 	.slider__dot {
