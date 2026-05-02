@@ -136,12 +136,29 @@
 	--font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 }
 
-html,
-body {
+html {
 	height: 100%;
 	background: var(--paper);
 	color: var(--ink);
 	font-family: var(--font-sans);
+}
+
+/* Sticky-footer flex layout: body owns the column. `<main>` flexes to fill
+   the remaining viewport so the page-footer sits at viewport-bottom on
+   short pages (hero before any chapter intersects, results that fit in
+   one screen) and at the natural document end on tall pages. `100dvh`
+   accounts for mobile address-bar collapse. */
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--font-sans);
+}
+
+main {
+	flex: 1;
 }
 
 /* Page-level snap: questions inside the quiz snap one-per-viewport via
