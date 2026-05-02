@@ -62,5 +62,7 @@ perf:
 secret-scan:
 	$(PNPM) secret-scan
 
+ai-checks: secret-scan format lint typecheck test
+
 clean:
 	rm -rf .svelte-kit build dist coverage .lighthouseci playwright-report test-results .wrangler .vite
