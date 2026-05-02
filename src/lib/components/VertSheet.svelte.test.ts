@@ -114,14 +114,14 @@ describe('VertSheet — dismissal', () => {
 	it('invokes onclose on Escape', async () => {
 		const onclose = vi.fn();
 		renderSheet({ onclose });
-		await fireEvent.keyDown(window, { key: 'Escape' });
+		await fireEvent.keyDown(document, { key: 'Escape' });
 		expect(onclose).toHaveBeenCalledOnce();
 	});
 
 	it('does not invoke onclose on Escape when archetype is null', async () => {
 		const onclose = vi.fn();
 		renderSheet({ archetype: null, onclose });
-		await fireEvent.keyDown(window, { key: 'Escape' });
+		await fireEvent.keyDown(document, { key: 'Escape' });
 		expect(onclose).not.toHaveBeenCalled();
 	});
 
@@ -137,7 +137,7 @@ describe('VertSheet — dismissal', () => {
 	it('does not invoke onclose on unrelated keys', async () => {
 		const onclose = vi.fn();
 		renderSheet({ onclose });
-		await fireEvent.keyDown(window, { key: 'a' });
+		await fireEvent.keyDown(document, { key: 'a' });
 		expect(onclose).not.toHaveBeenCalled();
 	});
 });

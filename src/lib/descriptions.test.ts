@@ -4,15 +4,17 @@ import { descriptions, type DeepDescription } from './descriptions';
 
 const TYPES: readonly Archetype[] = ARCHETYPES;
 
+const compare = (a: string, b: string) => a.localeCompare(b);
+
 describe('descriptions registry — invariants', () => {
 	it('has exactly one entry per archetype, keyed by archetype', () => {
-		expect(Object.keys(descriptions).sort()).toEqual([...TYPES].sort());
+		expect(Object.keys(descriptions).sort(compare)).toEqual([...TYPES].sort(compare));
 	});
 
 	it('exposes only the field-guide schema (no `type` field, no encyclopedia leftovers)', () => {
 		const expectedTopKeys = ['body', 'deep', 'headline'];
 		for (const t of TYPES) {
-			expect(Object.keys(descriptions[t]).sort()).toEqual(expectedTopKeys);
+			expect(Object.keys(descriptions[t]).sort(compare)).toEqual(expectedTopKeys);
 		}
 	});
 
@@ -86,7 +88,7 @@ describe('descriptions registry — field-guide deep block', () => {
 			'youllNeverAdmit'
 		];
 		for (const t of TYPES) {
-			expect(Object.keys(descriptions[t].deep).sort()).toEqual(expectedKeys);
+			expect(Object.keys(descriptions[t].deep).sort(compare)).toEqual(expectedKeys);
 		}
 	});
 });

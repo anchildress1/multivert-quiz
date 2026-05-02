@@ -49,7 +49,10 @@ describe('archetypes registry — invariants', () => {
 	);
 
 	it.each(ARCHETYPE_LITERALS)('VERT_NAMES.%s exposes only `name` and `label`', (archetype) => {
-		expect(Object.keys(VERT_NAMES[archetype]).sort()).toEqual(['label', 'name']);
+		expect(Object.keys(VERT_NAMES[archetype]).sort((a, b) => a.localeCompare(b))).toEqual([
+			'label',
+			'name'
+		]);
 	});
 
 	it.each(DIMENSION_LITERALS)('DIMENSION_META has a non-empty description for %s', (dimension) => {
@@ -73,8 +76,9 @@ describe('archetypes registry — chapter map', () => {
 	});
 
 	it('each chapter dimension appears exactly once across the chapter list', () => {
-		const dims = CHAPTERS.map((c) => c.dimension).sort();
-		expect(dims).toEqual([...DIMENSION_LITERALS].sort());
+		const compare = (a: string, b: string) => a.localeCompare(b);
+		const dims = CHAPTERS.map((c) => c.dimension).sort(compare);
+		expect(dims).toEqual([...DIMENSION_LITERALS].sort(compare));
 	});
 
 	it.each(['I', 'II', 'III', 'IV'] as const)('chapter numeral %s is present once', (numeral) => {
