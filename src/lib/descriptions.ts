@@ -48,7 +48,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		body: "Liking people and having stamina for them are two different things. You can charm a room, hold court at a dinner, host the brunch—and still need the next day off the calendar. Being on burns charge; only silence refills it. Anxiety and shyness can ride along, but they're not what's draining you. You're a battery, and you've learned the cost.",
 		deep: {
 			dayInTheLife:
-				"You're awake while the house is asleep, because the silence at 6 a.m. is yours and the silence at 9 p.m. has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many—even if two of them were just baristas. You go to bed twenty minutes earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
+				"You're awake while the house is asleep, because that silence is yours; every other silence in the day has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many—even if two of them were just baristas. You go to bed earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
 			trueThings: [
 				"You have rehearsed apologies for plans you haven't been invited to yet.",
 				"You've stayed in the bathroom an extra five minutes at parties just to be alone with the towel rack.",
