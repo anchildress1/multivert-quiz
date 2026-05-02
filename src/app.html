@@ -23,12 +23,13 @@
 				try {
 					var v = localStorage.getItem('multivert:theme');
 					if (v === 'light' || v === 'dark') {
-						document.documentElement.setAttribute('data-theme', v);
+						document.documentElement.dataset.theme = v;
 					}
-				} catch (_) {
-					/* localStorage blocked (private browsing) — fall back to the
-					   system preference, which the CSS already handles via
-					   `color-scheme: light dark`. */
+				} catch (err) {
+					// localStorage blocked (private browsing, ITP, CSP) — log the
+					// failure name and fall back to the system preference, which
+					// the CSS already handles via `color-scheme: light dark`.
+					console.warn('[theme] preflight read failed:', err && err.name);
 				}
 			})();
 		</script>

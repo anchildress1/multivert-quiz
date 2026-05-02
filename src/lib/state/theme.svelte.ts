@@ -39,16 +39,17 @@ class ThemeStore {
 	current = $state<Theme>(readStoredTheme());
 	systemDark = $state<boolean>(readSystemDark());
 
-	resolved = $derived<'light' | 'dark'>(
-		this.current === 'system' ? (this.systemDark ? 'dark' : 'light') : this.current
-	);
+	resolved = $derived.by<'light' | 'dark'>(() => {
+		if (this.current !== 'system') return this.current;
+		return this.systemDark ? 'dark' : 'light';
+	});
 
 	apply(next: Theme): void {
 		this.current = next;
 		if (!browser) return;
 		const root = document.documentElement;
-		if (next === 'system') root.removeAttribute('data-theme');
-		else root.setAttribute('data-theme', next);
+		if (next === 'system') delete root.dataset.theme;
+		else root.dataset.theme = next;
 		persistTheme(next);
 	}
 
