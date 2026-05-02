@@ -56,7 +56,7 @@ export interface VertMeta {
 export const VERT_NAMES: Readonly<Record<Archetype, VertMeta>> = Object.freeze({
 	introvert: { name: 'Introvert', label: 'inward, charged by quiet' },
 	extrovert: { name: 'Extrovert', label: 'outward, charged by people' },
-	ambivert: { name: 'Ambivert', label: 'context-flexible, mid-range' },
+	ambivert: { name: 'Ambivert', label: 'the dial, not a default' },
 	omnivert: { name: 'Omnivert', label: 'oscillates between extremes' },
 	otrovert: { name: 'Otrovert', label: 'belongs without belonging' }
 });
@@ -69,7 +69,7 @@ export interface DimensionMeta {
 export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object.freeze({
 	extraversion: {
 		description:
-			'How casual, unstructured social settings actually feel — the kind without a defined role.'
+			'How casual, unstructured social settings actually feel—the kind without a defined role.'
 	},
 	otherness: {
 		description:

@@ -24,7 +24,7 @@
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
 	const questionCount = questions.length;
-	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — ${questionCount} questions, one slider, a five-way breakdown at the end.`;
+	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
@@ -47,7 +47,7 @@
 				numeral: 'V' as const,
 				title: 'Result',
 				archetype: store.result.dominant,
-				description: 'Five independent fits — bars do not sum to 100.'
+				description: 'Five independent fits—bars do not sum to 100.'
 			};
 		}
 		if (activeChapter) {
@@ -294,9 +294,10 @@
 			</h1>
 
 			<p class="hero__lede">
-				Most quizzes only know two: introvert, extrovert. There are three more —
-				<em data-vert="ambivert">ambivert</em>, <em data-vert="omnivert">omnivert</em>, and
-				<em data-vert="otrovert">otrovert</em> (a 2025 term from psychiatrist Rami Kaminski).
+				Most quizzes only know two: introvert, extrovert. There are three more—<em
+					data-vert="ambivert">ambivert</em
+				>, <em data-vert="omnivert">omnivert</em>, and
+				<em data-vert="otrovert">otrovert</em>, popularized by psychiatrist Rami Kaminski in 2025.
 				{questions.length} statements, one quiet slider, a five-way breakdown at the end.
 			</p>
 

@@ -171,42 +171,42 @@ export const questions: Question[] = [
 
 	{
 		id: 'b-01',
-		text: 'Being part of a group has never really run my calendar — my week follows my own rhythm, not theirs.',
+		text: 'Being part of a group has never really run my calendar—my week follows my own rhythm, not theirs.',
 		dimension: 'otherness',
 		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-02',
-		text: "When I introduce myself, I lead with what I'm part of — team, church, neighborhood — before I get to what I do for work.",
+		text: "When I introduce myself, I lead with what I'm part of—team, hometown, neighborhood—before I get to what I do for work.",
 		dimension: 'otherness',
 		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-03',
-		text: "Team logos, alumni gear, inside jokes — that whole 'this is who we are' shorthand has never really stuck to me.",
+		text: "Team logos, alumni gear, inside jokes—that whole 'this is who we are' shorthand has never really stuck to me.",
 		dimension: 'otherness',
 		reverse: false,
 		source: 'Otherness Institute'
 	},
 	{
 		id: 'b-04',
-		text: 'Reunions, traditions, annual gatherings — that kind of recurring group event is some of my favorite stuff on the calendar.',
+		text: 'Reunions, traditions, annual gatherings—those are the things I block off the calendar for first.',
 		dimension: 'otherness',
 		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-05',
-		text: "Belonging somewhere is a big part of what makes me feel like me — without it, I'd feel like a smaller version of myself.",
+		text: "Belonging somewhere is a big part of what makes me feel like me—without it, I'd feel like a smaller version of myself.",
 		dimension: 'otherness',
 		reverse: true,
 		source: 'custom'
 	},
 	{
 		id: 'b-06',
-		text: "I'm most myself at recurring rituals — Sunday dinner, standing meetup, weekly hangout, the kinds of things that anchor a week.",
+		text: "I'm most myself at recurring rituals—the standing meetup, the weekly hangout, the date on the calendar that doesn't move.",
 		dimension: 'otherness',
 		reverse: true,
 		source: 'custom'
@@ -241,7 +241,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'b-11',
-		text: 'I examine ideas for myself before adopting them — popularity does not make something true.',
+		text: 'I examine ideas for myself before adopting them—popularity does not make something true.',
 		dimension: 'otherness',
 		reverse: false,
 		source: 'Otherness Institute'
@@ -295,7 +295,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 'g-03',
-		text: 'When friends ask "big group brunch or just us two?", I\'m voting big group.',
+		text: 'When friends ask "big group or small group?", I\'m voting big group.',
 		dimension: 'group_size',
 		reverse: false,
 		source: 'custom'
@@ -335,7 +335,7 @@ export const questions: Question[] = [
 	},
 	{
 		id: 's-02',
-		text: 'I swing between all-in and off-grid — never a mild middle.',
+		text: 'I swing between all-in and off-grid—never a mild middle.',
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'
@@ -349,14 +349,14 @@ export const questions: Question[] = [
 	},
 	{
 		id: 's-04',
-		text: 'I can be the loudest person in the room at 9pm and need to disappear by 10:30 — both are equally me.',
+		text: 'I can be the loudest person in the room at 9 p.m. and need to disappear by 10:30 p.m.—both are equally me.',
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'
 	},
 	{
 		id: 's-05',
-		text: 'Same crowd, same plan, different week — one time I work the room, the next I find the quietest corner.',
+		text: 'Same crowd, same plan, different week—one time I work the room, the next I find the quietest corner.',
 		dimension: 'swings',
 		reverse: false,
 		source: 'custom'

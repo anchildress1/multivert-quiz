@@ -3,8 +3,8 @@
  *
  * Each archetype gets a "field-guide" entry rather than a definition. The
  * structure is deliberately *not* the standard signs / mistaken-for / sources
- * format you'll find in a clinic explainer or a personality-test article —
- * the whole point is that this app reads like nothing else.
+ * format you'll find in a clinic explainer or a personality-test article—the
+ * whole point is that this app reads like nothing else.
  *
  * Sections:
  *   - headline + body  : the result-page summary (kept compact, voice-led)
@@ -48,7 +48,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		body: "Liking people and having stamina for them are two different things. You can charm a room, hold court at a dinner, host the brunch—and still need the next day off the calendar. Being on burns charge; only silence refills it. Anxiety and shyness can ride along, but they're not what's draining you. You're a battery, and you've learned the cost.",
 		deep: {
 			dayInTheLife:
-				"You're awake while the house is asleep, because that silence is yours; every other silence in the day has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many—even if two of them were just baristas. You go to bed earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
+				"The silences you keep have to be earned; the rest of the day will spend them. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many—even if two of them were just baristas. You go to bed earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",
 			trueThings: [
 				"You have rehearsed apologies for plans you haven't been invited to yet.",
 				"You've stayed in the bathroom an extra five minutes at parties just to be alone with the towel rack.",
@@ -58,14 +58,14 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 			],
 			giveaways: [
 				'Your headphones are a permanent accessory, even indoors.',
-				'You leave the party with the same volume you arrived with—most people leave louder.',
-				"You've owned the same three mugs for five years, and use only one."
+				'You arrive at things on time and leave them ten minutes early; nobody can ever name when you slipped.',
+				'You sit at the end of any table that has an end, and people who watch you stop noticing.'
 			],
 			whatHelps:
 				'A whole afternoon nobody can reach you, and nobody is in the next room either. Not even a good one.',
 			whatKillsYou: 'A "quick coffee" that you didn\'t budget four hours for.',
 			youllNeverAdmit:
-				"Your favorite version of yourself shows up after the door has closed behind everyone, and you'd like more of her, please."
+				"Your favorite version of yourself shows up after the door has closed behind everyone, and you'd like more of that one, please."
 		}
 	},
 
@@ -75,7 +75,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		body: "You think out loud. Solitude isn't peaceful—it's static. The hum of a crowded room is where the volume comes back. A weekend with no plans gets itchy fast, and a noisy dinner is the only known cure. People aren't input you process; they're the field you play on.",
 		deep: {
 			dayInTheLife:
-				"You wake up looking for the day to start, which to you means looking for someone. Coffee tastes wrong without a person across from it. By lunch you've passed three ideas through three different people, and one of them is now your idea. You organized a follow-up dinner from scratch in a parking lot at 4 p.m., and seven people are coming. By the time you fall asleep you've absorbed seven moods, returned six, and the seventh is going to be tomorrow's whole personality.",
+				"You wake up looking for the day to start, which to you means looking for someone. Coffee tastes wrong without a person across from it. By lunch you've passed three ideas through three different people, and one of them came back to you sharper than you sent it. You organized a follow-up dinner from scratch in a parking lot at 4 p.m., and seven people are coming. By the time you fall asleep you've absorbed seven moods, returned six, and the seventh is going to be tomorrow's whole personality.",
 			trueThings: [
 				"You think 'I should probably learn to be alone' the way other people think they should learn pottery—abstract, beautiful, and not this year.",
 				'A meeting that becomes a hallway conversation that becomes a coffee is the actual point of the meeting.',
@@ -86,7 +86,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 			giveaways: [
 				"You know the bartender's name within twenty minutes.",
 				'You start the story before anyone asked for it.',
-				'Your phone is face-up on the dinner table, and somehow nobody minds.'
+				"You finish strangers' sentences in coffee-shop lines and somehow get away with it."
 			],
 			whatHelps:
 				'One more dinner, even though everyone in the chat already said no. Especially because they did.',
@@ -101,25 +101,25 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 		body: "You're the one nobody can guess at the party. At the team dinner you're loud; at the work mixer you're listening; at a family event you're somehow both. Your trick isn't being in the middle—it's reading the room and turning the dial. You're not undecided. You're situational. The dial takes effort to turn—most people only have a switch.",
 		deep: {
 			dayInTheLife:
-				"You wake up and the day picks you. Mornings are quiet because they were always going to be—coffee, a long inbox, a low playlist. By lunch you're carrying a conversation through three jokes and a rebrand. You read the room at three meetings and become a slightly different person at each one, on purpose. You go home and don't talk to anyone for two hours, and that's fine. You answer one important text, then go quiet again. Nobody, including you, could honestly say which mode is the real one.",
+				"You start the day in low gear because that's what this one asks for—coffee, a long inbox, a low playlist. By lunch you're carrying a conversation through three jokes and a rebrand. You read the room at three meetings and become a slightly different person at each one, on purpose. You drop two registers between leaving work and unlocking your door, and stay there until one important text pulls you back up. Nobody, including you, could honestly say which version is the real one.",
 			trueThings: [
 				'"Are you an introvert or extrovert?" is a question you\'ve answered five different ways at five different jobs and meant all of them.',
-				"You've ended a conversation by simply stopping mid-sentence and walking off, and people thought it was charming because you sold it.",
+				"You've matched a stranger's accent inside two sentences and not realized you were doing it until they laughed.",
 				'You can hear a tone change in a voice over the phone before you can hear the words.',
-				'Your party trick is bringing people together and then leaving the room.',
-				"You've performed competence so often that competence has become performance, and you can't always tell which week you're in."
+				'You can be the funny one at one table and the listener at the next, served the same dinner.',
+				"Your closest friends each describe you to other people, and you've heard four different descriptions back, and all four are accurate."
 			],
 			giveaways: [
-				'You show up first, or last, never in the middle.',
+				"Someone has called you an extrovert. Someone else has called you a real introvert. You didn't correct either.",
 				"Your voice changes register slightly with the room—you don't notice it doing it.",
 				'You read the room before you read the menu.'
 			],
 			whatHelps:
-				"Whatever the last week wasn't. If it was loud, this one is novels. If it was novels, this one is dinner for ten.",
+				"An afternoon where you don't have to be one specific person, just the one each hour wants. Coffee with one friend, a long walk alone, a noisy dinner—same day, none of them effortful.",
 			whatKillsYou:
 				'Being told you "haven\'t picked." You did. Repeatedly. They just didn\'t notice.',
 			youllNeverAdmit:
-				"The dial costs more than you let on. One day a year, you'd quite like to be a switch."
+				'The dial costs more than you let on. Some weeks, a switch sounds like a vacation.'
 		}
 	},
 
@@ -140,7 +140,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 			giveaways: [
 				'You either show up to everything or nothing—your friends learned to ask twice.',
 				'A four-photo carousel of brunch on Saturday; phone untouched by Tuesday.',
-				'Your group chat avatar changes roughly every season.'
+				'Your last post is either today or last June, with no in-between.'
 			],
 			whatHelps:
 				'A literal door, closed, for a literal weekend, with permission from no one. Then you come back loud.',
@@ -170,9 +170,9 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 				'The deepest friendships of your life have been one person at a time, with no overlapping witnesses.'
 			],
 			giveaways: [
-				'You hold doors open until three strangers have walked through. No idea why.',
+				"Strangers ask you for directions in cities you don't live in, and you do your best.",
 				'In any group chat over six people, your entire participation is a heart react.',
-				"You've kept the same haircut for nine years without considering changing it."
+				"Acquaintances call you private; close friends know you're not, you just don't repeat yourself."
 			],
 			whatHelps:
 				"A real two-hour conversation with one person you don't see often enough. Not a phone call. In a kitchen.",
