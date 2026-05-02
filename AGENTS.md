@@ -20,7 +20,9 @@ it.
 - Every commit must carry a `Generated-by:` footer naming the AI model that produced it (the
   RAI commitlint plugin enforces this).
 - Releases are managed by **Release Please** (config in `release-please-config.json`).
-  Pre-1.0: minor bumps for features, patch bumps for fixes (`bump-minor-pre-major: true`).
+  Standard semver from v0.0.1 onward: `feat` bumps minor, `fix` bumps patch,
+  breaking changes bump major. The v0.0.1 tag at the initial commit is the
+  baseline — the pre-1.0 patch-bump shim has been removed.
 
 ## Commands (via Makefile)
 
