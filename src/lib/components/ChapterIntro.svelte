@@ -26,13 +26,13 @@
 	style:--accent-ink="var(--vert-{archetype}-ink)"
 >
 	<span class="chapter-head__numeral" aria-hidden="true">{numeral}</span>
-	<div class="chapter-head__rule" aria-hidden="true"></div>
 	<div class="chapter-head__copy">
 		<h2 {id} class="chapter-head__title">
 			<em>{title}</em>
 		</h2>
 		<p class="chapter-head__description">{description}</p>
 	</div>
+	<div class="chapter-head__rule" aria-hidden="true"></div>
 	<div
 		class="chapter-head__progress"
 		role="progressbar"
@@ -63,7 +63,7 @@
 		top: 0;
 		z-index: 5;
 		display: grid;
-		grid-template-columns: auto 1fr auto auto auto;
+		grid-template-columns: auto auto 1fr auto auto;
 		align-items: center;
 		gap: clamp(0.75rem, 2vw, 1.25rem);
 		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
