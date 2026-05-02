@@ -1,67 +1,7 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { themeStore, type Theme } from '$lib/state/theme.svelte';
 
-	type Theme = 'light' | 'dark' | 'system';
-
-	const STORAGE_KEY = 'multivert:theme';
-
-	let theme = $state<Theme>('system');
-
-	/* Read the persisted choice on mount. The `app.html` head script (added
-	   alongside this component) sets `data-theme` before paint to avoid a
-	   light-flash when the saved choice is dark. Here we just sync the
-	   button's reactive state to the value the head script already wrote. */
-	$effect(() => {
-		if (!browser) return;
-		const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-		if (saved === 'light' || saved === 'dark') {
-			theme = saved;
-		} else {
-			theme = 'system';
-		}
-	});
-
-	/* Resolved scheme is what the user *sees* — needed because `system` has
-	   to inspect `prefers-color-scheme` to decide which glyph to show. The
-	   matchMedia listener keeps the glyph honest if the OS theme flips while
-	   the page is open and the user hasn't overridden. */
-	let systemDark = $state(false);
-	$effect(() => {
-		if (!browser) return;
-		const mql = globalThis.matchMedia('(prefers-color-scheme: dark)');
-		systemDark = mql.matches;
-		const onChange = (event: MediaQueryListEvent) => {
-			systemDark = event.matches;
-		};
-		mql.addEventListener('change', onChange);
-		return () => mql.removeEventListener('change', onChange);
-	});
-
-	const resolved = $derived<'light' | 'dark'>(
-		theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
-	);
-
-	function apply(next: Theme) {
-		theme = next;
-		if (!browser) return;
-		const root = document.documentElement;
-		if (next === 'system') {
-			root.removeAttribute('data-theme');
-			localStorage.removeItem(STORAGE_KEY);
-		} else {
-			root.setAttribute('data-theme', next);
-			localStorage.setItem(STORAGE_KEY, next);
-		}
-	}
-
-	/* Single button cycles light → dark → system → light. Three states
-	   instead of two so the user can opt back into following their OS
-	   without clearing storage manually. */
-	function cycle() {
-		const order: Theme[] = ['light', 'dark', 'system'];
-		const next = order[(order.indexOf(theme) + 1) % order.length] ?? 'system';
-		apply(next);
-	}
+	$effect(() => themeStore.subscribeSystem());
 
 	const labelMap: Record<Theme, string> = {
 		light: 'Theme: light. Click to switch to dark.',
@@ -73,14 +13,12 @@
 <button
 	type="button"
 	class="toggle"
-	data-theme-state={theme}
-	data-resolved={resolved}
-	aria-label={labelMap[theme]}
-	title={labelMap[theme]}
-	onclick={cycle}
+	data-theme-state={themeStore.current}
+	data-resolved={themeStore.resolved}
+	aria-label={labelMap[themeStore.current]}
+	title={labelMap[themeStore.current]}
+	onclick={() => themeStore.cycle()}
 >
-	<!-- Three glyphs, only one visible per state. CSS opacity-swaps them
-	     so the button width never jitters between modes. -->
 	<svg
 		class="toggle__glyph toggle__glyph--sun"
 		viewBox="0 0 24 24"
@@ -116,7 +54,7 @@
 		<circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6" />
 		<path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="currentColor" />
 	</svg>
-	<span class="toggle__sr">{labelMap[theme]}</span>
+	<span class="toggle__sr">{labelMap[themeStore.current]}</span>
 </button>
 
 <style>
