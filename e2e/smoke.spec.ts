@@ -105,23 +105,21 @@ test.describe('landing + scroll quiz — structure', () => {
 		await expect(page.locator('input[type="range"]')).toHaveCount(questions.length);
 	});
 
-	test('progress meter is mounted', async ({ page }) => {
-		await page.goto('/');
-		await expect(page.locator('.meter')).toBeAttached();
-	});
-
-	test('submit CTA is disabled and out of layout until all questions are answered', async ({
+	test('progress strip mounts inside the chapter banner once a chapter intersects', async ({
 		page
 	}) => {
 		await page.goto('/');
-		const submitBtn = page.locator('.submit__cta');
-		// Still disabled and still carries the holding-pattern copy for AT users.
-		await expect(submitBtn).toBeDisabled();
-		await expect(submitBtn).toContainText(/more to go/i);
-		// Forward-progress lock keeps the submit panel out of layout (display:
-		// none) until the last gating question is committed, so a sighted user
-		// physically cannot scroll to it.
-		await expect(submitBtn).not.toBeVisible();
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'chapter-energy');
+		await expect.poll(() => page.locator('.chapter-head__progress').count()).toBe(1);
+	});
+
+	test('result section is not in the DOM until every question is answered', async ({ page }) => {
+		await page.goto('/');
+		// `{#if store.result}` keeps `#result` out of the DOM entirely until
+		// `store.allAnswered` flips. There is no intermediary "submit" panel —
+		// finishing the last question is the submit, the result IS the receipt.
+		await expect(page.locator('#result')).toHaveCount(0);
 	});
 });
 
@@ -130,18 +128,20 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		page
 	}) => {
 		await page.goto('/');
-		// Initial state: Q1 is laid out, Q2+ are display:none, later chapters hidden.
+		// Initial state: Q1 is laid out, Q2+ are display:none, later chapters
+		// hidden, and the result section is gated by `{#if store.result}`.
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await expect(page.locator('article#q-e-02')).toBeHidden();
 		await expect(page.locator('section#chapter-belonging')).toBeHidden();
-		await expect(page.locator('section#submit')).toBeHidden();
+		await expect(page.locator('#result')).toHaveCount(0);
 
-		// Commit Q1 → Q2 enters layout, but later chapters and submit remain hidden.
+		// Commit Q1 → Q2 enters layout, but later chapters and the result
+		// section remain unavailable until every question is answered.
 		await dispatchSliderCommit(page, 'e-01', 0.5);
 		await expect(page.locator('article#q-e-02')).toBeVisible();
 		await expect(page.locator('article#q-e-03')).toBeHidden();
 		await expect(page.locator('section#chapter-belonging')).toBeHidden();
-		await expect(page.locator('section#submit')).toBeHidden();
+		await expect(page.locator('#result')).toHaveCount(0);
 	});
 
 	test('forward-scroll attempt at the document floor pulses the gating row', async ({ page }) => {
@@ -161,11 +161,8 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 	test('subsequent forward-scroll attempts re-pulse (the effect does not get stuck)', async ({
 		page
 	}) => {
-		// Regression: the previous implementation read `pulseActive` inside
-		// the effect's guard, making it a reactivity dependency. The effect
-		// re-ran from its own write, the cleanup cancelled the timer that
-		// would have reset `pulseActive`, and the row got stuck — every
-		// nudge after the first was a no-op. This test pins the fix.
+		// Regression pin: a reactivity self-loop on `pulseActive` (read inside
+		// the effect's guard) once made every nudge after the first a no-op.
 		await page.goto('/');
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await waitForNudgeArmed(page);
@@ -236,16 +233,24 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 		});
 		await expect(page.locator('article#q-e-03')).toHaveAttribute('data-state', 'in-progress');
 
-		// Q4 and the final row both stay visible — the gate is not re-engaged.
+		// Q4, the final row, and every later chapter all stay visible — the
+		// forward-progress lock is keyed on `[data-state='unset']`, so an
+		// in-progress revision (which is no longer unset) does not re-engage
+		// the gate. The result section unmounts via `{#if store.result}` while
+		// any answer is mid-drag, so it isn't checked here.
 		await expect(page.locator('article#q-e-04')).toBeVisible();
 		await expect(page.locator('article#q-s-05')).toBeVisible();
-		await expect(page.locator('section#submit')).toBeVisible();
+		await expect(page.locator('section#chapter-swings')).toBeVisible();
 	});
 });
 
 test.describe('landing + scroll quiz — navigation', () => {
 	test('Begin button scrolls the first chapter into view', async ({ page }) => {
 		await page.goto('/');
+		// `scrollToId` short-circuits if the chapter element isn't mounted yet;
+		// the nudge-listener flag is the same hydration signal the rest of the
+		// suite anchors on.
+		await waitForNudgeArmed(page);
 		await page.evaluate(() =>
 			globalThis.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
 		);
@@ -287,7 +292,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'unset');
 		await dispatchSliderCommit(page, 'e-01', 0.5);
 		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
-		await expect(page.locator('.meter__count strong')).toHaveText('1');
+		await expect(page.locator('.chapter-head__progress-count strong')).toHaveText('1');
 	});
 
 	test('clicking the slider track at neutral commits a 0 value', async ({ page }) => {
@@ -304,26 +309,70 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(persisted).toEqual({ state: 'answered', value: 0 });
 	});
 
-	test('answering all questions enables the submit CTA and surfaces a result', async ({ page }) => {
+	test('answering all questions surfaces the result section', async ({ page }) => {
 		await seedAllAnswered(page);
 		await page.goto('/');
-		const submitBtn = page.locator('.submit__cta');
-		await expect(submitBtn).toBeEnabled();
-		await expect(submitBtn).toContainText(/breakdown/i);
-		// The result section is conditionally rendered when store.result is non-null.
+		// `{#if store.result}` mounts the result section once the store has a
+		// computed verdict — there is no intermediary submit panel.
 		await expect(page.locator('#result')).toBeAttached();
-		await expect(page.locator('#result-title')).toContainText(/^You are an/i);
-		await expect(page.locator('.result__bar')).toHaveCount(5);
-		// The archetype prose paragraph is the new content layer below the lede —
-		// confirm it's rendered with substantive copy so we don't silently ship
-		// a missing/empty entry from VERT_NAMES.
-		await expect(page.locator('.result__prose')).toBeAttached();
-		const proseText = (await page.locator('.result__prose').textContent()) ?? '';
-		expect(proseText.trim().length).toBeGreaterThanOrEqual(40);
+		// The Pantone-style swatch hero prints just the archetype name in caps —
+		// e.g. "OTROVERT" — as the colour name. No "You are an" prefix.
+		await expect(page.locator('#result-title')).toHaveText(
+			/^(INTROVERT|EXTROVERT|AMBIVERT|OMNIVERT|OTROVERT)$/
+		);
+		await expect(page.locator('.breakdown__chip')).toHaveCount(5);
+		// The body paragraphs come from `descriptions[dominant].body` — confirm
+		// at least one renders with substantive copy.
+		await expect(page.locator('.swatch__body').first()).toBeAttached();
+		const bodyText = (await page.locator('.swatch__body').first().textContent()) ?? '';
+		expect(bodyText.trim().length).toBeGreaterThanOrEqual(40);
 		// The result section carries data-dominant matching the headline archetype,
 		// which the radial accent wash binds to via inline custom properties.
 		const dominant = await page.locator('#result').getAttribute('data-dominant');
 		expect(dominant).toMatch(/^(introvert|extrovert|ambivert|omnivert|otrovert)$/);
+	});
+
+	test('clicking a result bar opens the per-archetype detail sheet', async ({ page }) => {
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('#result')).toBeAttached();
+		// The result section sits at the bottom of a long scroll-snapped page.
+		// Scroll the verdict block into view before interacting — auto-scroll
+		// on click fights the snap container.
+		await scrollToElement(page, 'result');
+
+		// Primary affordance: the swatch-hero CTA opens the dominant archetype's sheet.
+		const primary = page.locator('[data-testid="result-read-guide-button"]');
+		await primary.scrollIntoViewIfNeeded();
+		const dominantArchetype = await page.locator('#result').getAttribute('data-dominant');
+		await primary.click();
+		const primaryDialog = page.locator('[role="dialog"][aria-modal="true"]');
+		await expect(primaryDialog).toBeVisible();
+		await expect(primaryDialog).toHaveAttribute('data-archetype', dominantArchetype ?? '');
+		await page.keyboard.press('Escape');
+		await expect(primaryDialog).toHaveCount(0);
+		await expect(primary).toBeFocused();
+
+		// Secondary affordance: per-vert bar buttons. Click introvert directly,
+		// assert the dialog mounts for that archetype, and that escape returns
+		// focus to the bar trigger.
+		const trigger = page.locator('[data-testid="result-bar-button-introvert"]');
+		await trigger.scrollIntoViewIfNeeded();
+		await trigger.click();
+
+		const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+		await expect(dialog).toBeVisible();
+		await expect(dialog).toHaveAttribute('data-archetype', 'introvert');
+		// Title is the archetype name; body jumps straight into the field-guide content.
+		await expect(page.locator('#vert-sheet-title')).toHaveText('INTROVERT');
+		await expect(page.locator('.sheet__day-text')).toBeVisible();
+		await expect(page.locator('.sheet__truth')).toHaveCount(5);
+		await expect(page.locator('.sheet__giveaway').first()).toBeVisible();
+		await expect(page.locator('.sheet__pull-text')).toBeVisible();
+
+		await page.keyboard.press('Escape');
+		await expect(dialog).toHaveCount(0);
+		await expect(trigger).toBeFocused();
 	});
 
 	test('retake clears every answer, hides the result, and clears sessionStorage', async ({
@@ -339,7 +388,10 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await page.locator('.result__retake').click();
 
 		await expect(page.locator('#result')).toHaveCount(0);
-		await expect(page.locator('.submit__cta')).toBeDisabled();
+		// After reset, the first question is the only thing in layout — every
+		// downstream chapter is gated by the forward-progress lock again.
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await expect(page.locator('article#q-e-02')).toBeHidden();
 
 		const storedStates = await page.evaluate(() => {
 			const raw = sessionStorage.getItem('multivert.answers.v1');

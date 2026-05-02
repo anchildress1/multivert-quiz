@@ -106,27 +106,36 @@
 	}
 
 	.row__card {
-		width: min(100%, 720px);
+		width: min(100%, 45rem);
 		display: flex;
 		flex-direction: column;
-		gap: clamp(20px, 2.4vh, 28px);
-		padding: clamp(24px, 3vw, 36px) clamp(24px, 4vw, 40px);
-		background: color-mix(in oklab, var(--paper) 96%, transparent);
-		backdrop-filter: blur(16px) saturate(1.05);
-		-webkit-backdrop-filter: blur(16px) saturate(1.05);
-		border: 1px solid var(--ink-08);
+		gap: clamp(1.25rem, 2.4vh, 1.75rem);
+		padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.5rem, 4vw, 2.5rem);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: var(--glass-border);
 		border-radius: var(--card-radius);
 		/* Inset accent stripe lives on the card's left edge — gives every
 		   question quiet chapter-of-origin context without competing with the
 		   active-state halo on the border. The rotating accent token already
 		   lives on `--accent` so this requires no per-row plumbing. */
 		box-shadow:
-			inset 3px 0 0 color-mix(in oklab, var(--accent) 60%, transparent),
-			0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
-			0 12px 32px -16px color-mix(in oklab, var(--ink) 12%, transparent);
+			inset 3px 0 0 color-mix(in oklab, var(--accent) 80%, transparent),
+			0 1px 2px color-mix(in oklab, var(--ink) 4%, transparent),
+			0 16px 40px -12px color-mix(in oklab, var(--ink) 12%, transparent);
 		transition:
-			border-color 0.2s ease,
-			box-shadow 0.2s ease;
+			transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+			border-color 0.4s ease,
+			box-shadow 0.4s ease;
+	}
+
+	.row__card:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 3px 0 0 color-mix(in oklab, var(--accent) 90%, transparent),
+			0 4px 12px color-mix(in oklab, var(--ink) 6%, transparent),
+			0 24px 48px -12px color-mix(in oklab, var(--ink) 16%, transparent);
 	}
 
 	/* Forward-progress feedback. The card mimics a damped rubber-band: the

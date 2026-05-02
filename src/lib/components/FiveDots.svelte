@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { VERT_ORDER, type Archetype } from '$lib/archetypes';
+	import { ARCHETYPES, type Archetype } from '$lib/archetypes';
 
 	interface Props {
 		size?: number;
@@ -12,7 +12,7 @@
 </script>
 
 <span class="inline-flex items-center" style:gap="{gap}px" aria-hidden="true">
-	{#each VERT_ORDER as vert (vert)}
+	{#each ARCHETYPES as vert (vert)}
 		<span
 			class="rounded-full"
 			style:width="{size}px"

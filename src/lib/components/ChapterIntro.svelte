@@ -1,30 +1,22 @@
 <script lang="ts">
 	import type { Archetype, ChapterNumeral } from '$lib/archetypes';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 
 	interface Props {
 		id: string;
 		numeral: ChapterNumeral;
 		title: string;
 		archetype: Archetype;
-		count: number;
-		/**
-		 * Italic blurb shown under the title — pulled from `DIMENSION_META` in
-		 * the registry so chapter copy has a single source of truth.
-		 */
 		description: string;
-		/** Suffix on the right-hand count, e.g. `7 statements` or `5 verts`. */
-		countLabel?: string;
+		total: number;
+		answered: number;
 	}
 
-	const {
-		id,
-		numeral,
-		title,
-		archetype,
-		count,
-		description,
-		countLabel = 'statements'
-	}: Props = $props();
+	const { id, numeral, title, archetype, description, total, answered }: Props = $props();
+
+	const safeTotal = $derived(Math.max(0, total));
+	const safeAnswered = $derived(Math.max(0, Math.min(safeTotal, answered)));
+	const pct = $derived(safeTotal === 0 ? 0 : Math.round((safeAnswered / safeTotal) * 100));
 </script>
 
 <header
@@ -34,14 +26,35 @@
 	style:--accent-ink="var(--vert-{archetype}-ink)"
 >
 	<span class="chapter-head__numeral" aria-hidden="true">{numeral}</span>
-	<div class="chapter-head__rule" aria-hidden="true"></div>
 	<div class="chapter-head__copy">
 		<h2 {id} class="chapter-head__title">
 			<em>{title}</em>
 		</h2>
 		<p class="chapter-head__description">{description}</p>
 	</div>
-	<span class="chapter-head__count">{count} {countLabel}</span>
+	<div class="chapter-head__rule" aria-hidden="true"></div>
+	<div
+		class="chapter-head__progress"
+		role="progressbar"
+		aria-label="Quiz progress"
+		aria-valuemin={0}
+		aria-valuemax={safeTotal}
+		aria-valuenow={safeAnswered}
+		aria-valuetext="{safeAnswered} of {safeTotal} answered ({pct}%)"
+	>
+		<span class="chapter-head__progress-count" aria-hidden="true">
+			<strong>{safeAnswered}</strong><span class="chapter-head__progress-total">
+				/ {safeTotal}</span
+			>
+		</span>
+		<span class="chapter-head__progress-bar" aria-hidden="true">
+			<span class="chapter-head__progress-fill" style:width="{pct}%"></span>
+		</span>
+		<span class="chapter-head__progress-pct" aria-hidden="true">{pct}%</span>
+	</div>
+	<div class="chapter-head__toggle">
+		<ThemeToggle />
+	</div>
 </header>
 
 <style>
@@ -50,44 +63,44 @@
 		top: 0;
 		z-index: 5;
 		display: grid;
-		grid-template-columns: auto 1fr auto auto;
+		grid-template-columns: auto auto 1fr auto auto;
 		align-items: center;
-		gap: clamp(12px, 2vw, 20px);
-		padding: 14px clamp(16px, 4vw, 56px);
-		min-height: 72px;
-		background: color-mix(in oklab, var(--paper) 88%, transparent);
-		backdrop-filter: blur(18px) saturate(1.05);
-		-webkit-backdrop-filter: blur(18px) saturate(1.05);
-		border-bottom: 1px solid var(--ink-08);
+		gap: clamp(0.75rem, 2vw, 1.25rem);
+		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
+		min-height: var(--chapter-head-h, 4.5rem);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border-bottom: var(--glass-border);
 	}
 
 	.chapter-head__numeral {
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(28px, 3vw, 36px);
+		font-size: clamp(1.75rem, 3vw, 2.25rem);
 		line-height: 1;
 		color: var(--accent-ink);
-		min-width: 32px;
+		min-width: 2rem;
 		text-align: center;
 	}
 
 	.chapter-head__rule {
-		height: 1px;
+		height: 0.0625rem;
 		background: linear-gradient(to right, var(--accent), transparent 80%);
 	}
 
 	.chapter-head__copy {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 0.25rem;
 		min-width: 0;
 	}
 
 	.chapter-head__title {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(20px, 2.4vw, 28px);
+		font-size: clamp(1.25rem, 2.4vw, 1.75rem);
 		line-height: 1;
 		letter-spacing: -0.02em;
 		margin: 0;
@@ -103,7 +116,7 @@
 		font-family: var(--font-display);
 		font-style: italic;
 		font-weight: 400;
-		font-size: clamp(13px, 1.3vw, 15px);
+		font-size: clamp(0.8125rem, 1.3vw, 0.9375rem);
 		line-height: 1.35;
 		color: var(--ink-70);
 		margin: 0;
@@ -111,25 +124,71 @@
 		max-width: 64ch;
 	}
 
-	.chapter-head__count {
+	/* Progress block — small mono cluster on the right. Quiet enough to read
+	   as a status strip on the chapter banner rather than a second bar. */
+	.chapter-head__progress {
+		display: grid;
+		grid-template-columns: auto minmax(3.75rem, 12.5rem) auto;
+		align-items: center;
+		gap: 0.75rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
+		font-size: 0.6875rem;
 		color: var(--ink-70);
-		white-space: nowrap;
 	}
 
-	@media (max-width: 760px) {
-		.chapter-head__count {
+	.chapter-head__progress-count strong {
+		color: var(--ink);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.chapter-head__progress-total {
+		color: var(--ink-70);
+	}
+
+	.chapter-head__progress-bar {
+		display: block;
+		height: 0.1875rem;
+		border-radius: 99rem;
+		background: var(--ink-08);
+		overflow: hidden;
+		position: relative;
+	}
+
+	.chapter-head__progress-fill {
+		display: block;
+		height: 100%;
+		background: var(--ink);
+		transition: width 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.chapter-head__progress-pct {
+		font-variant-numeric: tabular-nums;
+		color: var(--ink-70);
+		min-width: 2.25rem;
+		text-align: right;
+	}
+
+	.chapter-head__toggle {
+		display: flex;
+		align-items: center;
+	}
+
+	/* Medium screens: drop the long bar segment so the count + pct still
+	   read at a glance, and let the title breathe. */
+	@media (max-width: 60rem) {
+		.chapter-head__progress {
+			grid-template-columns: auto auto;
+			gap: 0.5rem;
+		}
+		.chapter-head__progress-bar {
 			display: none;
 		}
-		.chapter-head {
-			grid-template-columns: auto 1fr auto;
-		}
 	}
 
-	@media (max-width: 540px) {
+	/* Narrow screens: drop the description and the gradient rule. Keeps the
+	   numeral + title + a hairline progress count + theme toggle. */
+	@media (max-width: 47.5rem) {
 		.chapter-head__description {
 			display: none;
 		}
@@ -137,7 +196,11 @@
 			display: none;
 		}
 		.chapter-head {
-			grid-template-columns: auto auto 1fr;
+			grid-template-columns: auto 1fr auto auto;
+			gap: 0.875rem;
+		}
+		.chapter-head__progress-count {
+			display: none;
 		}
 	}
 </style>

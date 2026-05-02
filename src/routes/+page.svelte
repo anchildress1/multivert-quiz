@@ -5,42 +5,53 @@
 		CHAPTERS,
 		DIMENSION_META,
 		VERT_NAMES,
-		VERT_ORDER,
+		ARCHETYPES,
+		type Archetype,
 		type Chapter
 	} from '$lib/archetypes';
 	import ChapterIntro from '$lib/components/ChapterIntro.svelte';
 	import FiveDots from '$lib/components/FiveDots.svelte';
-	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
 	import QuestionRow from '$lib/components/QuestionRow.svelte';
 	import Tagline from '$lib/components/Tagline.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import VertSheet from '$lib/components/VertSheet.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
+	import { descriptions } from '$lib/descriptions';
 	import { questions } from '$lib/questions';
 	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
-	import { APP_VERSION } from '$lib/version';
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
 	const questionCount = questions.length;
-	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert — ${questionCount} questions, one slider, a five-way breakdown at the end.`;
+	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
-	let scrollY = $state(0);
+	let heroVisible = $state(true);
+	let sheetArchetype = $state<Archetype | null>(null);
 
-	const meterVisible = $derived(scrollY > 80);
+	function openSheet(archetype: Archetype) {
+		sheetArchetype = archetype;
+	}
 
-	/* The single sticky banner at the top of `<main>` is driven by this
-	   derived bag of ChapterIntro props. Result takes precedence when its
-	   section is intersecting; otherwise the last visited chapter wins. */
+	function closeSheet() {
+		sheetArchetype = null;
+	}
+
+	/* The sticky banner at the top of `<main>` is gated on hero visibility:
+	   while the hero owns the viewport it would render at its natural
+	   position (just under the hero) which lands near viewport-bottom and
+	   reads as misplaced chrome. Skip until the hero is fully out of view.
+	   Result takes precedence when its section is intersecting; otherwise
+	   the last visited chapter wins. */
 	const activeSection = $derived.by(() => {
+		if (heroVisible) return null;
 		if (resultActive && store.result) {
 			return {
 				numeral: 'V' as const,
 				title: 'Result',
 				archetype: store.result.dominant,
-				count: 5,
-				countLabel: 'verts',
-				description: 'Five independent fits — bars do not sum to 100.'
+				description: 'Five independent fits—bars do not sum to 100.'
 			};
 		}
 		if (activeChapter) {
@@ -48,12 +59,29 @@
 				numeral: activeChapter.numeral,
 				title: activeChapter.title,
 				archetype: activeChapter.archetype,
-				count: grouped[activeChapter.dimension].length,
-				countLabel: 'statements',
 				description: DIMENSION_META[activeChapter.dimension].description
 			};
 		}
 		return null;
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const hero = document.querySelector<HTMLElement>('header.hero');
+		if (!hero) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (!entry) return;
+				const rootHeight = entry.rootBounds?.height ?? globalThis.innerHeight;
+				// Hero "owns" the viewport while its bottom edge sits below the
+				// viewport mid-line. Once scrolled past that, the chapter banner
+				// can take over at viewport-top without competing for attention.
+				heroVisible = entry.boundingClientRect.bottom > rootHeight * 0.5;
+			},
+			{ threshold: [0, 0.25, 0.5, 0.75, 1] }
+		);
+		obs.observe(hero);
+		return () => obs.disconnect();
 	});
 
 	$effect(() => {
@@ -187,12 +215,15 @@
 			touchStartY = event.touches[0]?.clientY ?? 0;
 		};
 
+		const TOUCH_NOISE_PX = 8;
 		const onTouchMove = (event: TouchEvent) => {
 			const currentY = event.touches[0]?.clientY ?? 0;
 			// Positive delta = finger swept up (i.e., trying to scroll forward).
-			// 8px is the noise threshold — below that, tiny finger jitter
-			// during a tap on the slider would fire false positives.
-			if (touchStartY - currentY > 8 && atDocumentBottom()) fire();
+			// 8 CSS px is the noise threshold — below that, tiny finger jitter
+			// during a tap on the slider would fire false positives. Threshold
+			// is in raw clientY pixels, not rem, because TouchEvent coordinates
+			// are unaffected by font-size scaling.
+			if (touchStartY - currentY > TOUCH_NOISE_PX && atDocumentBottom()) fire();
 		};
 
 		window.addEventListener('wheel', onWheel, { passive: true });
@@ -227,7 +258,9 @@
 		if (idx < 0) return;
 		const next = questions[idx + 1];
 		if (next && store.answers[next.id]?.state === 'answered') return;
-		const targetId = next ? `q-${next.id}` : 'submit';
+		// Last commit lands the user directly on the result — finishing the
+		// quiz IS the submit, no intermediary panel.
+		const targetId = next ? `q-${next.id}` : 'result';
 		const behavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
 		if (autoScrollTimer !== null) clearTimeout(autoScrollTimer);
 		autoScrollTimer = setTimeout(() => {
@@ -261,15 +294,6 @@
 	/>
 </svelte:head>
 
-<svelte:window bind:scrollY />
-
-<ProgressMeter
-	total={store.total}
-	answered={store.totalAnswered}
-	chapter={activeChapter ? `${activeChapter.numeral} · ${activeChapter.title}` : null}
-	visible={meterVisible}
-/>
-
 <header class="hero">
 	<div class="hero__bar">
 		<Wordmark size={22} />
@@ -277,8 +301,8 @@
 			<a href="#chapter-energy" onclick={(e) => scrollToId('chapter-energy', e)}>
 				The five verts
 			</a>
-			<a href="#submit" onclick={(e) => scrollToId('submit', e)}>Submit</a>
 			<FiveDots />
+			<ThemeToggle />
 		</nav>
 	</div>
 
@@ -296,11 +320,11 @@
 			</h1>
 
 			<p class="hero__lede">
-				Most quizzes only know two: introvert, extrovert. We added three more —
-				<em>ambivert</em> (context-flexible),
-				<em>omnivert</em> (oscillates between extremes), and
-				<em>otrovert</em> (a 2025 construct from psychiatrist Rami Kaminski; belongs without
-				belonging). {questions.length} statements, one quiet slider, a five-way breakdown at the end.
+				Most quizzes only know two: introvert, extrovert. There are three more—<em
+					data-vert="ambivert">ambivert</em
+				>, <em data-vert="omnivert">omnivert</em>, and
+				<em data-vert="otrovert">otrovert</em>, popularized by psychiatrist Rami Kaminski in 2025.
+				{questions.length} statements, one quiet slider, a five-way breakdown at the end.
 			</p>
 
 			<div class="hero__cta-row">
@@ -316,7 +340,7 @@
 		<aside class="hero__card">
 			<div class="hero__card-eyebrow">The five verts</div>
 			<ul class="hero__card-list">
-				{#each VERT_ORDER as vert, i (vert)}
+				{#each ARCHETYPES as vert, i (vert)}
 					<li class="hero__card-item" class:hero__card-item--first={i === 0}>
 						<span
 							class="hero__card-dot"
@@ -334,7 +358,12 @@
 
 <main class="quiz">
 	{#if activeSection}
-		<ChapterIntro id="active-chapter-head" {...activeSection} />
+		<ChapterIntro
+			id="active-chapter-head"
+			{...activeSection}
+			total={store.total}
+			answered={store.totalAnswered}
+		/>
 	{/if}
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
@@ -366,124 +395,189 @@
 		</section>
 	{/each}
 
-	<section id="submit" class="submit">
-		<div class="submit__inner">
-			<p class="submit__eyebrow">
-				{store.totalAnswered} of {store.total} answered
-			</p>
-			<h2 class="submit__title">
-				{#if store.allAnswered}
-					That’s <em>all of them.</em><br />Want to see how you came out?
-				{:else}
-					Almost there — <em>{store.total - store.totalAnswered}</em> still need a&nbsp;slide.
-				{/if}
-			</h2>
-
-			<button
-				class="submit__cta"
-				type="button"
-				disabled={!store.allAnswered}
-				aria-disabled={!store.allAnswered}
-				onclick={() => scrollToId('result')}
-			>
-				{#if store.allAnswered}
-					See my five-vert breakdown <span aria-hidden="true">→</span>
-				{:else}
-					{store.total - store.totalAnswered} more to go
-				{/if}
-			</button>
-
-			<p class="submit__hint">
-				Your answers stay on this device. We don’t persist anything to a server.
-			</p>
-		</div>
-	</section>
-
 	{#if store.result}
 		{@const result = store.result}
+		{@const dominant = result.dominant}
+		{@const dominantFit = result.fits.find((f) => f.archetype === dominant)?.fit ?? 0}
+		{@const dominantIndex = ARCHETYPES.indexOf(dominant)}
+		{@const bodyParas = descriptions[dominant].body.split('\n\n')}
 		<section
 			id="result"
 			class="result"
 			aria-labelledby="result-title"
-			data-dominant={result.dominant}
-			style:--dominant-soft="var(--vert-{result.dominant}-soft)"
-			style:--dominant-mid="var(--vert-{result.dominant}-mid)"
-			style:--dominant-ink="var(--vert-{result.dominant}-ink)"
+			data-dominant={dominant}
+			style:--dominant-mid="var(--vert-{dominant}-mid)"
+			style:--dominant-ink="var(--vert-{dominant}-ink)"
 		>
-			<div class="result__inner">
-				<p class="result__eyebrow">your result · {store.total} of {store.total} answered</p>
-				<h2 id="result-title" class="result__title">
-					You are an <em>{VERT_NAMES[result.dominant].name}</em>.
-				</h2>
-				<p class="result__lede">{VERT_NAMES[result.dominant].label}</p>
-				<p class="result__prose">{VERT_NAMES[result.dominant].prose}</p>
+			<!-- Pantone-style swatch hero — full-bleed dominant hue, archetype name as
+			     the "color name," reference numerals top, swatch ink throughout. -->
+			<div
+				class="swatch"
+				style:--swatch="var(--vert-{dominant}-mid)"
+				style:--swatch-ink="var(--vert-{dominant}-ink)"
+				style:--swatch-soft="var(--vert-{dominant}-soft)"
+			>
+				<header class="swatch__chrome">
+					<span class="swatch__ref">
+						№ {String(dominantIndex + 1).padStart(2, '0')}/05 &nbsp;·&nbsp; FIT {dominantFit.toFixed(
+							1
+						)}%
+					</span>
+					<span class="swatch__lot">multivert · {store.total}/{store.total}</span>
+				</header>
 
-				<ul class="result__bars">
-					{#each VERT_ORDER as vert, i (vert)}
+				<div class="swatch__title">
+					<h2 id="result-title" class="swatch__name">{VERT_NAMES[dominant].name.toUpperCase()}</h2>
+					<p class="swatch__label">{VERT_NAMES[dominant].label}.</p>
+				</div>
+
+				<div class="swatch__lede">
+					<p class="swatch__headline">{descriptions[dominant].headline}</p>
+					{#each bodyParas as para, i (i)}
+						<p class="swatch__body">{para}</p>
+					{/each}
+				</div>
+
+				<button
+					type="button"
+					class="swatch__cta"
+					onclick={() => openSheet(dominant)}
+					data-testid="result-read-guide-button"
+				>
+					<span>Read all about it</span>
+					<span class="swatch__cta-glyph" aria-hidden="true">→</span>
+				</button>
+			</div>
+
+			<!-- Breakdown — five swatch chips on paper. Click to open that vert's
+			     sheet. Dominant chip carries an outlined ring that ties it back
+			     to the hero above. -->
+			<section class="breakdown" aria-label="Five-vert breakdown">
+				<p class="breakdown__caption">
+					<span>five-vert breakdown</span>
+					<span class="breakdown__caption-rule" aria-hidden="true"></span>
+					<span>tap any swatch to read its entry</span>
+				</p>
+				<ol class="breakdown__row">
+					{#each ARCHETYPES as vert, i (vert)}
 						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
 						<li
-							class="result__bar"
-							data-dominant={vert === result.dominant}
-							style:--bar-delay="{i * 90}ms"
+							class="breakdown__chip"
+							data-dominant={vert === dominant}
+							style:--chip-color="var(--vert-{vert}-mid)"
+							style:--chip-ink="var(--vert-{vert}-ink)"
+							style:--chip-delay="{i * 60}ms"
 						>
-							<span class="result__bar-name">{VERT_NAMES[vert].name}</span>
-							<span class="result__bar-track" aria-hidden="true">
-								<span
-									class="result__bar-fill"
-									style:--bar-width="{fit}%"
-									style:background="var(--vert-{vert}-mid)"
-								></span>
-							</span>
-							<span class="result__bar-pct">{fit.toFixed(1)}%</span>
+							<button
+								type="button"
+								class="breakdown__chip-button"
+								data-archetype={vert}
+								data-testid="result-bar-button-{vert}"
+								aria-label="Read the entry for {VERT_NAMES[vert].name.toLowerCase()} — {fit.toFixed(
+									1
+								)} percent fit"
+								onclick={() => openSheet(vert)}
+							>
+								<span class="breakdown__chip-num">№ {String(i + 1).padStart(2, '0')}</span>
+								<span class="breakdown__chip-name">
+									{VERT_NAMES[vert].name.toUpperCase()}
+								</span>
+								<span class="breakdown__chip-fit">
+									<span class="breakdown__chip-fit-num">{fit.toFixed(1)}</span>
+									<span class="breakdown__chip-fit-pct">%</span>
+								</span>
+							</button>
 						</li>
 					{/each}
-				</ul>
+				</ol>
+			</section>
 
-				<p class="result__hint">
-					Each bar is independent — the five percentages do not sum to 100. A strong introverted
-					otrovert can legitimately score high on both axes.
+			<footer class="result__colophon">
+				<button class="result__retake" type="button" onclick={handleRetake}>
+					<em>Start over.</em>
+					<span class="result__retake-glyph" aria-hidden="true">↺</span>
+				</button>
+				<p class="result__retake-meta">
+					Clears your answers on this device and rolls the page back to the top.
 				</p>
-
-				<div class="result__actions">
-					<button class="result__retake" type="button" onclick={handleRetake}>
-						<em>Start over.</em><span class="result__retake-glyph" aria-hidden="true">↺</span>
-					</button>
-					<p class="result__retake-meta">
-						Clears your answers on this device and rolls the page back to the top.
-					</p>
-				</div>
-			</div>
+			</footer>
 		</section>
 	{/if}
-
-	<footer class="page-footer">
-		<Tagline size={11} align="left" />
-		<div class="page-footer__version">{APP_VERSION}</div>
-	</footer>
 </main>
 
+<footer class="page-footer">
+	<div class="page-footer__inner">
+		<small class="page-footer__copyright">&copy; 2026 Ashley Childress</small>
+		<Tagline size={11} align="right" />
+	</div>
+</footer>
+
+<VertSheet archetype={sheetArchetype} onclose={closeSheet} />
+
 <style>
+	/* Cover-page sizing: fill the first viewport exactly. Anything less leaves
+	   a stranded paper band between the hero's natural bottom edge and the
+	   first chapter — that band reads as "forgotten content" because nothing
+	   anchors the bottom of the landing view. `100dvh` (not `100vh`) so mobile
+	   address-bar collapse doesn't pop the layout. The bar sits at the top
+	   naturally; the grid below claims `flex: 1` and centres its content
+	   block (`align-content: center`) so the headline lives in the optical
+	   middle of the viewport on tall displays instead of clinging to the
+	   top edge. */
 	.hero {
 		background: var(--paper);
 		color: var(--ink);
-		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
+		min-height: 100dvh;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero::before {
+		content: '';
+		position: absolute;
+		top: -20%;
+		left: -10%;
+		width: 120%;
+		height: 140%;
+		background:
+			radial-gradient(
+				circle at 70% 10%,
+				color-mix(in oklab, var(--vert-extrovert-mid) 12%, transparent),
+				transparent 45%
+			),
+			radial-gradient(
+				circle at 20% 80%,
+				color-mix(in oklab, var(--vert-omnivert-mid) 12%, transparent),
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 50% 50%,
+				color-mix(in oklab, var(--vert-introvert-mid) 8%, transparent),
+				transparent 60%
+			);
+		pointer-events: none;
+		z-index: 0;
+		filter: blur(80px);
 	}
 
 	.hero__bar {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 24px;
-		border-bottom: 1px solid var(--ink-08);
+		padding: 1.5rem;
+		border-bottom: 0.0625rem solid var(--ink-08);
+		flex-shrink: 0;
 	}
 
 	.hero__nav {
 		display: flex;
 		align-items: center;
-		gap: 28px;
-		font-size: 13px;
+		gap: 1.75rem;
+		font-size: 0.8125rem;
 		color: var(--ink-70);
 	}
 
@@ -498,40 +592,43 @@
 	}
 
 	.hero__grid {
-		flex: 1;
+		position: relative;
+		z-index: 1;
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 56px;
-		padding: 64px 24px;
-		max-width: 1280px;
+		gap: 2.5rem;
+		padding: 2.5rem 1.5rem 3.5rem;
+		max-width: 80rem;
 		width: 100%;
 		margin: 0 auto;
+		flex: 1;
+		align-content: center;
 	}
 
 	.hero__eyebrow {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 0.75rem;
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin-bottom: 28px;
+		margin-bottom: 1.75rem;
 	}
 
 	.hero__eyebrow-rule {
 		display: block;
-		width: 24px;
-		height: 1px;
+		width: 1.5rem;
+		height: 0.0625rem;
 		background: var(--ink-30);
 	}
 
 	.hero__headline {
 		font-family: var(--font-display);
 		font-weight: 400;
-		font-size: clamp(56px, 9vw, 116px);
-		line-height: 0.92;
+		font-size: clamp(2.75rem, 7vw, 5.5rem);
+		line-height: 0.94;
 		letter-spacing: -0.035em;
 		margin: 0;
 		text-wrap: balance;
@@ -543,43 +640,62 @@
 	}
 
 	.hero__lede {
-		margin: 36px 0 0;
-		max-width: 540px;
-		font-size: 17px;
+		margin: 2.25rem 0 0;
+		max-width: 33.75rem;
+		font-size: 1.0625rem;
 		line-height: 1.55;
 		color: var(--ink-70);
 	}
 
+	/* The three "new" verts get tinted with their archetype inks so the
+	   names read as coloured chips that tie back to the breakdown strip on
+	   the result page. Introvert/extrovert are left in plain ink — the
+	   sentence frames them as "the boring two everyone knows" and a tinted
+	   colour would muddy that voice. The -ink tokens already shift in dark
+	   mode (oklch lightness flips) so contrast holds in both schemes. */
+	.hero__lede em[data-vert='ambivert'] {
+		color: var(--vert-ambivert-ink);
+	}
+	.hero__lede em[data-vert='omnivert'] {
+		color: var(--vert-omnivert-ink);
+	}
+	.hero__lede em[data-vert='otrovert'] {
+		color: var(--vert-otrovert-ink);
+	}
+
 	.hero__cta-row {
-		margin-top: 44px;
+		margin-top: 2.75rem;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 16px 20px;
+		gap: 1rem 1.25rem;
 	}
 
 	.hero__cta {
 		display: inline-flex;
 		align-items: center;
-		gap: 12px;
-		height: 60px;
-		padding: 0 28px;
+		gap: 0.75rem;
+		height: 3.75rem;
+		padding: 0 1.75rem;
 		background: var(--ink);
 		color: var(--paper);
 		border: none;
 		border-radius: var(--button-radius);
 		font-family: var(--font-sans);
-		font-size: 16px;
+		font-size: 1rem;
 		font-weight: 500;
 		letter-spacing: -0.005em;
 		cursor: pointer;
+		box-shadow: 0 4px 12px color-mix(in oklab, var(--ink) 16%, transparent);
 		transition:
-			transform 0.2s ease,
-			background 0.2s ease;
+			transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+			background 0.3s ease,
+			box-shadow 0.3s ease;
 	}
 
 	.hero__cta:hover {
-		transform: translateY(-1px);
+		transform: translateY(-0.125rem);
+		box-shadow: 0 8px 24px -6px color-mix(in oklab, var(--ink) 40%, transparent);
 	}
 
 	.hero__cta:active {
@@ -587,14 +703,14 @@
 	}
 
 	.hero__cta:focus-visible {
-		outline: 2px solid var(--paper);
-		outline-offset: 3px;
-		box-shadow: 0 0 0 4px var(--ink);
+		outline: 0.125rem solid var(--paper);
+		outline-offset: 0.1875rem;
+		box-shadow: 0 0 0 0.25rem var(--ink);
 	}
 
 	.hero__cta-meta {
 		font-family: var(--font-mono);
-		font-size: 12px;
+		font-size: 0.75rem;
 		line-height: 1.55;
 		letter-spacing: 0.02em;
 		color: var(--ink-70);
@@ -602,20 +718,23 @@
 	}
 
 	.hero__card {
-		background: var(--paper-dk);
-		border: 1px solid var(--ink-08);
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: var(--glass-border);
 		border-radius: var(--card-radius);
-		padding: 32px;
+		padding: 2rem;
 		align-self: start;
+		box-shadow: var(--glass-shadow);
 	}
 
 	.hero__card-eyebrow {
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.625rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin-bottom: 20px;
+		margin-bottom: 1.25rem;
 	}
 
 	.hero__card-list {
@@ -628,11 +747,11 @@
 
 	.hero__card-item {
 		display: grid;
-		grid-template-columns: 14px 110px 1fr;
+		grid-template-columns: 0.875rem 6.875rem 1fr;
 		align-items: center;
-		gap: 14px;
-		padding: 14px 0;
-		border-top: 1px solid var(--ink-12);
+		gap: 0.875rem;
+		padding: 0.875rem 0;
+		border-top: 0.0625rem solid var(--ink-12);
 	}
 
 	.hero__card-item--first {
@@ -640,33 +759,33 @@
 	}
 
 	.hero__card-dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 999px;
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 99rem;
 	}
 
 	.hero__card-name {
 		font-family: var(--font-display);
 		font-style: italic;
-		font-size: 22px;
+		font-size: 1.375rem;
 		letter-spacing: -0.02em;
 	}
 
 	.hero__card-label {
-		font-size: 13px;
+		font-size: 0.8125rem;
 		color: var(--ink-70);
 		line-height: 1.4;
 	}
 
-	@media (min-width: 960px) {
+	@media (min-width: 60rem) {
 		.hero__grid {
-			grid-template-columns: 1fr minmax(0, 480px);
-			gap: 80px;
-			padding: 96px 56px 96px;
+			grid-template-columns: 1fr minmax(0, 30rem);
+			gap: 5rem;
+			padding: 6rem 3.5rem 6rem;
 			align-items: start;
 		}
 		.hero__bar {
-			padding: 24px 56px;
+			padding: 1.5rem 3.5rem;
 		}
 	}
 
@@ -681,223 +800,325 @@
 		background: var(--paper);
 	}
 
-	.submit {
-		background: var(--paper-dk);
-		padding: clamp(80px, 12vh, 160px) 24px;
-		border-top: 1px solid var(--ink-08);
-		border-bottom: 1px solid var(--ink-08);
-	}
-
-	.submit__inner {
-		max-width: 720px;
-		margin: 0 auto;
-		text-align: center;
-	}
-
-	.submit__eyebrow {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--ink-70);
-		margin: 0 0 18px;
-	}
-
-	.submit__title {
-		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(36px, 5vw, 56px);
-		line-height: 1.05;
-		letter-spacing: -0.02em;
-		margin: 0 0 36px;
-		text-wrap: balance;
-	}
-
-	.submit__title em {
-		font-style: italic;
-		color: var(--vert-otrovert-ink);
-	}
-
-	.submit__cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 14px;
-		height: 60px;
-		padding: 0 32px;
-		background: var(--ink);
-		color: var(--paper);
-		border: none;
-		border-radius: var(--button-radius);
-		font-family: var(--font-sans);
-		font-size: 16px;
-		font-weight: 500;
-		cursor: pointer;
-		transition:
-			background 0.2s ease,
-			transform 0.2s ease;
-	}
-
-	.submit__cta:disabled,
-	.submit__cta[aria-disabled='true'] {
-		background: var(--ink-12);
-		color: var(--ink-70);
-		cursor: not-allowed;
-		transform: none;
-	}
-
-	.submit__cta:not(:disabled):hover {
-		transform: translateY(-1px);
-	}
-
-	.submit__cta:focus-visible {
-		outline: 2px solid var(--paper);
-		outline-offset: 3px;
-		box-shadow: 0 0 0 4px var(--ink);
-	}
-
-	.submit__hint {
-		margin: 24px 0 0;
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		color: var(--ink-70);
-	}
-
 	.result {
 		position: relative;
 		isolation: isolate;
 		background: var(--paper);
-		scroll-margin-top: 72px;
-		/* No `overflow: hidden` — sticky descendants need an unclipped
-		   ancestor, and the global `<ChapterIntro>` sits at the top of
-		   `<main>` outside this section either way. The radial-gradient
-		   `::before` is bounded by `inset: 0` and fades to transparent
-		   before the section edges, so clipping isn't required. */
+		scroll-margin-top: 4.5rem;
+		padding: clamp(2rem, 5vh, 4rem) clamp(1rem, 4vw, 2rem) 0;
 	}
 
-	.result__inner {
-		max-width: 760px;
+	/* ── Pantone-style swatch hero, behind glass ───────────────────────────
+	   Full-bleed dominant hue, but softened — the hue itself is mixed into
+	   paper (about 28% paper) so saturated reds/oranges don't shout, and a
+	   top-left light-catch radial gradient sits on top to read as the
+	   surface of a frosted glass card rather than a pure printed swatch.
+	   The archetype name still functions as the colour name; type prints
+	   in the deep tone-on-tone ink (`--vert-{name}-ink`). */
+	.swatch {
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: 0.0625rem solid color-mix(in oklab, var(--swatch) 30%, transparent);
+		border-radius: var(--card-radius);
+		box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in oklab, var(--ink) 16%, transparent);
+		color: var(--ink);
+		/* Top padding stays lean (sticky chapter banner is already 4.5rem).
+		   Bottom is generous-but-bounded so the swatch doesn't dominate the
+		   page on tall viewports. */
+		padding: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 5vw, 6rem) clamp(3rem, 8vh, 6rem);
+		position: relative;
+		overflow: hidden;
+		max-width: 80rem;
 		margin: 0 auto;
-		padding: clamp(56px, 9vh, 112px) clamp(16px, 4vw, 64px);
 	}
 
-	/* Soft archetype-tinted wash anchored top-left, fading to nothing.
-	   Bound to `--dominant-soft` (set inline from result.dominant) so the
-	   atmosphere matches the user's headline result. */
-	.result::before {
+	/* A second, very faint glass sheen at the bottom-right — lifts the card
+	   off the page edge and gives the surface depth without becoming a
+	   gradient page. */
+	.swatch::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		z-index: -1;
-		background:
-			radial-gradient(
-				ellipse 70% 60% at 12% 8%,
-				color-mix(in oklab, var(--dominant-soft, var(--paper)) 75%, transparent) 0%,
-				transparent 70%
-			),
-			var(--paper);
 		pointer-events: none;
+		background: radial-gradient(
+			ellipse 50% 40% at 88% 92%,
+			color-mix(in oklab, var(--swatch) 30%, transparent) 0%,
+			transparent 60%
+		);
 	}
 
-	.result__eyebrow {
+	/* Stack the swatch's children above the ::after sheen. */
+	.swatch > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Swatch chrome — the small mono band of "reference numbers" running
+	   across the top of a Pantone card. Two columns, baseline aligned. */
+	.swatch__chrome {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem 1.5rem;
+		flex-wrap: wrap;
+		margin-bottom: clamp(2rem, 6vh, 4rem);
 		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.22em;
+		font-size: 0.6875rem;
+		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--ink-70);
-		margin: 0 0 20px;
+		opacity: 0.85;
 	}
 
-	.result__title {
+	.swatch__ref {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.swatch__lot {
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Title block — shrinks to the width of the colour-name, so the tagline
+	   beneath right-aligns to the END OF THE WORD instead of the right edge
+	   of the swatch. The tagline reads as a quiet caption on the title
+	   itself, not a far-flung column of metadata. */
+	.swatch__title {
+		display: block;
+		width: max-content;
+		max-width: 100%;
+	}
+
+	/* The colour name — heavy sans-serif, all-caps. Sized to dominate but
+	   not so big it pushes the rest of the card off-screen. */
+	.swatch__name {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		font-size: clamp(3.5rem, 11vw, 9rem);
+		line-height: 0.88;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+		margin: 0;
+		text-wrap: balance;
+		text-transform: uppercase;
+	}
+
+	/* Tagline right-aligned to the swatch's right edge — mirrors the
+	   chrome row's right column ("multivert · 35/35"), so the card reads
+	   with two clean text columns: name on the left, identity strip on
+	   the right. */
+	.swatch__label {
 		font-family: var(--font-display);
-		font-weight: 400;
-		font-size: clamp(48px, 8vw, 96px);
-		line-height: 1;
-		letter-spacing: -0.03em;
-		margin: 0 0 18px;
+		font-style: italic;
+		font-size: clamp(1.125rem, 2vw, 1.5rem);
+		line-height: 1.2;
+		color: var(--ink-70);
+		opacity: 0.78;
+		margin: clamp(0.5rem, 1.4vh, 1rem) 0 clamp(2.5rem, 6vh, 4rem);
+		text-align: right;
+	}
+
+	.swatch__lede {
+		max-width: 60ch;
+		margin-bottom: clamp(1.75rem, 4vh, 3rem);
+	}
+
+	.swatch__headline {
+		font-family: var(--font-sans);
+		font-weight: 500;
+		font-size: clamp(1.375rem, 2.6vw, 1.875rem);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		color: var(--ink);
+		margin: 0 0 1.5rem;
+		max-width: 28ch;
 		text-wrap: balance;
 	}
 
-	.result__title em {
-		font-style: italic;
-		color: var(--dominant-ink, var(--ink));
-	}
-
-	.result__lede {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: clamp(20px, 2.4vw, 26px);
-		color: var(--ink);
-		margin: 0 0 24px;
-	}
-
-	.result__prose {
-		max-width: 56ch;
-		font-size: 16px;
+	.swatch__body {
+		font-family: var(--font-sans);
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
 		line-height: 1.6;
 		color: var(--ink-70);
-		margin: 0 0 56px;
+		margin: 0 0 0.875rem;
+		max-width: 60ch;
 		text-wrap: pretty;
+		opacity: 0.92;
 	}
 
-	.result__bars {
-		list-style: none;
-		margin: 0 0 36px;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
+	.swatch__body:last-of-type {
+		margin-bottom: 0;
 	}
 
-	.result__bar {
-		display: grid;
-		grid-template-columns: minmax(96px, 120px) 1fr auto;
-		align-items: center;
-		gap: 16px;
-		font-family: var(--font-mono);
-		font-size: 12px;
-		opacity: 0;
-		animation: result-bar-in 520ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--bar-delay, 0ms) both;
-	}
-
-	.result__bar[data-dominant='true'] .result__bar-name,
-	.result__bar[data-dominant='true'] .result__bar-pct {
-		font-weight: 500;
+	.swatch__cta {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
+		background: transparent;
+		border: none;
+		border-bottom: 0.0625rem solid var(--ink);
 		color: var(--ink);
+		font-family: var(--font-sans);
+		font-weight: 500;
+		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
+		letter-spacing: 0.01em;
+		cursor: pointer;
+		transition:
+			gap 0.2s ease,
+			opacity 0.2s ease;
 	}
 
-	.result__bar-name {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: 18px;
+	.swatch__cta-glyph {
+		font-family: var(--font-sans);
+		font-size: 1.125rem;
+		transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.swatch__cta:hover,
+	.swatch__cta:focus-visible {
+		gap: 1.125rem;
+		opacity: 0.7;
+	}
+
+	.swatch__cta:hover .swatch__cta-glyph,
+	.swatch__cta:focus-visible .swatch__cta-glyph {
+		transform: translateX(0.375rem);
+	}
+
+	.swatch__cta:focus-visible {
+		outline: 0.125rem solid var(--ink);
+		outline-offset: 0.375rem;
+	}
+
+	/* ── Five-vert breakdown — a strip of swatch chips on paper ──────────
+	   Each chip is its own miniature Pantone card: solid colour, mono № ref,
+	   archetype name as the colour name, fit % as the swatch's "value." The
+	   dominant chip is ringed in its own ink so it ties back to the hero. */
+	.breakdown {
+		background: var(--paper);
+		padding: clamp(3rem, 8vh, 6rem) clamp(1.25rem, 5vw, 4rem);
+	}
+
+	.breakdown__caption {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		max-width: 75rem;
+		margin: 0 auto 1.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
 		color: var(--ink-70);
 	}
 
-	.result__bar-track {
-		height: 8px;
-		border-radius: 999px;
-		background: var(--ink-08);
-		overflow: hidden;
-		position: relative;
+	.breakdown__caption-rule {
+		flex: 1;
+		height: 0.0625rem;
+		background: var(--ink-12);
 	}
 
-	.result__bar[data-dominant='true'] .result__bar-track {
-		height: 12px;
+	.breakdown__row {
+		list-style: none;
+		margin: 0 auto;
+		padding: 0;
+		max-width: 75rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr));
+		gap: 0.375rem;
 	}
 
-	.result__bar-fill {
-		display: block;
-		height: 100%;
-		width: 0;
-		border-radius: 999px;
-		animation: result-bar-fill 720ms cubic-bezier(0.2, 0.7, 0.3, 1)
-			calc(var(--bar-delay, 0ms) + 120ms) both;
+	.breakdown__chip {
+		opacity: 0;
+		animation: chip-in 480ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--chip-delay, 0ms) both;
 	}
 
-	@keyframes result-bar-in {
+	.breakdown__chip-button {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: 1.5rem;
+		width: 100%;
+		min-height: 12.5rem;
+		padding: 1rem 1.125rem 1.125rem;
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-filter);
+		-webkit-backdrop-filter: var(--glass-filter);
+		border: 0.0625rem solid color-mix(in oklab, var(--chip-color) 30%, transparent);
+		border-radius: var(--card-radius);
+		color: var(--ink);
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		transition:
+			transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
+			box-shadow 0.22s ease,
+			border-color 0.22s ease,
+			background 0.22s ease;
+	}
+
+	.breakdown__chip-button:hover {
+		transform: translateY(-0.25rem);
+		box-shadow: 0 0.75rem 1.75rem -1rem color-mix(in oklab, var(--chip-color) 40%, transparent);
+		background: color-mix(in oklab, var(--chip-color) 10%, var(--glass-bg-heavy));
+		border-color: color-mix(in oklab, var(--chip-color) 60%, transparent);
+	}
+
+	.breakdown__chip-button:focus-visible {
+		outline: 0.125rem solid var(--chip-color);
+		outline-offset: 0.1875rem;
+	}
+
+	.breakdown__chip[data-dominant='true'] .breakdown__chip-button {
+		outline: 0.125rem solid color-mix(in oklab, var(--chip-color) 80%, transparent);
+		outline-offset: -0.5rem;
+	}
+
+	.breakdown__chip-num {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		font-variant-numeric: tabular-nums;
+		opacity: 0.85;
+	}
+
+	.breakdown__chip-name {
+		font-family: var(--font-sans);
+		font-weight: 600;
+		font-size: clamp(0.875rem, 1.4vw, 1.0625rem);
+		letter-spacing: -0.01em;
+		text-transform: uppercase;
+		line-height: 1;
+	}
+
+	.breakdown__chip-fit {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.0625rem;
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+		font-weight: 500;
+	}
+
+	.breakdown__chip-fit-num {
+		font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+		line-height: 1;
+	}
+
+	.breakdown__chip-fit-pct {
+		/* Sized at 0.55em the % glyph collapsed into an "s" shape — bumped
+		   to 0.78em so it reads unambiguously as percent without competing
+		   with the value. */
+		font-size: 0.78em;
+		opacity: 0.75;
+	}
+
+	@keyframes chip-in {
 		from {
 			opacity: 0;
-			transform: translateY(8px);
+			transform: translateY(0.5rem);
 		}
 		to {
 			opacity: 1;
@@ -905,49 +1126,30 @@
 		}
 	}
 
-	@keyframes result-bar-fill {
-		from {
-			width: 0;
-		}
-		to {
-			width: var(--bar-width, 0%);
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.result__bar {
+		.breakdown__chip {
 			opacity: 1;
 			animation: none;
 		}
-		.result__bar-fill {
-			width: var(--bar-width, 0%);
-			animation: none;
+		.breakdown__chip-button {
+			transition: none;
+		}
+		.swatch__cta-glyph {
+			transition: none;
 		}
 	}
 
-	.result__bar-pct {
-		font-variant-numeric: tabular-nums;
-		color: var(--ink-70);
-		min-width: 56px;
-		text-align: right;
-	}
-
-	.result__hint {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		line-height: 1.6;
-		color: var(--ink-70);
-		margin: 0;
-	}
-
-	.result__actions {
-		margin-top: 56px;
-		padding-top: 32px;
-		border-top: 1px solid var(--ink-08);
+	/* Colophon — sits under the breakdown on the paper background. Hairline
+	   rule above, retake reads as the page's quiet "turn over" gesture. */
+	.result__colophon {
+		max-width: 75rem;
+		margin: 0 auto;
+		padding: 2rem clamp(1.25rem, 5vw, 4rem) clamp(3rem, 8vh, 6rem);
+		border-top: 0.0625rem solid var(--ink-08);
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
-		gap: 12px 28px;
+		gap: 0.75rem 1.75rem;
 	}
 
 	/* Editorial typographic retake — italic display serif rather than a
@@ -956,19 +1158,19 @@
 	.result__retake {
 		display: inline-flex;
 		align-items: baseline;
-		gap: 10px;
+		gap: 0.625rem;
 		padding: 0;
 		background: transparent;
 		color: var(--ink);
 		border: none;
-		border-bottom: 1px solid var(--ink-30);
+		border-bottom: 0.0625rem solid var(--ink-30);
 		border-radius: 0;
 		font-family: var(--font-display);
-		font-size: clamp(20px, 2.4vw, 28px);
+		font-size: clamp(1.25rem, 2.4vw, 1.75rem);
 		line-height: 1.1;
 		letter-spacing: -0.015em;
 		cursor: pointer;
-		padding-bottom: 4px;
+		padding-bottom: 0.25rem;
 		transition:
 			border-color 0.2s ease,
 			color 0.2s ease,
@@ -981,7 +1183,7 @@
 
 	.result__retake-glyph {
 		font-family: var(--font-sans);
-		font-size: 18px;
+		font-size: 1.125rem;
 		font-style: normal;
 		color: var(--ink-70);
 		transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -989,7 +1191,7 @@
 
 	.result__retake:hover {
 		border-bottom-color: var(--dominant-mid, var(--ink));
-		gap: 14px;
+		gap: 0.875rem;
 	}
 
 	.result__retake:hover .result__retake-glyph {
@@ -998,34 +1200,52 @@
 	}
 
 	.result__retake:focus-visible {
-		outline: 2px solid var(--ink);
-		outline-offset: 6px;
+		outline: 0.125rem solid var(--ink);
+		outline-offset: 0.375rem;
 	}
 
 	.result__retake-meta {
 		font-family: var(--font-mono);
-		font-size: 12px;
+		font-size: 0.75rem;
 		color: var(--ink-70);
 		margin: 0;
 	}
 
+	/* Page chrome lives on a quietly differentiated surface so it reads as
+	   "the end" rather than leftover paper. Three layered signals:
+	   1. hairline `border-top` — the literal line marking page-end
+	   2. `--paper-dk` background — a ~3% darker paper tint (light-dark-aware)
+	   3. asymmetric block padding — more breathing room above than below
+	   The border + tint span full-width; the inner row caps at the same
+	   80rem rhythm the hero/swatch use so the copyright/credit columns
+	   align with the rest of the page on wide viewports. */
 	.page-footer {
+		border-top: 0.0625rem solid var(--ink-08);
+		background: var(--paper-dk);
+		padding-block: clamp(2rem, 4vh, 3rem) clamp(1.5rem, 3vh, 2rem);
+		padding-inline: 1.5rem;
+	}
+
+	.page-footer__inner {
+		max-width: 80rem;
+		margin-inline: auto;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: flex-end;
 		justify-content: space-between;
-		padding: 24px;
-		gap: 16px;
+		gap: 1rem 1.5rem;
 	}
 
-	.page-footer__version {
+	.page-footer__copyright {
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.6875rem;
 		color: var(--ink-70);
+		letter-spacing: 0.01em;
 	}
 
-	@media (min-width: 960px) {
+	@media (min-width: 60rem) {
 		.page-footer {
-			padding: 32px 56px;
+			padding-inline: 3.5rem;
 		}
 	}
 </style>
