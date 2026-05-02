@@ -484,7 +484,7 @@
 	</footer>
 </main>
 
-<VertSheet open={sheetArchetype !== null} archetype={sheetArchetype} onclose={closeSheet} />
+<VertSheet archetype={sheetArchetype} onclose={closeSheet} />
 
 <style>
 	.hero {

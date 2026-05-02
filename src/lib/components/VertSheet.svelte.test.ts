@@ -7,15 +7,12 @@ import VertSheet from './VertSheet.svelte';
 
 afterEach(cleanup);
 
-const renderSheet = (
-	overrides: { open?: boolean; archetype?: Archetype | null; onclose?: () => void } = {}
-) => {
+const renderSheet = (overrides: { archetype?: Archetype | null; onclose?: () => void } = {}) => {
 	const onclose = overrides.onclose ?? vi.fn();
 	const result = render(VertSheet, {
 		props: {
-			open: overrides.open ?? true,
-			// `null` is a valid intent ("sheet is closed because no archetype is
-			// selected"), so don't coalesce it away with `??`.
+			// `null` means closed; explicit so a missing key doesn't coalesce to
+			// the default `'introvert'` and accidentally render the open state.
 			archetype: 'archetype' in overrides ? (overrides.archetype ?? null) : 'introvert',
 			onclose
 		}
@@ -24,17 +21,12 @@ const renderSheet = (
 };
 
 describe('VertSheet — render gating', () => {
-	it('renders nothing when open=false', () => {
-		const { container } = renderSheet({ open: false });
-		expect(container.querySelector('[role="dialog"]')).toBeNull();
-	});
-
 	it('renders nothing when archetype=null', () => {
 		const { container } = renderSheet({ archetype: null });
 		expect(container.querySelector('[role="dialog"]')).toBeNull();
 	});
 
-	it('renders the dialog when open=true with an archetype', () => {
+	it('renders the dialog when archetype is set', () => {
 		const { container } = renderSheet();
 		const dialog = container.querySelector('[role="dialog"]');
 		expect(dialog).not.toBeNull();
@@ -132,11 +124,20 @@ describe('VertSheet — dismissal', () => {
 		expect(onclose).toHaveBeenCalledOnce();
 	});
 
-	it('does not invoke onclose on Escape when closed', async () => {
+	it('does not invoke onclose on Escape when archetype is null', async () => {
 		const onclose = vi.fn();
-		renderSheet({ open: false, onclose });
+		renderSheet({ archetype: null, onclose });
 		await fireEvent.keyDown(window, { key: 'Escape' });
 		expect(onclose).not.toHaveBeenCalled();
+	});
+
+	it('does not bind a touchend dismissal on the scrim (mobile-scroll false-positive)', () => {
+		const { container } = renderSheet();
+		const scrim = container.querySelector('.sheet__scrim') as HTMLElement;
+		expect(scrim).not.toBeNull();
+		// `click` is the only dismissal channel — `touchend` would fire after a
+		// scroll-then-release on iOS/Android and close the sheet by accident.
+		expect(scrim.outerHTML).not.toContain('touchend');
 	});
 
 	it('does not invoke onclose on unrelated keys', async () => {

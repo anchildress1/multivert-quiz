@@ -4,28 +4,23 @@
 	import { descriptions } from '$lib/descriptions';
 
 	interface Props {
-		/** Whether the sheet is currently rendered. The host owns the boolean. */
-		open: boolean;
-		/** Which archetype the sheet is showing — null while closed. */
 		archetype: Archetype | null;
-		/** Called when the user dismisses (scrim, ESC, or close button). */
 		onclose: () => void;
 	}
 
-	const { open, archetype, onclose }: Props = $props();
+	const { archetype, onclose }: Props = $props();
 
 	let dialogEl = $state<HTMLElement | null>(null);
 	let returnFocusEl: HTMLElement | null = null;
 
-	/* Body-scroll lock + focus management. The host page is a long single-scroll
-	   document; without `overflow: hidden` on the body, scrolling the sheet would
-	   bleed through to the underlying page. Captures the previously-focused
-	   element on open and restores it on close so keyboard users land back on
+	/* Body-scroll lock + focus management. Capture the previously-focused
+	   element on open and restore it on close so keyboard users land back on
 	   the bar they triggered the sheet from. */
 	$effect(() => {
-		if (!open || !browser) return;
+		if (!archetype || !browser) return;
 
-		returnFocusEl = document.activeElement as HTMLElement | null;
+		const active = document.activeElement;
+		returnFocusEl = active instanceof HTMLElement ? active : null;
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
 
@@ -40,7 +35,7 @@
 	});
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (!open) return;
+		if (!archetype) return;
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			onclose();
@@ -68,7 +63,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#if open && archetype}
+{#if archetype}
 	{@const meta = VERT_NAMES[archetype]}
 	{@const desc = descriptions[archetype]}
 	{@const archetypeIndex = VERT_ORDER.indexOf(archetype)}
@@ -82,13 +77,7 @@
 		style:--sheet-mid="var(--vert-{archetype}-mid)"
 		style:--sheet-ink="var(--vert-{archetype}-ink)"
 	>
-		<div
-			class="sheet__scrim"
-			role="presentation"
-			aria-hidden="true"
-			onclick={onclose}
-			ontouchend={onclose}
-		></div>
+		<div class="sheet__scrim" role="presentation" aria-hidden="true" onclick={onclose}></div>
 
 		<article class="sheet__card" tabindex="-1" bind:this={dialogEl} data-testid="vert-sheet-paper">
 			<!-- Title banner — the colour strip holds the archetype TITLE
