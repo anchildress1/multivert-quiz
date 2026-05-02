@@ -1,271 +1,184 @@
-# Multivert — Voice Guide
+# Multivert—Voice Guide
 
-> Source of truth: every line in `src/lib/descriptions.ts`.
-> If a copy decision contradicts this guide, edit the guide. If it contradicts the descriptions, the descriptions win.
-
----
-
-## Voice in one line
-
-**Conversational, scenic, slightly wry. Specific over abstract. Direct without hedging. Literary but accessible.**
-
-Closest tonal cousin in the wild: **Co-Star** — punchy, intimate, shareable. Not BuzzFeed (too sugary), not 16personalities (too clinical), not LinkedIn (too motivational), not the New Yorker (too detached). Multivert lives in the narrow band where a friend who reads is telling you something about yourself you already half-knew.
+> Notes, not a rulebook. The descriptions in `src/lib/descriptions.ts` and the tagline are the actual artifacts. If a rule below contradicts a line that the author has signed off on, the line wins and the rule is wrong.
 
 ---
 
-## Seven attributes
+## What the voice is, in one line
 
-1. **Specific.** Concrete nouns, real times, real numbers. _"You go to bed twenty minutes earlier than you said you would."_ Not "earlier than planned."
-2. **Scenic.** A line should put a small picture in the reader's head — a kitchen, a doorway, a phone face-up. _"You eat a sandwich standing in your kitchen with the lights off."_
-3. **Direct.** No "you might," "you tend to," "you may find." If the result says you're the type, the copy acts like it. _"You think out loud."_ Full stop.
-4. **Wry, not jokey.** Dry humor that lives inside the sentence, never as a punchline. _"A 'quick coffee' that you didn't budget four hours for."_
-5. **Warm without flattery.** Respects the reader. Doesn't compliment them. Doesn't pity them. _"You'd just like it to be over now, please."_
-6. **Self-aware without being meta.** The voice knows it's writing a personality quiz; it doesn't comment on writing one. No winks at the camera.
-7. **Literary cadence.** Em-dashes, semicolons, occasional short fragments. The rhythm matters as much as the content.
+**Somewhat snarky, witty, cynical with a sunshine attitude. Assertive without attack. Honest above clever. Specific over abstract. Direct without hedging. Polished or raw—but never invented.**
+
+"Cynical with sunshine" is the register. Knowing skepticism with warmth—never bitter, never saccharine. The voice has edges, but they don't cut the reader.
+
+The "never invented" part is load-bearing. More on that below.
 
 ---
 
-## Four rules (do)
+## The first rule, above all others: don't make shit up
 
-### 1. Lead with the disqualifier when introducing a type
+Every other rule in this document matters less than this one.
 
-The strongest opening move in the file: name what the type is NOT, then turn into what it is.
+If a pattern in the file is an accident, don't post-hoc claim it as a deliberate move. If a project was built because the author was bored, don't dress that up as "strategic low-stakes framing." If a metaphor is doing the work, don't add a clause explaining why it's clever. If a line lacks a payoff, sometimes it's just a fact—let it be a fact.
 
-- _"You're not antisocial — you're battery-operated."_ (introvert)
-- _"You're not balanced like an ambivert. You're a power switch, not a dial."_ (omnivert)
-- _"Friendly to everyone. Member of nothing."_ (otrovert)
+The voice's entire credibility is in admitting what's actually true. The reader can smell a sentence that's straining to claim more than it has. Strain is the killer.
 
-This pre-empts the user's most likely misconception in the first line. Cuts faster than any explanation.
+Concrete examples of past failures, kept here so they don't repeat:
 
-### 2. Land on a kicker
+- Calling the giveaways' third-person `they/their` pronoun **"the most important formal move in the file."** It was an artifact. It got rationalized. The user called it.
+- Writing **"the low-stakes framing turned out to be the asset"** for a project built out of boredom. The framing wasn't the asset. There was no asset. It was a side outlet.
+- Naming bullet-list items with cute trademarked-feeling labels like **"Kicker-Please"** and **"Substitution-by-Displacement"**—turning observation into branding.
+- Calling the field-guide structure **"the moat"** in a card. Pitch language for a portfolio note that didn't need to sell anything.
 
-Strong sentences ride a rhythm and end on a small surprise. Track the closer of every body sentence; if the closer is generic ("...important to them"), the line failed. If it's specific or sideways ("...the way other people think they should learn pottery"), it earned the read.
-
-Examples to study:
-
-- _"...and you'd like more of her, please."_
-- _"...the bed becomes a country."_
-- _"...with no overlapping witnesses."_
-- _"...and somehow nobody minds."_
-
-### 3. Use specific numbers
-
-Numbers ground claims. Unspecific quantifiers ("a lot," "many," "often") read as bland generalities. The file is full of working numbers:
-
-- _"three people too many"_
-- _"forty-three at 11 p.m. on a Thursday"_
-- _"three strangers have walked through"_
-- _"the same three mugs for five years"_
-- _"haven't replied since 2019"_
-
-Pick numbers that _almost_ make the line fictional. "Three" is vivid. "Several" is dead.
-
-### 4. Show the proof, then state it
-
-When a line states a trait, ground it with the behavior first:
-
-- _"Your texts arrive in clusters. Days of nothing, then forty-three at 11 p.m. on a Thursday with no preamble."_ — behavior first, mechanism follows.
-- _"You think 'I should probably learn to be alone' the way other people think they should learn pottery — abstract, beautiful, and not this year."_ — interior thought first, the framing arrives in the dash.
+If a line about why something is the way it is feels good in the writing, treat that as a yellow flag. Confirm the reason actually existed before the sentence did.
 
 ---
 
-## Five anti-rules (don't)
+## Three things to do
 
-### 1. Don't hedge
+### 1. Be specific
 
-Banned words and phrases inside copy:
+Concrete nouns, real times, real numbers. _"You go to bed twenty minutes earlier than you said you would."_ Not "earlier than planned." _"Three strangers"_ not "a few people." _"Forty-three at 11 p.m. on a Thursday"_ not "a lot of texts at night." Numbers and concrete nouns are what make a sentence feel observed instead of described.
 
-- _you might_
-- _you tend to_
-- _you may find_
-- _some people_
-- _can sometimes_
-- _generally_
+### 2. Land the kicker
 
-The result was computed. Speak like it.
-
-### 2. Don't explain the metaphor
-
-If you reach for a metaphor, trust it. Don't explain it in the next sentence.
-
-- ❌ _"The dial costs energy to turn — most people only have a switch. (This is what makes ambiverts different.)"_
-- ✅ _"The dial costs energy to turn — most people only have a switch."_
-
-The reader gets it. Adding a clause is the writer flinching.
-
-### 3. Don't praise the reader
-
-The voice respects the reader; it doesn't compliment them.
-
-- ❌ _"You have a unique gift for reading rooms."_
-- ✅ _"You read the room before you read the menu."_
-
-Compliments make the result feel like a horoscope. Specifics make it feel true.
-
-### 4. Don't use psychology jargon inside the lines
-
-Words like _trait, tendency, behavior, personality, characteristic, disposition_ don't appear in the file. Voice is descriptive, not categorical. The whole point is to make the reader recognize themselves, not to teach them about themselves.
-
-The disclaimer carries the academic weight. The descriptions carry the experience.
-
-### 5. No exclamation points. No emoji. No motivational uplift.
-
-The file has zero exclamation points and zero emoji. That's a hard rule. The closest the voice gets to enthusiasm is a quiet semicolon and a turn.
-
-Motivational closers — _"…and that's beautiful."_ / _"…own it."_ — kill the voice instantly. The closing line of `youllNeverAdmit` is the right register: surprising, true, slightly bruised.
-
----
-
-## Sentence patterns / signature moves
-
-These are recurring shapes worth keeping in the toolkit. Each is named so future writers can request them by shorthand.
-
-### The Disqualifier
-
-> _"You're not X — you're Y."_
-
-Pre-empts misconception. Best for openers.
-
-- _"You're not antisocial — you're battery-operated."_
-
-### The Kicker-Please
-
-> _"…[full sentence], please."_
-
-A British-essayist closer. Works once per archetype, not more.
+The last six words of any sentence carry it or sink it. Read aloud. If the closer is bland—_"…important to them," "…they really feel,"_—the line failed regardless of the setup. Strong closers introduce a small image, a sideways turn, or a quiet escalation:
 
 - _"…and you'd like more of her, please."_
+- _"…and somehow nobody minds."_
+- _"…with no overlapping witnesses."_
+- _"…the bed becomes a country."_
 
-### The Comma Aside
+This is the test most weak Multivert lines fail.
 
-> _"You [verb], [adverb / aside], [completion]."_
+### 3. Disqualify near-neighbors when it earns its keep
 
-Slows the sentence to drop a sideways observation.
+When the type has a common confusion (introvert ≠ shy/anxious; otrovert ≠ introvert; omnivert ≠ ambivert), pre-empt it directly. Not as defense, but as honesty about what the type isn't:
 
-- _"You wonder, kindly, whether you actually were."_
+- _"You're not antisocial—you're battery-operated."_
+- _"You're not balanced like an ambivert. You're a power switch, not a dial."_
 
-### The Negation Beat
+Don't disqualify when there's no near-neighbor confusion to clear up. Forced disqualification reads as formula.
 
-> _"[X] — wrong. [Truth]."_
+### 4. Be assertive without attacking
 
-Direct refutation that resets the reader.
+The voice makes claims directly—_"You don't drift between modes. You teleport."_—not _"You might tend to teleport."_ That's the assertive part. It speaks like the result was computed (it was), so the copy commits.
 
-- _"Friends sometimes call this 'moody' — wrong. It's a binary, not a mood."_
+What it doesn't do is roast the reader. Adjacent objects can take the hit—motivational uplift, fake polish, communities-that-mean-a-Slack-workspace—but the reader receives recognition, not judgment. _"You'd like more of her, please"_ reads as someone seeing you. Not someone marking you down.
 
-### The Truncated Affirmative
-
-> _"[Claim]. [Two-word agreement]."_
-
-Sharp ending pattern.
-
-- _"They're right. You are."_
-
-### The Specific Count
-
-> _"[behavior] for [exact number] [exact unit]."_
-
-Numbers ground claims.
-
-- _"You've kept the same haircut for nine years."_
-
-### The Substitution-by-Displacement
-
-> _"[mundane thing] like a [unexpectedly heavy descriptor]."_
-
-Replaces a normal word with one a notch too literary.
-
-- _"…lands in your stomach like a mild administrative crime."_
+The test: assertion describes what's true. Attack tells the reader what's wrong with them. The line between the two is where this voice lives.
 
 ---
 
-## Vocabulary guidance
+## Things not to do
 
-**Reach for:** kitchen, door, mug, phone, party, bartender, weekend, Tuesday, Thursday, candle, sandwich, group chat, voice notes, podium, hallway. Domestic. Recognizable. Slightly British in cadence (it's "earned back," "she shows up," "made of weather," not LA-lite).
+### Don't hedge
 
-**Avoid:** journey, growth, energy (as a noun), authentic, tribe, vibes (the disclaimer owns that word; it stays out of descriptions), curious, intentional, intentionality, magic, beautiful soul, bestie, gal, gentlemen, sis. Anything Pinterest-coded.
+_"You might,"_ _"you tend to,"_ _"some people,"_ _"can sometimes,"_ _"often"_—banned in the body of a description. The reader's result was computed; the copy should act like it.
 
-**Spelling note:** the file uses **British** spellings inside lines (_favourite, organised, apologised_). It uses **American** for the noun _extrovert_ and the dimension _extraversion_. Keep both. The British spellings give the voice a slightly elevated literary register; the American type-name keeps it US-readable.
+### Don't praise the reader
 
----
+_"You have a unique gift for reading rooms"_ is the result page sounding like a horoscope. Specifics make it feel true; compliments make it feel canned. The exception: when the line is the _differentiator_ for that type—telling an ambivert they have a dial when most people have a switch isn't flattery, it's the honest distinction. Context matters; rule isn't categorical.
 
-## Pronoun + tense by section
+### Don't use psychology jargon inside the lines
 
-Every section is written in **second person** ("you / your"). The voice speaks directly to the reader throughout — no third-person observer mode, no narrator stepping out.
+_Trait, tendency, behavior, personality, characteristic, disposition_ don't appear in the descriptions. Voice is descriptive, not categorical. The whole point is for the reader to recognize themselves, not to be taught about themselves.
 
-| Section           | Tense                                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `headline`        | present                                                                                                            |
-| `body`            | present, sometimes habitual ("You think out loud")                                                                 |
-| `dayInTheLife`    | present continuous narrative ("You wake up. You give the talk.")                                                   |
-| `trueThings`      | mix of present perfect ("You've stayed…") and habitual present                                                     |
-| `giveaways`       | habitual present + present perfect ("You hold doors open until…" / "You've kept the same haircut for nine years…") |
-| `whatHelps`       | noun phrase, implied second-person remedy                                                                          |
-| `whatKillsYou`    | noun phrase, present-tense diagnosis                                                                               |
-| `youllNeverAdmit` | present, closing register                                                                                          |
+### Don't add motivational uplift, exclamation points, or emoji
 
----
+_"…and that's beautiful."_ _"…own it."_ _"…you're enough."_ All instantly torch the voice. Zero exclamation points. Zero emoji. The closest the voice gets to enthusiasm is a quiet semicolon.
 
-## The kicker test
+### Don't backfill virtue
 
-Before shipping a new line, read its **last six words aloud**. Ask:
+Already covered in the first rule, but worth repeating in the don'ts list: don't take a thing that just happened and write a sentence about why it was deliberate. The reader will believe a calmer, less-flattering claim.
 
-1. Are the last six words _specific_?
-2. Do they introduce a small new image, or do they restate the start?
-3. Does the sentence land — or does it taper off?
+### Don't pretend you're sure when you aren't
 
-If the last six words are bland, the line will read bland regardless of how good the setup was. Most weak Multivert lines fail this test, not the opening.
-
-Examples that pass:
-
-- _"…lights already off, phone face-down."_ (introvert)
-- _"…and there is a candle on."_ (omnivert)
-- _"…even the ones you quietly agree with."_ (otrovert)
-- _"…with no overlapping witnesses."_ (otrovert)
-- _"…and somehow nobody minds."_ (extrovert)
+Marketing voice often comes from over-confidence. It's fine for a description to say _"both modes are completely you"_—that's an honest claim about the type. It's not fine to say _"this is the moat"_ about a structural choice that might or might not actually be the moat. Reach for what you actually know.
 
 ---
 
-## Five lines that define the voice (verbatim, study these)
+## Recurring sentence shapes
 
-1. _"Your favourite version of yourself shows up after the door has closed behind everyone, and you'd like more of her, please."_ — introvert, `youllNeverAdmit`
-2. _"You don't drift between modes. You teleport."_ — omnivert, `trueThings`
-3. _"Privacy isn't preference; it's posture. Even close friends only see the version you let through."_ — otrovert, `body`
-4. _"You wake up looking for the day to start, which to you means looking for someone."_ — extrovert, `dayInTheLife`
-5. _"You've performed competence so often that competence has become performance, and you can't always tell which week you're in."_ — ambivert, `trueThings`
+These are patterns that show up across the file. Not formulas to deploy, just observations that the rhythm tends to land in similar ways.
 
-Each is the voice working at full strength: specific, scenic, direct, slightly bruised, ending on a kicker.
+- **The disqualifier opener.** _"You're not X—you're Y."_ Pre-empts misconception in the first sentence.
+- **The truncated affirmative.** _"They're right. You are."_ Quick agreement, sharp ending.
+- **The negation beat.** _"X—wrong. Y."_ Direct refutation that resets the reader.
+- **The comma aside.** _"You wonder, kindly, whether you actually were."_ Slows the sentence to drop a sideways observation.
+- **The specific-count tell.** _"You've kept the same haircut for nine years."_ Numbers that almost feel fictional, ground the claim.
+- **The ", please" closer.** _"…you'd like more of her, please."_ Works once across the whole project, not per archetype. Quiet British-essayist register.
+
+These are descriptive, not prescriptive. Use them when they fit. Don't reach for them on every line.
 
 ---
 
-## Where the voice extends (or doesn't)
+## Vocabulary
 
-| Surface                                                           | Voice level                                                                            |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `descriptions.ts` (every entry)                                   | **Full voice.** The vocal anchor of the product.                                       |
-| `Tagline.svelte` ("Built with vibes…")                            | **Full voice.** Same register as `youllNeverAdmit`.                                    |
-| `archetypes.ts > DIMENSION_META.description`                      | **Light voice.** One italic line per chapter. Already on-tone.                         |
-| `ChapterIntro.svelte`                                             | **Inherited from DIMENSION_META.** No additional voice; let the descriptions carry it. |
-| `Slider.svelte` legend ("not at all like me" / "exactly like me") | **Functional.** Stay quiet. Sliders need to be read fast.                              |
-| `ProgressMeter.svelte` ("begin scrolling," "in {chapter}")        | **Functional.** Don't add voice here — the meter is wayfinding.                        |
-| Error states / loading states (when added)                        | **Light voice.** Match `Tagline` register, not `dayInTheLife`. Two sentences max.      |
-| Result-page micro-copy (retake / share, when added)               | **Light voice.** Short. Direct. _"Send this to someone who needs it."_                 |
+**Reach for:** kitchen, door, mug, phone, party, bartender, weekend, Tuesday, Thursday, candle, sandwich, group chat, voice notes, podium, hallway. Domestic. Recognizable.
 
-The descriptions carry the entire voice budget. Functional UI stays quiet on purpose. This isn't a tonal split — it's a tonal hierarchy.
+**Avoid (therapy-speak / "I love you" nonsense):** hold space, do the work, your truth, you're enough, you're worthy, honor your X, your healing, your boundaries (in the wellness sense), authentic, your authentic self, your best version, growth, journey, tribe, bestie, sis. Anything Pinterest-coded.
+
+**Avoid (corporate / enterprise):** workshopped, leverage, synergy, paradigm, ecosystem, scale (as a verb), operationalize, stakeholder, circle back, deep dive, low-hanging fruit, bandwidth, alignment, social currency. TED-talk language counts here too.
+
+**Engineering register is fine.** _Calibrated, signal, lossy, throughput, gain, drift_—these are real and specific. The voice tolerates engineering metaphors because they're concrete; it does not tolerate corporate metaphors because they're concrete only in the way that PowerPoint is concrete.
+
+**Avoid pitch words inside the descriptions:** _the moat, the differentiator, deliberately rejects, doubles down, leans into, turbocharges, supercharges, unlocks._ These are fine in card facts (different audience) but not in user-facing copy.
+
+**Spelling.** American throughout, no exceptions. Earlier drafts drifted into British (_favourite, organised, honour, apologised_); those have been Americanized.
+
+**Em dashes.** Closed, no spaces around them. _word—word_, not _word — word_. This follows Chicago Manual of Style (the dominant US book convention) rather than AP / journalism style. The closed em dash matches the literary register the descriptions sit in. This is a global rule across descriptions, voice guide, tagline, and any future user-facing copy.
+
+---
+
+## Pronoun + tense
+
+Every section is second person. _You / your._ No third-person register. No narrator stepping out. This was already corrected in the file.
+
+| Section           | Tense                                       |
+| ----------------- | ------------------------------------------- |
+| `headline`        | present                                     |
+| `body`            | present, sometimes habitual                 |
+| `dayInTheLife`    | present continuous narrative                |
+| `trueThings`      | mix of present perfect and habitual present |
+| `giveaways`       | habitual present + present perfect          |
+| `whatHelps`       | noun-phrase remedy, implied second person   |
+| `whatKillsYou`    | noun-phrase diagnosis                       |
+| `youllNeverAdmit` | present, closing register                   |
+
+---
+
+## Polish vs. raw—both are valid
+
+The disclaimer (_"Built with vibes, AI, and a small pile of cited research. Not a diagnosis. Don't put it on your résumé."_) is polished. The Multivert philosophy card (_"There was no strategic reason behind starting Multivert. I had hours to spend and nothing more important pulling on them."_) is raw.
+
+Both work. The choice between them depends on what's actually true. Polish what genuinely earned polish; let raw be raw when raw is the truth.
+
+What's not allowed: faking polish over rawness. Writing in polished voice to hide that the underlying claim was small or accidental.
+
+---
+
+## The kicker test (keep using this)
+
+Before shipping a new line, read the **last six words aloud**. Ask:
+
+1. Are they specific?
+2. Do they introduce a small new image, or restate the start?
+3. Does the sentence land—or taper off?
+
+If the closer is bland, the line is bland. The opening rarely fails; the closer often does.
 
 ---
 
 ## Quick reference card
 
-When generating new copy in this voice, run it through:
+When writing or reviewing a line in this voice:
 
-- [ ] Specific noun, not abstract category
-- [ ] Real number or time, not "many" / "often"
+- [ ] Did I make the reasoning up, or is it true?
+- [ ] Specific noun, real number, named scene
 - [ ] No "you might" / "you tend to" hedge
-- [ ] No exclamation point, no emoji
+- [ ] No exclamation point, no emoji, no motivational uplift
 - [ ] No psychology jargon
-- [ ] No flattery
 - [ ] Last six words land on a kicker
-- [ ] Second person ("you / your") throughout — no narrator drift
-- [ ] Tense matches section type
-- [ ] Trust the metaphor — don't explain it
-- [ ] If it could appear in any other personality quiz, rewrite it
+- [ ] Second person throughout—no narrator drift
+- [ ] If the line could appear in any other personality quiz, rewrite it
+- [ ] If a rule above contradicts an existing approved line, the line is right and the rule is wrong
