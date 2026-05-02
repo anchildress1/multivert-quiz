@@ -14,9 +14,9 @@
 
 	const { id, numeral, title, archetype, description, total, answered }: Props = $props();
 
-	const pct = $derived(
-		total <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((answered / total) * 100)))
-	);
+	const safeTotal = $derived(Math.max(0, total));
+	const safeAnswered = $derived(Math.max(0, Math.min(safeTotal, answered)));
+	const pct = $derived(safeTotal === 0 ? 0 : Math.round((safeAnswered / safeTotal) * 100));
 </script>
 
 <header
@@ -38,12 +38,14 @@
 		role="progressbar"
 		aria-label="Quiz progress"
 		aria-valuemin={0}
-		aria-valuemax={total}
-		aria-valuenow={answered}
-		aria-valuetext="{answered} of {total} answered ({pct}%)"
+		aria-valuemax={safeTotal}
+		aria-valuenow={safeAnswered}
+		aria-valuetext="{safeAnswered} of {safeTotal} answered ({pct}%)"
 	>
 		<span class="chapter-head__progress-count" aria-hidden="true">
-			<strong>{answered}</strong><span class="chapter-head__progress-total"> / {total}</span>
+			<strong>{safeAnswered}</strong><span class="chapter-head__progress-total">
+				/ {safeTotal}</span
+			>
 		</span>
 		<span class="chapter-head__progress-bar" aria-hidden="true">
 			<span class="chapter-head__progress-fill" style:width="{pct}%"></span>

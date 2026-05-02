@@ -192,12 +192,15 @@
 			touchStartY = event.touches[0]?.clientY ?? 0;
 		};
 
+		const TOUCH_NOISE_PX = 8;
 		const onTouchMove = (event: TouchEvent) => {
 			const currentY = event.touches[0]?.clientY ?? 0;
 			// Positive delta = finger swept up (i.e., trying to scroll forward).
-			// 0.5rem is the noise threshold — below that, tiny finger jitter
-			// during a tap on the slider would fire false positives.
-			if (touchStartY - currentY > 8 && atDocumentBottom()) fire();
+			// 8 CSS px is the noise threshold — below that, tiny finger jitter
+			// during a tap on the slider would fire false positives. Threshold
+			// is in raw clientY pixels, not rem, because TouchEvent coordinates
+			// are unaffected by font-size scaling.
+			if (touchStartY - currentY > TOUCH_NOISE_PX && atDocumentBottom()) fire();
 		};
 
 		window.addEventListener('wheel', onWheel, { passive: true });

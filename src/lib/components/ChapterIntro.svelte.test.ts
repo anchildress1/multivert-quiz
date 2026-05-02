@@ -130,4 +130,32 @@ describe('ChapterIntro — progress contract', () => {
 		const fill = container.querySelector('.chapter-head__progress-fill') as HTMLElement;
 		expect(fill.style.width).toBe('0%');
 	});
+
+	it('keeps the ARIA contract intact on overflow (valuenow ≤ valuemax)', () => {
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 12, total: 10 }
+		});
+		const bar = container.querySelector('[role="progressbar"]') as HTMLElement;
+		expect(bar.getAttribute('aria-valuemax')).toBe('10');
+		expect(bar.getAttribute('aria-valuenow')).toBe('10');
+		expect(bar.getAttribute('aria-valuetext')).toBe('10 of 10 answered (100%)');
+	});
+
+	it('keeps the ARIA contract intact on negative answered (valuenow ≥ 0)', () => {
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: -2, total: 10 }
+		});
+		const bar = container.querySelector('[role="progressbar"]') as HTMLElement;
+		expect(bar.getAttribute('aria-valuenow')).toBe('0');
+		expect(bar.getAttribute('aria-valuetext')).toBe('0 of 10 answered (0%)');
+	});
+
+	it('keeps the ARIA contract intact when total is negative (valuemax ≥ 0)', () => {
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 0, total: -3 }
+		});
+		const bar = container.querySelector('[role="progressbar"]') as HTMLElement;
+		expect(bar.getAttribute('aria-valuemax')).toBe('0');
+		expect(bar.getAttribute('aria-valuenow')).toBe('0');
+	});
 });
