@@ -39,10 +39,7 @@ describe('VertSheet — field-guide content', () => {
 	it.each(ARCHETYPES)('renders the title for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
 		const text = container.textContent ?? '';
-		// Banner carries the archetype TITLE (uppercase) + tagline; the body
-		// of the sheet jumps directly into the deeper field-guide content.
-		// The headline + body lede that used to repeat under the title was
-		// removed so the sheet does not restate what the swatch already said.
+		// Banner is the archetype name + tagline; body jumps into the field-guide.
 		expect(text).toContain(VERT_NAMES[archetype].name.toUpperCase());
 		expect(text).toContain(VERT_NAMES[archetype].label);
 	});
@@ -51,8 +48,7 @@ describe('VertSheet — field-guide content', () => {
 		const { container } = renderSheet({ archetype });
 		const day = container.querySelector('.sheet__day-text');
 		expect(day).not.toBeNull();
-		// Pin a stable substring from each vignette so a future copy revert is
-		// caught here, not just by the data-shape test next to it.
+		// Stable substring pin so a copy revert is caught here, not just by shape.
 		const expectedFragment = descriptions[archetype].deep.dayInTheLife.slice(0, 40);
 		expect(day?.textContent).toContain(expectedFragment);
 	});
@@ -84,10 +80,8 @@ describe('VertSheet — field-guide content', () => {
 		expect(pull?.textContent?.trim()).toBe(descriptions[archetype].deep.youllNeverAdmit);
 	});
 
-	it('does not render an encyclopedia "sources/receipts" credits roll', () => {
-		// Regression pin: the v2 layout had a `.sheet__credits` block with a
-		// "The receipts" label. The field-guide rewrite drops it — make sure
-		// nobody walks it back in.
+	it('does not render a `.sheet__credits` "receipts" block', () => {
+		// The field-guide structure has no sources/receipts roll — pin its absence.
 		const { container } = renderSheet();
 		expect(container.querySelector('.sheet__credits')).toBeNull();
 		expect(container.textContent ?? '').not.toMatch(/the receipts/i);

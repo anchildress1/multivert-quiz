@@ -160,11 +160,8 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 	test('subsequent forward-scroll attempts re-pulse (the effect does not get stuck)', async ({
 		page
 	}) => {
-		// Regression: the previous implementation read `pulseActive` inside
-		// the effect's guard, making it a reactivity dependency. The effect
-		// re-ran from its own write, the cleanup cancelled the timer that
-		// would have reset `pulseActive`, and the row got stuck — every
-		// nudge after the first was a no-op. This test pins the fix.
+		// Regression pin: a reactivity self-loop on `pulseActive` (read inside
+		// the effect's guard) once made every nudge after the first a no-op.
 		await page.goto('/');
 		await expect(page.locator('article#q-e-01')).toBeVisible();
 		await waitForNudgeArmed(page);
@@ -339,8 +336,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		// on click fights the snap container.
 		await scrollToElement(page, 'result');
 
-		// Primary affordance: the "Read your full field guide" CTA at the foot
-		// of the Verdict block. Opens the dominant archetype's sheet.
+		// Primary affordance: the swatch-hero CTA opens the dominant archetype's sheet.
 		const primary = page.locator('[data-testid="result-read-guide-button"]');
 		await primary.scrollIntoViewIfNeeded();
 		const dominantArchetype = await page.locator('#result').getAttribute('data-dominant');
@@ -362,17 +358,13 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		const dialog = page.locator('[role="dialog"][aria-modal="true"]');
 		await expect(dialog).toBeVisible();
 		await expect(dialog).toHaveAttribute('data-archetype', 'introvert');
-		// The sheet's title slot now prints the archetype name; the headline
-		// + body lede that used to repeat under the title was removed so the
-		// sheet jumps straight into the deeper "i. A day in the life" content
-		// rather than restating what the swatch already said.
+		// Title is the archetype name; body jumps straight into the field-guide content.
 		await expect(page.locator('#vert-sheet-title')).toHaveText('INTROVERT');
 		await expect(page.locator('.sheet__day-text')).toBeVisible();
 		await expect(page.locator('.sheet__truth')).toHaveCount(5);
 		await expect(page.locator('.sheet__giveaway').first()).toBeVisible();
 		await expect(page.locator('.sheet__pull-text')).toBeVisible();
 
-		// Escape dismisses; the trigger button reclaims focus.
 		await page.keyboard.press('Escape');
 		await expect(dialog).toHaveCount(0);
 		await expect(trigger).toBeFocused();
