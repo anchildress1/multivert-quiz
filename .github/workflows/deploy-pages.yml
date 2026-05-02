@@ -1,9 +1,18 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to deploy (e.g. v1.2.3)
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (or ref) to deploy (e.g. v1.2.3)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -29,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ inputs.tag }}
 
       - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
         with:
@@ -54,3 +63,14 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy .svelte-kit/cloudflare --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Smoke test
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::warning::deployment-url output empty — skipping smoke test"
+            exit 0
+          fi
+          echo "Deployment URL: $DEPLOY_URL"
+          curl -sfI --retry 3 --retry-delay 5 "$DEPLOY_URL" >/dev/null

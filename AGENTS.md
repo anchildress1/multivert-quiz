@@ -78,11 +78,14 @@ score computation.
 - Build directory: `.svelte-kit/cloudflare`
 - Build command: `pnpm build`
 - Production branch: `main`
-- Deploy is GHA-driven via `cloudflare/wrangler-action`. Repo secrets:
-  `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
-- The deploy workflow runs **only on `release: published`** events (and
-  `workflow_dispatch`), not on every push. Releases are cut by Release
-  Please, so `main` only deploys when a release PR is merged.
+- Deploy is GHA-driven via `cloudflare/wrangler-action`. Secrets
+  (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) are scoped to the
+  `deploy` GitHub environment.
+- `deploy-pages.yml` is a reusable workflow (`workflow_call` + `workflow_dispatch`)
+  that takes a `tag` input and checks it out before building. It is invoked by
+  `release-please.yml` on `release_created`, so `main` only deploys when a
+  Release Please PR merges and a new release is cut. Manual smoke deploys go
+  through `workflow_dispatch` with an explicit tag/ref.
 
 ## Security
 
