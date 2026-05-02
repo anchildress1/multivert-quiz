@@ -7,8 +7,12 @@ const TYPES: readonly Archetype[] = ARCHETYPES;
 describe('descriptions registry — invariants', () => {
 	it('has exactly one entry per archetype, keyed by archetype', () => {
 		expect(Object.keys(descriptions).sort()).toEqual([...TYPES].sort());
+	});
+
+	it('exposes only the field-guide schema (no `type` field, no encyclopedia leftovers)', () => {
+		const expectedTopKeys = ['body', 'deep', 'headline'];
 		for (const t of TYPES) {
-			expect(descriptions[t].type).toBe(t);
+			expect(Object.keys(descriptions[t]).sort()).toEqual(expectedTopKeys);
 		}
 	});
 
@@ -20,6 +24,10 @@ describe('descriptions registry — invariants', () => {
 		const d = descriptions[t];
 		expect(d.headline.length).toBeGreaterThanOrEqual(10);
 		expect(d.body.length).toBeGreaterThanOrEqual(80);
+	});
+
+	it('otrovert.body keeps the `\\n\\n` paragraph separator the renderer splits on', () => {
+		expect(descriptions.otrovert.body.split('\n\n')).toHaveLength(3);
 	});
 });
 
@@ -68,10 +76,7 @@ describe('descriptions registry — field-guide deep block', () => {
 		}
 	);
 
-	it('the deep block exposes only the field-guide sections (no encyclopedia leftovers)', () => {
-		// The previous schema had `signs`, `mistakenFor`, `gifts`, `costs`,
-		// `recharge`, `sources`. Pin the new shape so a future revert can't
-		// silently re-introduce the personality-test article voice.
+	it('the deep block exposes only the field-guide sections', () => {
 		const expectedKeys = [
 			'dayInTheLife',
 			'giveaways',

@@ -1,49 +1,22 @@
-/**
- * Multivert—Type Descriptions (v3)
- *
- * Each archetype gets a "field-guide" entry rather than a definition. The
- * structure is deliberately *not* the standard signs / mistaken-for / sources
- * format you'll find in a clinic explainer or a personality-test article—the
- * whole point is that this app reads like nothing else.
- *
- * Sections:
- *   - headline + body  : the result-page summary (kept compact, voice-led)
- *   - dayInTheLife     : a vivid 4–6 sentence vignette of a real day
- *   - trueThings       : five interior lines you'd never put on a résumé
- *   - giveaways        : 3 observable, exterior tells—the way someone else
- *                        spots the type from across a room or a group chat
- *   - whatHelps        : one specific scenic remedy
- *   - whatKillsYou     : the drain you keep refusing to admit drains you
- *   - youllNeverAdmit  : a closing pull-quote—surprising, true, voicy
- */
-
 import type { Archetype } from './archetypes';
-
-/** Re-exported for back-compat with existing call sites. Single source of truth: `Archetype`. */
-export type VertType = Archetype;
 
 export interface DeepDescription {
 	dayInTheLife: string;
-	trueThings: readonly string[];
-	/** Three observable, exterior tells—behaviors that betray the type from
-	    the outside. Same second-person voice as the rest, just describing
-	    visible patterns instead of interior life. */
-	giveaways: readonly string[];
+	trueThings: readonly [string, string, string, string, string];
+	giveaways: readonly [string, string, string];
 	whatHelps: string;
 	whatKillsYou: string;
 	youllNeverAdmit: string;
 }
 
 export interface TypeDescription {
-	type: VertType;
 	headline: string;
 	body: string;
 	deep: DeepDescription;
 }
 
-export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.freeze({
+export const descriptions: Readonly<Record<Archetype, TypeDescription>> = Object.freeze({
 	introvert: {
-		type: 'introvert',
 		headline: "You're not antisocial—you're battery-operated.",
 		body: "Liking people and having stamina for them are two different things. You can charm a room, hold court at a dinner, host the brunch—and still need the next day off the calendar. Being on burns charge; only silence refills it. Anxiety and shyness can ride along, but they're not what's draining you. You're a battery, and you've learned the cost.",
 		deep: {
@@ -70,7 +43,6 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	},
 
 	extrovert: {
-		type: 'extrovert',
 		headline: 'Other people are your espresso.',
 		body: "You think out loud. Solitude isn't peaceful—it's static. The hum of a crowded room is where the volume comes back. A weekend with no plans gets itchy fast, and a noisy dinner is the only known cure. People aren't input you process; they're the field you play on.",
 		deep: {
@@ -96,7 +68,6 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	},
 
 	ambivert: {
-		type: 'ambivert',
 		headline: "You don't have a default setting—you have a dial.",
 		body: "You're the one nobody can guess at the party. At the team dinner you're loud; at the work mixer you're listening; at a family event you're somehow both. Your trick isn't being in the middle—it's reading the room and turning the dial. You're not undecided. You're situational. The dial takes effort to turn—most people only have a switch.",
 		deep: {
@@ -124,7 +95,6 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	},
 
 	omnivert: {
-		type: 'omnivert',
 		headline: 'Two settings: full volume or off-grid.',
 		body: "You're not balanced like an ambivert. You're a power switch, not a dial. One week you're hosting brunches and texting everyone; the next, your phone is in a drawer and you'd pay to be left alone. Both modes are completely you. Friends sometimes call this \"moody\"—wrong. It's a binary, not a mood. You just don't have a third gear.",
 		deep: {
@@ -152,7 +122,6 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	},
 
 	otrovert: {
-		type: 'otrovert',
 		headline: 'Friendly to everyone. Member of nothing.',
 		body: [
 			"You can host the party, give the lecture, MC the show. But sign on as a regular member of anything? That's where it cracks. Clubs, teams, friend groups, fandoms—guest appearances, never regular cast.",
