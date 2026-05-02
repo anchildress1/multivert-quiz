@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { VERT_NAMES, VERT_ORDER, type Archetype } from '$lib/archetypes';
+	import { VERT_NAMES, ARCHETYPES, type Archetype } from '$lib/archetypes';
 	import { descriptions } from '$lib/descriptions';
 
 	interface Props {
@@ -66,7 +66,7 @@
 {#if archetype}
 	{@const meta = VERT_NAMES[archetype]}
 	{@const desc = descriptions[archetype]}
-	{@const archetypeIndex = VERT_ORDER.indexOf(archetype)}
+	{@const archetypeIndex = ARCHETYPES.indexOf(archetype)}
 	<div
 		class="sheet"
 		role="dialog"

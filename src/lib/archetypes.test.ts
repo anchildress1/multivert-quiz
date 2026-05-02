@@ -6,7 +6,6 @@ import {
 	DIMENSIONS,
 	DIMENSION_META,
 	VERT_NAMES,
-	VERT_ORDER,
 	type Archetype,
 	type Dimension
 } from './archetypes';
@@ -35,19 +34,23 @@ describe('archetypes registry — invariants', () => {
 		expect(DIMENSIONS).toHaveLength(4);
 	});
 
-	it('VERT_ORDER matches ARCHETYPES (display order ≡ canonical order)', () => {
-		expect(VERT_ORDER).toEqual(ARCHETYPES);
+	it('VERT_NAMES is frozen (canonical labels cannot mutate at runtime)', () => {
+		expect(Object.isFrozen(VERT_NAMES)).toBe(true);
 	});
 
 	it.each(ARCHETYPE_LITERALS)(
-		'VERT_NAMES has a capitalised name + non-empty label entry for %s',
+		'VERT_NAMES.%s.name matches the key (no swap regressions)',
 		(archetype) => {
 			const meta = VERT_NAMES[archetype];
 			expect(meta).toBeDefined();
-			expect(meta.name).toMatch(/^[A-Z][a-z]+$/);
+			expect(meta.name.toLowerCase()).toBe(archetype);
 			expect(meta.label.length).toBeGreaterThan(0);
 		}
 	);
+
+	it.each(ARCHETYPE_LITERALS)('VERT_NAMES.%s exposes only `name` and `label`', (archetype) => {
+		expect(Object.keys(VERT_NAMES[archetype]).sort()).toEqual(['label', 'name']);
+	});
 
 	it.each(DIMENSION_LITERALS)('DIMENSION_META has a non-empty description for %s', (dimension) => {
 		const meta = DIMENSION_META[dimension];

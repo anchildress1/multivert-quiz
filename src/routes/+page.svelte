@@ -5,7 +5,7 @@
 		CHAPTERS,
 		DIMENSION_META,
 		VERT_NAMES,
-		VERT_ORDER,
+		ARCHETYPES,
 		type Archetype,
 		type Chapter
 	} from '$lib/archetypes';
@@ -314,7 +314,7 @@
 		<aside class="hero__card">
 			<div class="hero__card-eyebrow">The five verts</div>
 			<ul class="hero__card-list">
-				{#each VERT_ORDER as vert, i (vert)}
+				{#each ARCHETYPES as vert, i (vert)}
 					<li class="hero__card-item" class:hero__card-item--first={i === 0}>
 						<span
 							class="hero__card-dot"
@@ -373,7 +373,7 @@
 		{@const result = store.result}
 		{@const dominant = result.dominant}
 		{@const dominantFit = result.fits.find((f) => f.archetype === dominant)?.fit ?? 0}
-		{@const dominantIndex = VERT_ORDER.indexOf(dominant)}
+		{@const dominantIndex = ARCHETYPES.indexOf(dominant)}
 		{@const bodyParas = descriptions[dominant].body.split('\n\n')}
 		<section
 			id="result"
@@ -433,7 +433,7 @@
 					<span>tap any swatch to read its entry</span>
 				</p>
 				<ol class="breakdown__row">
-					{#each VERT_ORDER as vert, i (vert)}
+					{#each ARCHETYPES as vert, i (vert)}
 						{@const fit = result.fits.find((f) => f.archetype === vert)?.fit ?? 0}
 						<li
 							class="breakdown__chip"

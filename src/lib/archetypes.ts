@@ -1,50 +1,17 @@
 /**
- * Canonical archetype + dimension registry.
- *
- * Every list, type, label, hue, and chapter mapping that varies by archetype
- * lives here so adding or renaming an archetype is a one-file change. Other
- * modules (scoring, components, routes) import from this file directly or via
- * the convenience re-exports in `scoring.ts`.
- *
- * Scoring model
- * -------------
- * Per-archetype axis projection (no shared distance metric). Each archetype
- * scores against a small subset of axes that define it:
- *
- *   - Introvert / Ambivert / Extrovert — three points on the *extraversion*
- *     axis at -1, 0, +1. Group-size acts as a secondary correlate (introverts
- *     usually prefer small, extroverts large).
- *   - Otrovert — projection along the *otherness* axis (toward +1 = "high
- *     otherness"). Independent of the extraversion line; an otrovert can
- *     also be intro / extro / ambi.
- *   - Omnivert — driven by explicit positive answers on the swings items
- *     (self-reported oscillation across time / situation).
- *
- * The math itself lives in `scoring.ts`. PRD changes pair with code changes.
+ * Canonical archetype + dimension registry. Single source of truth for type,
+ * label, hue, and chapter mapping. Adding or renaming an archetype is a
+ * one-file change. Scoring math lives in `scoring.ts`; PRD changes pair with
+ * code changes.
  */
 
-export type Dimension = 'extraversion' | 'otherness' | 'group_size' | 'swings';
+export const DIMENSIONS = ['extraversion', 'otherness', 'group_size', 'swings'] as const;
+export type Dimension = (typeof DIMENSIONS)[number];
 
-export type Archetype = 'introvert' | 'extrovert' | 'ambivert' | 'omnivert' | 'otrovert';
+export const ARCHETYPES = ['introvert', 'extrovert', 'ambivert', 'omnivert', 'otrovert'] as const;
+export type Archetype = (typeof ARCHETYPES)[number];
 
 export type DimensionVector = Record<Dimension, number>;
-
-/** Stable iteration order for question-level loops (chapters, counters). */
-export const DIMENSIONS: readonly Dimension[] = [
-	'extraversion',
-	'otherness',
-	'group_size',
-	'swings'
-];
-
-/** Stable iteration order for every archetype-keyed loop and the rotating accent. */
-export const ARCHETYPES: readonly Archetype[] = [
-	'introvert',
-	'extrovert',
-	'ambivert',
-	'omnivert',
-	'otrovert'
-];
 
 export interface VertMeta {
 	/** Capitalised display name (`Introvert`). */
@@ -82,9 +49,6 @@ export const DIMENSION_META: Readonly<Record<Dimension, DimensionMeta>> = Object
 		description: 'How dramatically the same person, same plan, same week can flip.'
 	}
 });
-
-/** Display order in the hero card and FiveDots. */
-export const VERT_ORDER: readonly Archetype[] = ARCHETYPES;
 
 export type ChapterNumeral = 'I' | 'II' | 'III' | 'IV' | 'V';
 
@@ -129,10 +93,10 @@ export const CHAPTERS: readonly Chapter[] = Object.freeze([
 ]);
 
 /** Rotation used on QuestionRow accents so adjacent questions read different. */
-export const ACCENT_ROTATION: readonly Archetype[] = [
+export const ACCENT_ROTATION = [
 	'otrovert',
 	'introvert',
 	'ambivert',
 	'omnivert',
 	'extrovert'
-];
+] as const satisfies readonly Archetype[];
