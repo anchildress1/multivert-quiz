@@ -7,20 +7,16 @@
 		numeral: ChapterNumeral;
 		title: string;
 		archetype: Archetype;
-		/**
-		 * Italic blurb shown under the title — pulled from `DIMENSION_META` in
-		 * the registry so chapter copy has a single source of truth.
-		 */
 		description: string;
-		/** Total number of statements in the quiz. */
 		total: number;
-		/** How many statements the user has committed so far. */
 		answered: number;
 	}
 
 	const { id, numeral, title, archetype, description, total, answered }: Props = $props();
 
-	const pct = $derived(total === 0 ? 0 : Math.round((answered / total) * 100));
+	const pct = $derived(
+		total <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((answered / total) * 100)))
+	);
 </script>
 
 <header
