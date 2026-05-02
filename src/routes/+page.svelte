@@ -506,18 +506,30 @@
 </main>
 
 <footer class="page-footer">
-	<small class="page-footer__copyright">&copy; 2026 Ashley Childress</small>
-	<Tagline size={11} align="right" />
+	<div class="page-footer__inner">
+		<small class="page-footer__copyright">&copy; 2026 Ashley Childress</small>
+		<Tagline size={11} align="right" />
+	</div>
 </footer>
 
 <VertSheet archetype={sheetArchetype} onclose={closeSheet} />
 
 <style>
+	/* Cover-page sizing: fill the first viewport exactly. Anything less leaves
+	   a stranded paper band between the hero's natural bottom edge and the
+	   first chapter — that band reads as "forgotten content" because nothing
+	   anchors the bottom of the landing view. `100dvh` (not `100vh`) so mobile
+	   address-bar collapse doesn't pop the layout. The bar sits at the top
+	   naturally; the grid below claims `flex: 1` and centres its content
+	   block (`align-content: center`) so the headline lives in the optical
+	   middle of the viewport on tall displays instead of clinging to the
+	   top edge. */
 	.hero {
 		background: var(--paper);
 		color: var(--ink);
 		display: flex;
 		flex-direction: column;
+		min-height: 100dvh;
 		position: relative;
 		overflow: hidden;
 	}
@@ -558,6 +570,7 @@
 		justify-content: space-between;
 		padding: 1.5rem;
 		border-bottom: 0.0625rem solid var(--ink-08);
+		flex-shrink: 0;
 	}
 
 	.hero__nav {
@@ -588,6 +601,8 @@
 		max-width: 80rem;
 		width: 100%;
 		margin: 0 auto;
+		flex: 1;
+		align-content: center;
 	}
 
 	.hero__eyebrow {
@@ -1196,12 +1211,28 @@
 		margin: 0;
 	}
 
+	/* Page chrome lives on a quietly differentiated surface so it reads as
+	   "the end" rather than leftover paper. Three layered signals:
+	   1. hairline `border-top` — the literal line marking page-end
+	   2. `--paper-dk` background — a ~3% darker paper tint (light-dark-aware)
+	   3. asymmetric block padding — more breathing room above than below
+	   The border + tint span full-width; the inner row caps at the same
+	   80rem rhythm the hero/swatch use so the copyright/credit columns
+	   align with the rest of the page on wide viewports. */
 	.page-footer {
+		border-top: 0.0625rem solid var(--ink-08);
+		background: var(--paper-dk);
+		padding-block: clamp(2rem, 4vh, 3rem) clamp(1.5rem, 3vh, 2rem);
+		padding-inline: 1.5rem;
+	}
+
+	.page-footer__inner {
+		max-width: 80rem;
+		margin-inline: auto;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-end;
 		justify-content: space-between;
-		padding: 1.5rem;
 		gap: 1rem 1.5rem;
 	}
 
@@ -1214,7 +1245,7 @@
 
 	@media (min-width: 60rem) {
 		.page-footer {
-			padding: 2rem 3.5rem;
+			padding-inline: 3.5rem;
 		}
 	}
 </style>
