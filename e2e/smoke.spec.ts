@@ -105,9 +105,12 @@ test.describe('landing + scroll quiz — structure', () => {
 		await expect(page.locator('input[type="range"]')).toHaveCount(questions.length);
 	});
 
-	test('progress meter is mounted', async ({ page }) => {
+	test('progress strip mounts inside the chapter banner once a chapter intersects', async ({
+		page
+	}) => {
 		await page.goto('/');
-		await expect(page.locator('.meter')).toBeAttached();
+		await scrollToElement(page, 'chapter-energy');
+		await expect.poll(() => page.locator('.chapter-head__progress').count()).toBe(1);
 	});
 
 	test('result section is not in the DOM until every question is answered', async ({ page }) => {
@@ -287,7 +290,7 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'unset');
 		await dispatchSliderCommit(page, 'e-01', 0.5);
 		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
-		await expect(page.locator('.meter__count strong')).toHaveText('1');
+		await expect(page.locator('.chapter-head__progress-count strong')).toHaveText('1');
 	});
 
 	test('clicking the slider track at neutral commits a 0 value', async ({ page }) => {

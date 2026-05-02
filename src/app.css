@@ -62,8 +62,8 @@
 
 	/* ── Glass surface tokens ─────────────────────────────────────────────
 	   The frosted-glass treatment is used everywhere (hero card, sticky
-	   chapter head, progress meter, swatch hero, breakdown chips, row
-	   cards, sheets). Keeping it as tokens — instead of the same
+	   chapter head, swatch hero, breakdown chips, row cards, sheets).
+	   Keeping it as tokens — instead of the same
 	   color-mix/backdrop-filter triplet copy-pasted nine places — means
 	   one knob to turn when the surface needs to shift in either mode.
 	   `light-dark()` only takes colors, so the alpha is folded into the
@@ -82,15 +82,10 @@
 
 	/* Sticky chapter banner height — referenced by `scroll-padding-top` so
 	   snapped questions sit below the banner instead of being hidden under
-	   it. The banner's own `min-height` matches this. */
+	   it. The banner's own `min-height` matches this. The banner now also
+	   carries the progress strip and theme toggle, so it is the only sticky
+	   bar at the top of `<main>`. */
 	--chapter-head-h: 4.5rem;
-
-	/* Sticky progress meter height — used by the chapter banner to pin
-	   itself BELOW the meter when both are visible, so they stack cleanly
-	   instead of fighting for top:0. Roughly the meter's
-	   padding (0.875rem × 2) + content (~1.5rem) ≈ 3.25rem; round up to
-	   give a 0.25rem seam. */
-	--meter-h: 3.5rem;
 }
 
 /* ── Glassmorphism System ────────────────────────────────────────────────
@@ -158,16 +153,10 @@ body {
    snapped question sits below it. */
 html {
 	scroll-snap-type: y proximity;
-	/* When the progress meter is also pinned (i.e., the user has scrolled
-	   into the quiz), reserve room for both bars so a snapped question
-	   doesn't hide under them. The `:has()` test is on `body` because
-	   `<html>` does not contain `.meter` — it is fixed-positioned out of
-	   flow but still a descendant of body. */
+	/* The merged chapter banner is the only sticky chrome at the top of
+	   `<main>`, so reserving its height is enough to keep snapped questions
+	   from hiding behind it. */
 	scroll-padding-top: var(--chapter-head-h, 4.5rem);
-}
-
-html:has(body .meter[data-visible='true']) {
-	scroll-padding-top: calc(var(--meter-h, 3.5rem) + var(--chapter-head-h, 4.5rem));
 }
 
 /* ── Forward-progress lock (declarative) ──────────────────────────────

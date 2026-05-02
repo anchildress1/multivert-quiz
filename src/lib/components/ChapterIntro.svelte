@@ -1,30 +1,26 @@
 <script lang="ts">
 	import type { Archetype, ChapterNumeral } from '$lib/archetypes';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 
 	interface Props {
 		id: string;
 		numeral: ChapterNumeral;
 		title: string;
 		archetype: Archetype;
-		count: number;
 		/**
 		 * Italic blurb shown under the title — pulled from `DIMENSION_META` in
 		 * the registry so chapter copy has a single source of truth.
 		 */
 		description: string;
-		/** Suffix on the right-hand count, e.g. `7 statements` or `5 verts`. */
-		countLabel?: string;
+		/** Total number of statements in the quiz. */
+		total: number;
+		/** How many statements the user has committed so far. */
+		answered: number;
 	}
 
-	const {
-		id,
-		numeral,
-		title,
-		archetype,
-		count,
-		description,
-		countLabel = 'statements'
-	}: Props = $props();
+	const { id, numeral, title, archetype, description, total, answered }: Props = $props();
+
+	const pct = $derived(total === 0 ? 0 : Math.round((answered / total) * 100));
 </script>
 
 <header
@@ -41,7 +37,26 @@
 		</h2>
 		<p class="chapter-head__description">{description}</p>
 	</div>
-	<span class="chapter-head__count">{count} {countLabel}</span>
+	<div
+		class="chapter-head__progress"
+		role="progressbar"
+		aria-label="Quiz progress"
+		aria-valuemin={0}
+		aria-valuemax={total}
+		aria-valuenow={answered}
+		aria-valuetext="{answered} of {total} answered ({pct}%)"
+	>
+		<span class="chapter-head__progress-count" aria-hidden="true">
+			<strong>{answered}</strong><span class="chapter-head__progress-total"> / {total}</span>
+		</span>
+		<span class="chapter-head__progress-bar" aria-hidden="true">
+			<span class="chapter-head__progress-fill" style:width="{pct}%"></span>
+		</span>
+		<span class="chapter-head__progress-pct" aria-hidden="true">{pct}%</span>
+	</div>
+	<div class="chapter-head__toggle">
+		<ThemeToggle />
+	</div>
 </header>
 
 <style>
@@ -50,7 +65,7 @@
 		top: 0;
 		z-index: 5;
 		display: grid;
-		grid-template-columns: auto 1fr auto auto;
+		grid-template-columns: auto 1fr auto auto auto;
 		align-items: center;
 		gap: clamp(0.75rem, 2vw, 1.25rem);
 		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
@@ -59,15 +74,6 @@
 		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
 		border-bottom: var(--glass-border);
-		transition: top 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
-	}
-
-	/* Stack below the progress meter when the meter is visible. The meter
-	   slides in once the user has scrolled past the hero, so before that
-	   the banner sits flush at top:0. The transition matches the meter's
-	   own translate timing so the two bars feel like one chained motion. */
-	:global(body:has(.meter[data-visible='true'])) .chapter-head {
-		top: var(--meter-h, 3.5rem);
 	}
 
 	.chapter-head__numeral {
@@ -120,25 +126,71 @@
 		max-width: 64ch;
 	}
 
-	.chapter-head__count {
+	/* Progress block — small mono cluster on the right. Quiet enough to read
+	   as a status strip on the chapter banner rather than a second bar. */
+	.chapter-head__progress {
+		display: grid;
+		grid-template-columns: auto minmax(3.75rem, 12.5rem) auto;
+		align-items: center;
+		gap: 0.75rem;
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
 		color: var(--ink-70);
-		white-space: nowrap;
 	}
 
-	@media (max-width: 47.5rem) {
-		.chapter-head__count {
+	.chapter-head__progress-count strong {
+		color: var(--ink);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.chapter-head__progress-total {
+		color: var(--ink-70);
+	}
+
+	.chapter-head__progress-bar {
+		display: block;
+		height: 0.1875rem;
+		border-radius: 99rem;
+		background: var(--ink-08);
+		overflow: hidden;
+		position: relative;
+	}
+
+	.chapter-head__progress-fill {
+		display: block;
+		height: 100%;
+		background: var(--ink);
+		transition: width 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.chapter-head__progress-pct {
+		font-variant-numeric: tabular-nums;
+		color: var(--ink-70);
+		min-width: 2.25rem;
+		text-align: right;
+	}
+
+	.chapter-head__toggle {
+		display: flex;
+		align-items: center;
+	}
+
+	/* Medium screens: drop the long bar segment so the count + pct still
+	   read at a glance, and let the title breathe. */
+	@media (max-width: 60rem) {
+		.chapter-head__progress {
+			grid-template-columns: auto auto;
+			gap: 0.5rem;
+		}
+		.chapter-head__progress-bar {
 			display: none;
 		}
-		.chapter-head {
-			grid-template-columns: auto 1fr auto;
-		}
 	}
 
-	@media (max-width: 33.75rem) {
+	/* Narrow screens: drop the description and the gradient rule. Keeps the
+	   numeral + title + a hairline progress count + theme toggle. */
+	@media (max-width: 47.5rem) {
 		.chapter-head__description {
 			display: none;
 		}
@@ -146,7 +198,11 @@
 			display: none;
 		}
 		.chapter-head {
-			grid-template-columns: auto auto 1fr;
+			grid-template-columns: auto 1fr auto auto;
+			gap: 0.875rem;
+		}
+		.chapter-head__progress-count {
+			display: none;
 		}
 	}
 </style>

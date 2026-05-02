@@ -11,7 +11,6 @@
 	} from '$lib/archetypes';
 	import ChapterIntro from '$lib/components/ChapterIntro.svelte';
 	import FiveDots from '$lib/components/FiveDots.svelte';
-	import ProgressMeter from '$lib/components/ProgressMeter.svelte';
 	import QuestionRow from '$lib/components/QuestionRow.svelte';
 	import Tagline from '$lib/components/Tagline.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
@@ -29,7 +28,6 @@
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
-	let scrollY = $state(0);
 	let sheetArchetype = $state<Archetype | null>(null);
 
 	function openSheet(archetype: Archetype) {
@@ -40,8 +38,6 @@
 		sheetArchetype = null;
 	}
 
-	const meterVisible = $derived(scrollY > 80);
-
 	/* The single sticky banner at the top of `<main>` is driven by this
 	   derived bag of ChapterIntro props. Result takes precedence when its
 	   section is intersecting; otherwise the last visited chapter wins. */
@@ -51,8 +47,6 @@
 				numeral: 'V' as const,
 				title: 'Result',
 				archetype: store.result.dominant,
-				count: 5,
-				countLabel: 'verts',
 				description: 'Five independent fits — bars do not sum to 100.'
 			};
 		}
@@ -61,8 +55,6 @@
 				numeral: activeChapter.numeral,
 				title: activeChapter.title,
 				archetype: activeChapter.archetype,
-				count: grouped[activeChapter.dimension].length,
-				countLabel: 'statements',
 				description: DIMENSION_META[activeChapter.dimension].description
 			};
 		}
@@ -276,15 +268,6 @@
 	/>
 </svelte:head>
 
-<svelte:window bind:scrollY />
-
-<ProgressMeter
-	total={store.total}
-	answered={store.totalAnswered}
-	chapter={activeChapter ? `${activeChapter.numeral} · ${activeChapter.title}` : null}
-	visible={meterVisible}
-/>
-
 <header class="hero">
 	<div class="hero__bar">
 		<Wordmark size={22} />
@@ -348,7 +331,12 @@
 
 <main class="quiz">
 	{#if activeSection}
-		<ChapterIntro id="active-chapter-head" {...activeSection} />
+		<ChapterIntro
+			id="active-chapter-head"
+			{...activeSection}
+			total={store.total}
+			answered={store.totalAnswered}
+		/>
 	{/if}
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
