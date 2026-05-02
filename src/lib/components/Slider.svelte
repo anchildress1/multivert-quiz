@@ -34,23 +34,23 @@
 	const fillFromMid = $derived(Math.abs(fillPercent - 50));
 	const fillStart = $derived(Math.min(50, fillPercent));
 
-	// Tracks whether the user has interacted in this mounted instance. Used so
-	// the click handler can commit a neutral (0) answer that the native
-	// `change` event would otherwise swallow — clicking exactly at the
-	// already-rendered thumb position doesn't change the input value, so
-	// `input` / `change` never fire and the answer would otherwise be stuck
-	// at `unset` for any user who genuinely meant to pick neutral. Plain `let`
-	// (no `$state`) because it is only read inside event handlers, never in
-	// the template — reactivity isn't needed.
+	// `hasInteracted` lets a click on the unmoved thumb commit a neutral (0)
+	// answer — native `change` for a range input only fires when the value
+	// actually changed. Plain `let` because it is only read inside event
+	// handlers, never in the template.
 	let hasInteracted = false;
 
-	// Set true when `input` fires; cleared when `change` (or our pointerup
-	// fallback) commits `answered`. Native `change` for range inputs is only
-	// queued when the final value differs from the value at the start of the
-	// interaction — drag away from a value and back to it and `change` never
-	// runs, leaving the slider stuck in `in-progress`. The pointerup handler
-	// catches that case.
+	// `pendingCommit` is the same workaround on the drag-and-return path:
+	// `change` never queues if the user lets go at the starting value. The
+	// pointerup handler watches this latch and commits ourselves.
 	let pendingCommit = false;
+	let pointerupTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const clearPointerupTimer = () => {
+		if (pointerupTimer === null) return;
+		clearTimeout(pointerupTimer);
+		pointerupTimer = null;
+	};
 
 	$effect(() => {
 		// Retake/reset returns the external slider state to `unset`; clear the
@@ -58,8 +58,11 @@
 		if (phase === 'unset') {
 			hasInteracted = false;
 			pendingCommit = false;
+			clearPointerupTimer();
 		}
 	});
+
+	$effect(() => clearPointerupTimer);
 
 	function handleInput(event: Event) {
 		if (!(event.target instanceof HTMLInputElement)) return;
@@ -83,11 +86,13 @@
 		if (!(event.currentTarget instanceof HTMLInputElement)) return;
 		if (!pendingCommit) return;
 		const target = event.currentTarget;
+		clearPointerupTimer();
 		// `pointerup` runs before `change`. Defer one task so the native event
 		// can commit first when it's going to. If `change` doesn't fire (drag
 		// returned to the starting value), `pendingCommit` is still true and
 		// we commit ourselves.
-		setTimeout(() => {
+		pointerupTimer = setTimeout(() => {
+			pointerupTimer = null;
 			if (!pendingCommit) return;
 			pendingCommit = false;
 			const next = Number(target.value);

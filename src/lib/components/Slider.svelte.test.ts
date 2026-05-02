@@ -166,6 +166,36 @@ describe('Slider — handlePointerup (drag-back-to-start commit)', () => {
 		await flushTimers();
 		expect(onchange).not.toHaveBeenCalled();
 	});
+
+	it('cancels the pending pointerup commit when the component unmounts mid-defer', async () => {
+		const { input, onchange, unmount } = renderSlider({ value: null, phase: 'unset' });
+		fireEvent.input(input, { target: { value: '0.5' } });
+		fireEvent.pointerUp(input);
+		// pointerup queues a 0ms setTimeout; tearing the component down BEFORE
+		// the microtask drains must cancel the deferred commit so a torn-down
+		// slider cannot mutate the answers store after a Start-over.
+		unmount();
+		onchange.mockClear();
+		await flushTimers();
+		expect(onchange).not.toHaveBeenCalled();
+	});
+
+	it('clears the pointerup latch on retake so an in-flight setTimeout does not fire', async () => {
+		const { input, rerender, onchange } = renderSlider({ value: null, phase: 'in-progress' });
+		fireEvent.input(input, { target: { value: '0.5' } });
+		fireEvent.pointerUp(input);
+		// Phase flips back to unset (Start over) before the deferred commit drains.
+		await rerender({
+			id: 'test-slider',
+			label: 'Test question',
+			onchange,
+			value: null,
+			phase: 'unset'
+		});
+		onchange.mockClear();
+		await flushTimers();
+		expect(onchange).not.toHaveBeenCalled();
+	});
 });
 
 describe('Slider — hasInteracted latch reset on retake', () => {
