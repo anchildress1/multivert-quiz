@@ -30,6 +30,9 @@ jobs:
   deploy:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
+    permissions:
+      contents: read
+      deployments: write
     uses: ./.github/workflows/deploy-pages.yml
     with:
       tag: ${{ needs.release-please.outputs.tag_name }}
