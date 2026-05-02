@@ -247,6 +247,10 @@ test.describe('landing + scroll quiz — forward-progress lock', () => {
 test.describe('landing + scroll quiz — navigation', () => {
 	test('Begin button scrolls the first chapter into view', async ({ page }) => {
 		await page.goto('/');
+		// `scrollToId` short-circuits if the chapter element isn't mounted yet;
+		// the nudge-listener flag is the same hydration signal the rest of the
+		// suite anchors on.
+		await waitForNudgeArmed(page);
 		await page.evaluate(() =>
 			globalThis.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
 		);
