@@ -44,15 +44,15 @@ describe('VertSheet — render gating', () => {
 });
 
 describe('VertSheet — field-guide content', () => {
-	it.each(ARCHETYPES)('renders the title + headline for %s', (archetype) => {
+	it.each(ARCHETYPES)('renders the title for %s', (archetype) => {
 		const { container } = renderSheet({ archetype });
 		const text = container.textContent ?? '';
-		// Banner now carries the archetype TITLE (uppercase) + tagline; the
-		// chrome row is just "№ XX/05". The voice headline lives below the
-		// banner on paper.
+		// Banner carries the archetype TITLE (uppercase) + tagline; the body
+		// of the sheet jumps directly into the deeper field-guide content.
+		// The headline + body lede that used to repeat under the title was
+		// removed so the sheet does not restate what the swatch already said.
 		expect(text).toContain(VERT_NAMES[archetype].name.toUpperCase());
 		expect(text).toContain(VERT_NAMES[archetype].label);
-		expect(text).toContain(descriptions[archetype].headline);
 	});
 
 	it.each(ARCHETYPES)('renders the day-in-the-life vignette for %s', (archetype) => {

@@ -117,11 +117,6 @@
 			</header>
 
 			<div class="sheet__content">
-				<div class="sheet__lede">
-					<p class="sheet__headline">{desc.headline}</p>
-					<p class="sheet__body">{desc.body}</p>
-				</div>
-
 				<section class="sheet__section sheet__section--day" aria-labelledby="vert-sheet-day">
 					<p id="vert-sheet-day" class="sheet__section-label">
 						<span class="sheet__section-num">i.</span>
@@ -378,33 +373,6 @@
 		opacity: 0.78;
 		margin: clamp(0.25rem, 0.6vh, 0.5rem) 0 0;
 		text-align: right;
-	}
-
-	.sheet__lede {
-		margin-bottom: clamp(2.5rem, 7vh, 4.5rem);
-		max-width: 60ch;
-	}
-
-	.sheet__headline {
-		font-family: var(--font-sans);
-		font-weight: 500;
-		font-size: clamp(1.375rem, 2.6vw, 1.875rem);
-		line-height: 1.2;
-		letter-spacing: -0.015em;
-		color: var(--ink);
-		margin: 0 0 1.5rem;
-		max-width: 28ch;
-		text-wrap: balance;
-	}
-
-	.sheet__body {
-		font-family: var(--font-sans);
-		font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
-		line-height: 1.6;
-		color: var(--ink-70);
-		margin: 0;
-		text-wrap: pretty;
-		white-space: pre-wrap;
 	}
 
 	/* ── Section blocks ───────────────────────────────────────────────────

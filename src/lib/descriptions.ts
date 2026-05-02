@@ -45,7 +45,7 @@ export const descriptions: Readonly<Record<VertType, TypeDescription>> = Object.
 	introvert: {
 		type: 'introvert',
 		headline: "You're not antisocial—you're battery-operated.",
-		body: 'People aren\'t the problem. Recovery time is your fuel. You can absolutely show up, charm a room, hold court at a dinner—every hour spent doing it costs you, and you need the math to balance. Most "introverts" online are actually shy or anxious. You\'re neither. You just have a meter, and unlike most people, you read it.',
+		body: "Liking people and having stamina for them are two different things. You can charm a room, hold court at a dinner, host the brunch—and still need the next morning quiet to be quiet. Every hour of being on draws from a finite supply; only solitude refills it. Anxiety and shyness can ride along, but neither is the engine. The engine is the meter, and you've learned to read it.",
 		deep: {
 			dayInTheLife:
 				"You're awake while the house is asleep, because the silence at 6 a.m. is yours and the silence at 9 p.m. has to be earned back. Coffee, alone, with the kind of book you've already read. By dinner you've talked to three people too many—even if two of them were just baristas. You go to bed twenty minutes earlier than you said you would, lights already off, phone face-down. The day was good. You'd just like it to be over now, please.",

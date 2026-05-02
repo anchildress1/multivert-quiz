@@ -359,10 +359,12 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		const dialog = page.locator('[role="dialog"][aria-modal="true"]');
 		await expect(dialog).toBeVisible();
 		await expect(dialog).toHaveAttribute('data-archetype', 'introvert');
-		// The sheet's title slot now prints the archetype name (Pantone-card
-		// label); the voice headline lives in .sheet__headline below it.
+		// The sheet's title slot now prints the archetype name; the headline
+		// + body lede that used to repeat under the title was removed so the
+		// sheet jumps straight into the deeper "i. A day in the life" content
+		// rather than restating what the swatch already said.
 		await expect(page.locator('#vert-sheet-title')).toHaveText('INTROVERT');
-		await expect(page.locator('.sheet__headline')).toContainText(/battery-operated/i);
+		await expect(page.locator('.sheet__day-text')).toBeVisible();
 		await expect(page.locator('.sheet__truth')).toHaveCount(5);
 		await expect(page.locator('.sheet__giveaway').first()).toBeVisible();
 		await expect(page.locator('.sheet__pull-text')).toBeVisible();
