@@ -51,7 +51,7 @@ describe('themeStore — initialization (browser, localStorage seeded)', () => {
 	afterEach(() => {
 		vi.resetModules();
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 	});
 
 	it('reads a saved "light" preference on import', async () => {
@@ -106,7 +106,7 @@ describe('themeStore — apply / cycle / persistence', () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 		store = fakeStorage();
 		vi.stubGlobal('localStorage', store);
 		stubMatchMedia(false);
@@ -116,14 +116,14 @@ describe('themeStore — apply / cycle / persistence', () => {
 
 	afterEach(() => {
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 	});
 
 	it('apply("light") writes data-theme + persists', async () => {
 		const { themeStore } = await import('./theme.svelte');
 		themeStore.apply('light');
 		expect(themeStore.current).toBe('light');
-		expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+		expect(document.documentElement.dataset.theme).toBe('light');
 		expect(store.getItem(STORAGE_KEY)).toBe('light');
 	});
 
@@ -131,7 +131,7 @@ describe('themeStore — apply / cycle / persistence', () => {
 		const { themeStore } = await import('./theme.svelte');
 		themeStore.apply('dark');
 		expect(themeStore.current).toBe('dark');
-		expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+		expect(document.documentElement.dataset.theme).toBe('dark');
 		expect(store.getItem(STORAGE_KEY)).toBe('dark');
 	});
 
@@ -140,7 +140,7 @@ describe('themeStore — apply / cycle / persistence', () => {
 		themeStore.apply('dark');
 		themeStore.apply('system');
 		expect(themeStore.current).toBe('system');
-		expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+		expect(document.documentElement.dataset.theme).toBeUndefined();
 		expect(store.getItem(STORAGE_KEY)).toBeNull();
 	});
 
@@ -178,13 +178,13 @@ describe('themeStore — resolved + subscribeSystem', () => {
 	beforeEach(() => {
 		vi.resetModules();
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 		vi.stubGlobal('localStorage', fakeStorage());
 	});
 
 	afterEach(() => {
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 	});
 
 	it('resolves to itself for explicit light/dark', async () => {

@@ -44,7 +44,7 @@ const stubMatchMedia = (matches: boolean) => {
 describe('ThemeToggle', () => {
 	beforeEach(() => {
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 		vi.stubGlobal('localStorage', fakeStorage());
 		stubMatchMedia(false);
 		// Reset the shared singleton between tests since it survives across cases.
@@ -54,7 +54,7 @@ describe('ThemeToggle', () => {
 	afterEach(() => {
 		cleanup();
 		vi.unstubAllGlobals();
-		document.documentElement.removeAttribute('data-theme');
+		delete document.documentElement.dataset.theme;
 	});
 
 	it('renders a single toggle button labelled with the current state', () => {
@@ -62,7 +62,7 @@ describe('ThemeToggle', () => {
 		const button = container.querySelector('button.toggle') as HTMLButtonElement;
 		expect(button).not.toBeNull();
 		expect(button.getAttribute('aria-label')).toContain('Theme:');
-		expect(button.getAttribute('data-theme-state')).toBe('system');
+		expect(button.dataset.themeState).toBe('system');
 	});
 
 	it('cycles system → light → dark → system on successive clicks', async () => {
@@ -70,16 +70,16 @@ describe('ThemeToggle', () => {
 		const button = container.querySelector('button.toggle') as HTMLButtonElement;
 
 		await fireEvent.click(button);
-		expect(button.getAttribute('data-theme-state')).toBe('light');
-		expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+		expect(button.dataset.themeState).toBe('light');
+		expect(document.documentElement.dataset.theme).toBe('light');
 
 		await fireEvent.click(button);
-		expect(button.getAttribute('data-theme-state')).toBe('dark');
-		expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+		expect(button.dataset.themeState).toBe('dark');
+		expect(document.documentElement.dataset.theme).toBe('dark');
 
 		await fireEvent.click(button);
-		expect(button.getAttribute('data-theme-state')).toBe('system');
-		expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+		expect(button.dataset.themeState).toBe('system');
+		expect(document.documentElement.dataset.theme).toBeUndefined();
 	});
 
 	it('persists explicit choice and clears storage on system', async () => {
@@ -103,22 +103,22 @@ describe('ThemeToggle', () => {
 		const buttonB = b.container.querySelector('button.toggle') as HTMLButtonElement;
 
 		await fireEvent.click(buttonA);
-		expect(buttonA.getAttribute('data-theme-state')).toBe('light');
-		expect(buttonB.getAttribute('data-theme-state')).toBe('light');
+		expect(buttonA.dataset.themeState).toBe('light');
+		expect(buttonB.dataset.themeState).toBe('light');
 
 		await fireEvent.click(buttonB);
-		expect(buttonA.getAttribute('data-theme-state')).toBe('dark');
-		expect(buttonB.getAttribute('data-theme-state')).toBe('dark');
+		expect(buttonA.dataset.themeState).toBe('dark');
+		expect(buttonB.dataset.themeState).toBe('dark');
 	});
 
 	it('reflects the resolved scheme as data-resolved', async () => {
 		const { container } = render(ThemeToggle);
 		const button = container.querySelector('button.toggle') as HTMLButtonElement;
-		expect(button.getAttribute('data-resolved')).toBe('light');
+		expect(button.dataset.resolved).toBe('light');
 
 		await fireEvent.click(button); // light
-		expect(button.getAttribute('data-resolved')).toBe('light');
+		expect(button.dataset.resolved).toBe('light');
 		await fireEvent.click(button); // dark
-		expect(button.getAttribute('data-resolved')).toBe('dark');
+		expect(button.dataset.resolved).toBe('dark');
 	});
 });

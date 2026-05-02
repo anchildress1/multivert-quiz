@@ -60,7 +60,7 @@ describe('ChapterIntro — header rendering', () => {
 		const { container } = render(ChapterIntro, { props: baseProps });
 		const head = container.querySelector('.chapter-head') as HTMLElement;
 		expect(head).not.toBeNull();
-		expect(head.getAttribute('data-archetype')).toBe('introvert');
+		expect(head.dataset.archetype).toBe('introvert');
 		expect(container.querySelector('.chapter-head__numeral')?.textContent).toBe('I');
 		expect(container.querySelector('.chapter-head__title')?.textContent?.trim()).toBe('Energy');
 		expect(container.querySelector('.chapter-head__description')?.textContent).toBe(

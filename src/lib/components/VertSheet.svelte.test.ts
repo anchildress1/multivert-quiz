@@ -90,7 +90,7 @@ describe('VertSheet — field-guide content', () => {
 	it('writes the archetype to data-archetype on the dialog', () => {
 		const { container } = renderSheet({ archetype: 'otrovert' });
 		const dialog = container.querySelector('[role="dialog"]');
-		expect(dialog?.getAttribute('data-archetype')).toBe('otrovert');
+		expect((dialog as HTMLElement | null)?.dataset.archetype).toBe('otrovert');
 	});
 });
 
