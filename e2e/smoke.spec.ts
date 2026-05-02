@@ -109,6 +109,7 @@ test.describe('landing + scroll quiz — structure', () => {
 		page
 	}) => {
 		await page.goto('/');
+		await waitForNudgeArmed(page);
 		await scrollToElement(page, 'chapter-energy');
 		await expect.poll(() => page.locator('.chapter-head__progress').count()).toBe(1);
 	});
