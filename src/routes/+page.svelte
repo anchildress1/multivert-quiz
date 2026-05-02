@@ -312,11 +312,9 @@
 
 			<p class="hero__lede">
 				Most quizzes only know two: introvert, extrovert. There are three more —
-				<em data-vert="ambivert">ambivert</em> (context-flexible),
-				<em data-vert="omnivert">omnivert</em> (oscillates between extremes), and
-				<em data-vert="otrovert">otrovert</em> (a 2025 term coined by psychiatrist Rami Kaminski;
-				belongs without belonging). {questions.length} statements, one quiet slider, a five-way breakdown
-				at the end.
+				<em data-vert="ambivert">ambivert</em>, <em data-vert="omnivert">omnivert</em>, and
+				<em data-vert="otrovert">otrovert</em> (a 2025 term from psychiatrist Rami Kaminski).
+				{questions.length} statements, one quiet slider, a five-way breakdown at the end.
 			</p>
 
 			<div class="hero__cta-row">
