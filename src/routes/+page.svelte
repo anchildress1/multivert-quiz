@@ -27,6 +27,7 @@
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
+	let heroVisible = $state(true);
 	let sheetArchetype = $state<Archetype | null>(null);
 
 	function openSheet(archetype: Archetype) {
@@ -37,10 +38,14 @@
 		sheetArchetype = null;
 	}
 
-	/* The single sticky banner at the top of `<main>` is driven by this
-	   derived bag of ChapterIntro props. Result takes precedence when its
-	   section is intersecting; otherwise the last visited chapter wins. */
+	/* The sticky banner at the top of `<main>` is gated on hero visibility:
+	   while the hero owns the viewport it would render at its natural
+	   position (just under the hero) which lands near viewport-bottom and
+	   reads as misplaced chrome. Skip until the hero is fully out of view.
+	   Result takes precedence when its section is intersecting; otherwise
+	   the last visited chapter wins. */
 	const activeSection = $derived.by(() => {
+		if (heroVisible) return null;
 		if (resultActive && store.result) {
 			return {
 				numeral: 'V' as const,
@@ -58,6 +63,25 @@
 			};
 		}
 		return null;
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		const hero = document.querySelector<HTMLElement>('header.hero');
+		if (!hero) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (!entry) return;
+				const rootHeight = entry.rootBounds?.height ?? globalThis.innerHeight;
+				// Hero "owns" the viewport while its bottom edge sits below the
+				// viewport mid-line. Once scrolled past that, the chapter banner
+				// can take over at viewport-top without competing for attention.
+				heroVisible = entry.boundingClientRect.bottom > rootHeight * 0.5;
+			},
+			{ threshold: [0, 0.25, 0.5, 0.75, 1] }
+		);
+		obs.observe(hero);
+		return () => obs.disconnect();
 	});
 
 	$effect(() => {
