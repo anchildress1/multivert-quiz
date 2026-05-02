@@ -136,11 +136,26 @@
 	--font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
 }
 
+/* Root foundation + page-level snap.
+
+   Foundation: paper/ink color tokens and the sans default font.
+
+   Page-level snap: questions inside the quiz snap one-per-viewport via
+   `scroll-snap-align` on `.row`. `proximity` is intentionally gentler than
+   `mandatory` — `mandatory` would force the page to land on a snap target
+   on initial load, jumping past the hero. The forward-progress lock is
+   handled declaratively further down (.row[data-state='unset'] ~ .row).
+   `scroll-padding-top` reserves space for the sticky chapter header so a
+   snapped question sits below it; the merged chapter banner is the only
+   sticky chrome at the top of `<main>`, so reserving its height is enough
+   to keep snapped questions from hiding behind it. */
 html {
 	height: 100%;
 	background: var(--paper);
 	color: var(--ink);
 	font-family: var(--font-sans);
+	scroll-snap-type: y proximity;
+	scroll-padding-top: var(--chapter-head-h, 4.5rem);
 }
 
 /* Sticky-footer flex layout: body owns the column. `<main>` flexes to fill
@@ -155,25 +170,12 @@ body {
 	background: var(--paper);
 	color: var(--ink);
 	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 main {
 	flex: 1;
-}
-
-/* Page-level snap: questions inside the quiz snap one-per-viewport via
-   `scroll-snap-align` on `.row`. `proximity` is intentionally gentler than
-   `mandatory` — `mandatory` would force the page to land on a snap target
-   on initial load, jumping past the hero. The forward-progress lock is
-   handled declaratively further down (.row[data-state='unset'] ~ .row).
-   `scroll-padding-top` reserves space for the sticky chapter header so a
-   snapped question sits below it. */
-html {
-	scroll-snap-type: y proximity;
-	/* The merged chapter banner is the only sticky chrome at the top of
-	   `<main>`, so reserving its height is enough to keep snapped questions
-	   from hiding behind it. */
-	scroll-padding-top: var(--chapter-head-h, 4.5rem);
 }
 
 /* ── Forward-progress lock (declarative) ──────────────────────────────
@@ -208,11 +210,6 @@ html {
 	html {
 		scroll-snap-type: none;
 	}
-}
-
-body {
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
