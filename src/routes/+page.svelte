@@ -19,7 +19,6 @@
 	import { descriptions } from '$lib/descriptions';
 	import { questions } from '$lib/questions';
 	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
-	import { APP_VERSION } from '$lib/version';
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
@@ -480,12 +479,12 @@
 			</footer>
 		</section>
 	{/if}
-
-	<footer class="page-footer">
-		<Tagline size={11} align="left" />
-		<div class="page-footer__version">{APP_VERSION}</div>
-	</footer>
 </main>
+
+<footer class="page-footer">
+	<small class="page-footer__copyright">&copy; 2026 Ashley Childress</small>
+	<Tagline size={11} align="right" />
+</footer>
 
 <VertSheet archetype={sheetArchetype} onclose={closeSheet} />
 
@@ -1175,16 +1174,18 @@
 
 	.page-footer {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: flex-end;
 		justify-content: space-between;
 		padding: 1.5rem;
-		gap: 1rem;
+		gap: 1rem 1.5rem;
 	}
 
-	.page-footer__version {
+	.page-footer__copyright {
 		font-family: var(--font-mono);
-		font-size: 0.625rem;
+		font-size: 0.6875rem;
 		color: var(--ink-70);
+		letter-spacing: 0.01em;
 	}
 
 	@media (min-width: 60rem) {
