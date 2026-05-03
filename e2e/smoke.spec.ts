@@ -286,6 +286,11 @@ test.describe('landing + scroll quiz — navigation', () => {
 });
 
 test.describe('share + SEO surface', () => {
+	// PNG magic header (RFC 2083 §3.1). A truncated/corrupted asset still
+	// passing a content-type check is the silent-failure mode this guards.
+	const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+	const CANONICAL_URL = 'https://multivert-quiz.pages.dev/';
+
 	test('serves robots.txt with sitemap directive', async ({ request }) => {
 		const res = await request.get('/robots.txt');
 		expect(res.status()).toBe(200);
@@ -294,17 +299,22 @@ test.describe('share + SEO surface', () => {
 		expect(body).toMatch(/Sitemap:\s+https:\/\/.+\/sitemap\.xml/);
 	});
 
-	test('serves a valid sitemap.xml', async ({ request }) => {
+	test('serves a valid sitemap.xml pointing at the canonical URL', async ({ request }) => {
 		const res = await request.get('/sitemap.xml');
 		expect(res.status()).toBe(200);
 		const body = await res.text();
 		expect(body).toContain('<urlset');
-		expect(body).toContain('<loc>https://multivert-quiz.pages.dev/</loc>');
+		expect(body).toContain(`<loc>${CANONICAL_URL}</loc>`);
 	});
 
 	test('serves the PWA manifest with required fields', async ({ request }) => {
 		const res = await request.get('/manifest.webmanifest');
 		expect(res.status()).toBe(200);
+		// Cloudflare Pages must serve `.webmanifest` as the right MIME or
+		// Chrome's install prompt silently falls back to a link bookmark.
+		expect(res.headers()['content-type']).toMatch(
+			/^application\/manifest\+json|^application\/json/
+		);
 		const manifest = (await res.json()) as {
 			name: string;
 			short_name: string;
@@ -315,32 +325,74 @@ test.describe('share + SEO surface', () => {
 		expect(manifest.name).toMatch(/Multivert/i);
 		expect(manifest.short_name).toBe('Multivert');
 		expect(manifest.start_url).toBe('/');
+		// `standalone` is what triggers the Android Chrome "Install app"
+		// banner; `browser` would degrade to a normal tab bookmark.
 		expect(manifest.display).toBe('standalone');
 		expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
 		const sizes = manifest.icons.map((icon) => icon.sizes);
+		// 192x192 + 512x512 are the documented Chrome install-prompt minimums.
 		expect(sizes).toEqual(expect.arrayContaining(['192x192', '512x512']));
 	});
 
-	test('serves apple-touch-icon and PWA icons as image/png', async ({ request }) => {
-		for (const path of ['/apple-touch-icon.png', '/icon-192.png', '/icon-512.png']) {
-			const res = await request.get(path);
-			expect(res.status(), `${path} should resolve`).toBe(200);
-			expect(res.headers()['content-type']).toMatch(/^image\/png/);
+	test('every icon declared in the manifest actually resolves', async ({ request }) => {
+		// Drift guard: the manifest can list icons that don't exist (typo,
+		// removed file, wrong path). Iterate the declarations rather than
+		// asserting hardcoded paths so the test fails on any mismatch.
+		const res = await request.get('/manifest.webmanifest');
+		const manifest = (await res.json()) as {
+			icons: Array<{ src: string; type: string }>;
+		};
+		for (const icon of manifest.icons) {
+			const iconRes = await request.get(icon.src);
+			expect(iconRes.status(), `manifest icon ${icon.src} should resolve`).toBe(200);
+			const contentType = iconRes.headers()['content-type'] ?? '';
+			expect(
+				contentType.startsWith(icon.type),
+				`manifest icon ${icon.src} should be served as ${icon.type} (got ${contentType})`
+			).toBe(true);
 		}
 	});
 
-	test('OG image is at the declared URL and under WhatsApp 300KB ceiling', async ({ request }) => {
-		// WhatsApp drops OG previews above ~300KB; the asset must stay below that
-		// or shares silently fall back to a link-only card with no thumbnail.
+	test('apple-touch-icon and PWA icons are valid PNGs of the expected size', async ({
+		request
+	}) => {
+		// Pair a content-type check with a magic-byte check so a 12-byte HTML
+		// 404 served as image/png cannot pass. Each icon also has a minimum
+		// byte floor — a 0-byte placeholder would otherwise ship green.
+		const expected: Array<{ path: string; minBytes: number }> = [
+			{ path: '/apple-touch-icon.png', minBytes: 500 },
+			{ path: '/icon-192.png', minBytes: 1_000 },
+			{ path: '/icon-512.png', minBytes: 5_000 }
+		];
+		for (const { path, minBytes } of expected) {
+			const res = await request.get(path);
+			expect(res.status(), `${path} should resolve`).toBe(200);
+			expect(res.headers()['content-type']).toMatch(/^image\/png/);
+			const buf = Buffer.from(await res.body());
+			expect(buf.byteLength, `${path} should not be empty`).toBeGreaterThan(minBytes);
+			expect(buf.subarray(0, 8).equals(PNG_MAGIC), `${path} should start with PNG magic`).toBe(
+				true
+			);
+		}
+	});
+
+	test('OG image is a valid PNG within the WhatsApp share ceiling', async ({ request }) => {
+		// Lower bound catches a pipeline that "compressed" the asset to nothing;
+		// upper bound catches regression past WhatsApp's ~300KB unfurl ceiling
+		// (Meta's documented OG image cap — exceeding it silently strips the
+		// preview thumbnail across WhatsApp/iMessage/Slack on slow links).
 		const res = await request.get('/og-image.png');
 		expect(res.status()).toBe(200);
 		expect(res.headers()['content-type']).toMatch(/^image\/png/);
 		const buf = Buffer.from(await res.body());
+		expect(buf.byteLength).toBeGreaterThan(50_000);
 		expect(buf.byteLength).toBeLessThan(300_000);
+		expect(buf.subarray(0, 8).equals(PNG_MAGIC)).toBe(true);
 	});
 
-	test('document head wires apple-touch-icon, manifest, and OG/Twitter tags', async ({ page }) => {
+	test('document head wires the full share + PWA tag set', async ({ page }) => {
 		await page.goto('/');
+		// Apple/PWA hooks
 		await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
 			'href',
 			/apple-touch-icon\.png$/
@@ -349,18 +401,40 @@ test.describe('share + SEO surface', () => {
 			'href',
 			/manifest\.webmanifest$/
 		);
+		await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+			'content',
+			'Multivert'
+		);
+		await expect(page.locator('meta[name="application-name"]')).toHaveAttribute(
+			'content',
+			'Multivert'
+		);
+		// Canonical + OG/Twitter share contract — declared dimensions must
+		// match the actual asset (1200x630) or LinkedIn/Slack crop the preview.
+		await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', CANONICAL_URL);
+		await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', CANONICAL_URL);
 		await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
 			'content',
 			/og-image\.png$/
+		);
+		await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute(
+			'content',
+			'1200'
+		);
+		await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute(
+			'content',
+			'630'
+		);
+		await expect(page.locator('meta[property="og:image:type"]')).toHaveAttribute(
+			'content',
+			'image/png'
 		);
 		await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
 			'content',
 			'summary_large_image'
 		);
-		await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
-			'content',
-			'Multivert'
-		);
+		// JSON-LD presence (deep-checked elsewhere if/when search consoles complain).
+		await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
 	});
 });
 
