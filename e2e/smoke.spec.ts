@@ -285,6 +285,85 @@ test.describe('landing + scroll quiz — navigation', () => {
 	});
 });
 
+test.describe('share + SEO surface', () => {
+	test('serves robots.txt with sitemap directive', async ({ request }) => {
+		const res = await request.get('/robots.txt');
+		expect(res.status()).toBe(200);
+		const body = await res.text();
+		expect(body).toMatch(/User-agent:\s*\*/i);
+		expect(body).toMatch(/Sitemap:\s+https:\/\/.+\/sitemap\.xml/);
+	});
+
+	test('serves a valid sitemap.xml', async ({ request }) => {
+		const res = await request.get('/sitemap.xml');
+		expect(res.status()).toBe(200);
+		const body = await res.text();
+		expect(body).toContain('<urlset');
+		expect(body).toContain('<loc>https://multivert-quiz.pages.dev/</loc>');
+	});
+
+	test('serves the PWA manifest with required fields', async ({ request }) => {
+		const res = await request.get('/manifest.webmanifest');
+		expect(res.status()).toBe(200);
+		const manifest = (await res.json()) as {
+			name: string;
+			short_name: string;
+			start_url: string;
+			display: string;
+			icons: Array<{ src: string; sizes: string; type: string }>;
+		};
+		expect(manifest.name).toMatch(/Multivert/i);
+		expect(manifest.short_name).toBe('Multivert');
+		expect(manifest.start_url).toBe('/');
+		expect(manifest.display).toBe('standalone');
+		expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
+		const sizes = manifest.icons.map((icon) => icon.sizes);
+		expect(sizes).toEqual(expect.arrayContaining(['192x192', '512x512']));
+	});
+
+	test('serves apple-touch-icon and PWA icons as image/png', async ({ request }) => {
+		for (const path of ['/apple-touch-icon.png', '/icon-192.png', '/icon-512.png']) {
+			const res = await request.get(path);
+			expect(res.status(), `${path} should resolve`).toBe(200);
+			expect(res.headers()['content-type']).toMatch(/^image\/png/);
+		}
+	});
+
+	test('OG image is at the declared URL and under WhatsApp 300KB ceiling', async ({ request }) => {
+		// WhatsApp drops OG previews above ~300KB; the asset must stay below that
+		// or shares silently fall back to a link-only card with no thumbnail.
+		const res = await request.get('/og-image.png');
+		expect(res.status()).toBe(200);
+		expect(res.headers()['content-type']).toMatch(/^image\/png/);
+		const buf = Buffer.from(await res.body());
+		expect(buf.byteLength).toBeLessThan(300_000);
+	});
+
+	test('document head wires apple-touch-icon, manifest, and OG/Twitter tags', async ({ page }) => {
+		await page.goto('/');
+		await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+			'href',
+			/apple-touch-icon\.png$/
+		);
+		await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+			'href',
+			/manifest\.webmanifest$/
+		);
+		await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+			'content',
+			/og-image\.png$/
+		);
+		await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+			'content',
+			'summary_large_image'
+		);
+		await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+			'content',
+			'Multivert'
+		);
+	});
+});
+
 test.describe('landing + scroll quiz — answer interaction', () => {
 	test('committing a slider answer advances the answered count', async ({ page }) => {
 		await page.goto('/');
