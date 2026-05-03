@@ -8,11 +8,6 @@ on:
         required: true
         type: string
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag (or ref) to deploy (e.g. v1.2.3)
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -38,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
         with:
@@ -54,6 +49,27 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Self-bootstrap so first-time deploys (and forks) do not 404 with
+      # `Project not found [code: 8000007]`. Idempotent: if the project
+      # already exists wrangler exits non-zero with "already exists",
+      # which we treat as success. Any other failure (auth, permission,
+      # network) propagates so we do not silently skip real errors.
+      - name: Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          if pnpm exec wrangler pages project create "${CLOUDFLARE_PROJECT_NAME}" \
+              --production-branch=main 2>&1 | tee /tmp/cf-create.log; then
+            echo "Created Cloudflare Pages project ${CLOUDFLARE_PROJECT_NAME}"
+          elif grep -qiE "already exists|HTTP 409|8000077" /tmp/cf-create.log; then
+            echo "Cloudflare Pages project ${CLOUDFLARE_PROJECT_NAME} already exists — continuing"
+          else
+            echo "::error::Failed to ensure Cloudflare Pages project exists"
+            exit 1
+          fi
 
       - name: Deploy to Cloudflare Pages
         id: deploy
