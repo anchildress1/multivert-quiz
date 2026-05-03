@@ -51,24 +51,23 @@ jobs:
         run: pnpm build
 
       # Self-bootstrap so first-time deploys (and forks) do not 404 with
-      # `Project not found [code: 8000007]`. Idempotent: if the project
-      # already exists wrangler exits non-zero with "already exists",
-      # which we treat as success. Any other failure (auth, permission,
-      # network) propagates so we do not silently skip real errors.
+      # `Project not found [code: 8000007]`. We list first and only create
+      # on absence — no error-string matching, so wrangler version drift in
+      # the "already exists" message can't silently break re-runs. Real
+      # failures (auth, network) propagate naturally because both wrangler
+      # invocations fail loud.
       - name: Ensure Cloudflare Pages project exists
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          set -o pipefail
-          if pnpm exec wrangler pages project create "${CLOUDFLARE_PROJECT_NAME}" \
-              --production-branch=main 2>&1 | tee /tmp/cf-create.log; then
-            echo "Created Cloudflare Pages project ${CLOUDFLARE_PROJECT_NAME}"
-          elif grep -qiE "already exists|HTTP 409|8000077" /tmp/cf-create.log; then
-            echo "Cloudflare Pages project ${CLOUDFLARE_PROJECT_NAME} already exists — continuing"
+          set -euo pipefail
+          if pnpm exec wrangler pages project list --json \
+              | jq -e --arg name "$CLOUDFLARE_PROJECT_NAME" 'any(.[]; .name == $name)' >/dev/null; then
+            echo "Cloudflare Pages project '$CLOUDFLARE_PROJECT_NAME' already exists"
           else
-            echo "::error::Failed to ensure Cloudflare Pages project exists"
-            exit 1
+            echo "Creating Cloudflare Pages project '$CLOUDFLARE_PROJECT_NAME'"
+            pnpm exec wrangler pages project create "$CLOUDFLARE_PROJECT_NAME" --production-branch=main
           fi
 
       - name: Deploy to Cloudflare Pages
@@ -80,13 +79,18 @@ jobs:
           command: pages deploy .svelte-kit/cloudflare --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
+      # An empty `deployment-url` means wrangler-action did not produce its
+      # documented output even though it exited zero — that is itself a
+      # deploy failure (we have no URL to verify, no environment URL on the
+      # GH UI, no place to send the smoke curl). Fail loud, do not silently
+      # skip — the whole point of this step is to confirm the deploy landed.
       - name: Smoke test
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: |
           if [ -z "$DEPLOY_URL" ]; then
-            echo "::warning::deployment-url output empty — skipping smoke test"
-            exit 0
+            echo "::error::deployment-url output empty — wrangler-action did not surface a URL"
+            exit 1
           fi
           echo "Deployment URL: $DEPLOY_URL"
           curl -sfI --retry 3 --retry-delay 5 "$DEPLOY_URL" >/dev/null
