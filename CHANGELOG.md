@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/anchildress1/multivert-quiz/compare/v1.1.0...v1.1.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* **ci:** match release-please setup to anchildress1/test (verified working) ([#14](https://github.com/anchildress1/multivert-quiz/issues/14)) ([18815d1](https://github.com/anchildress1/multivert-quiz/commit/18815d1eff232120aae871b56820c6309e7fabd0))
+
 ## [1.1.0](https://github.com/anchildress1/multivert-quiz/compare/v1.0.0...v1.1.0) (2026-05-03)
 
 
