@@ -492,7 +492,7 @@
 				</ol>
 			</section>
 
-			<footer class="result__colophon">
+			<section class="result__restart" aria-label="Start over">
 				<button class="result__retake" type="button" onclick={handleRetake}>
 					<em>Start over.</em>
 					<span class="result__retake-glyph" aria-hidden="true">↺</span>
@@ -500,7 +500,7 @@
 				<p class="result__retake-meta">
 					Clears your answers on this device and rolls the page back to the top.
 				</p>
-			</footer>
+			</section>
 		</section>
 	{/if}
 </main>
@@ -515,15 +515,8 @@
 <VertSheet archetype={sheetArchetype} onclose={closeSheet} />
 
 <style>
-	/* Cover-page sizing: fill the first viewport exactly. Anything less leaves
-	   a stranded paper band between the hero's natural bottom edge and the
-	   first chapter — that band reads as "forgotten content" because nothing
-	   anchors the bottom of the landing view. `100dvh` (not `100vh`) so mobile
-	   address-bar collapse doesn't pop the layout. The bar sits at the top
-	   naturally; the grid below claims `flex: 1` and centres its content
-	   block (`align-content: center`) so the headline lives in the optical
-	   middle of the viewport on tall displays instead of clinging to the
-	   top edge. */
+	/* Cover page fills the first viewport (100dvh, not 100vh, for mobile
+	   address-bar collapse). */
 	.hero {
 		background: var(--paper);
 		color: var(--ink);
@@ -1139,9 +1132,10 @@
 		}
 	}
 
-	/* Colophon — sits under the breakdown on the paper background. Hairline
-	   rule above, retake reads as the page's quiet "turn over" gesture. */
-	.result__colophon {
+	/* Restart action — sits under the breakdown on the paper background.
+	   Hairline rule above, retake reads as the page's quiet "turn over"
+	   gesture. */
+	.result__restart {
 		max-width: 75rem;
 		margin: 0 auto;
 		padding: 2rem clamp(1.25rem, 5vw, 4rem) clamp(3rem, 8vh, 6rem);
