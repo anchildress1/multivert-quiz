@@ -14,6 +14,12 @@
 		   it still occupies layout space (keeping the chapter offsets
 		   stable for scrollIntoView) but reads as absent. */
 		ghost?: boolean;
+		/* Optional reset hook. When present and the user has answered at
+		   least one question, the banner shows a quiet "Reset" affordance
+		   that requires a confirm-tap before invoking — the reset is
+		   destructive (clears sessionStorage + every answer) so a single
+		   accidental click must not nuke an in-progress session. */
+		onreset?: () => void;
 	}
 
 	const {
@@ -24,12 +30,48 @@
 		description,
 		total,
 		answered,
-		ghost = false
+		ghost = false,
+		onreset
 	}: Props = $props();
 
 	const safeTotal = $derived(Math.max(0, total));
 	const safeAnswered = $derived(Math.max(0, Math.min(safeTotal, answered)));
 	const pct = $derived(safeTotal === 0 ? 0 : Math.round((safeAnswered / safeTotal) * 100));
+
+	const RESET_CONFIRM_MS = 3000;
+	let confirmPending = $state(false);
+	let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function clearConfirmTimer(): void {
+		if (confirmTimer !== null) {
+			clearTimeout(confirmTimer);
+			confirmTimer = null;
+		}
+	}
+
+	function handleResetClick(): void {
+		// Defense-in-depth: the `disabled` attribute on the button already
+		// prevents browser-driven clicks at zero answers, but a programmatic
+		// dispatch (test harness, future a11y helper) can still fire the
+		// handler. This is a destructive action — refuse anyway.
+		if (safeAnswered === 0) {
+			confirmPending = false;
+			clearConfirmTimer();
+			return;
+		}
+		if (confirmPending) {
+			clearConfirmTimer();
+			confirmPending = false;
+			onreset?.();
+			return;
+		}
+		confirmPending = true;
+		clearConfirmTimer();
+		confirmTimer = setTimeout(() => {
+			confirmPending = false;
+			confirmTimer = null;
+		}, RESET_CONFIRM_MS);
+	}
 </script>
 
 <header
@@ -68,6 +110,21 @@
 		</span>
 		<span class="chapter-head__progress-pct" aria-hidden="true">{pct}%</span>
 	</div>
+	{#if onreset}
+		<button
+			type="button"
+			class="chapter-head__reset"
+			class:chapter-head__reset--confirm={confirmPending}
+			disabled={safeAnswered === 0}
+			data-testid="chapter-reset"
+			data-confirm={confirmPending}
+			aria-label={confirmPending ? 'Confirm reset — clears every answer' : 'Reset all answers'}
+			onclick={handleResetClick}
+		>
+			<em class="chapter-head__reset-label">{confirmPending ? 'Confirm?' : 'Reset'}</em>
+			<span class="chapter-head__reset-glyph" aria-hidden="true">↺</span>
+		</button>
+	{/if}
 	<div class="chapter-head__toggle">
 		<ThemeToggle />
 	</div>
@@ -79,7 +136,7 @@
 		top: 0;
 		z-index: 5;
 		display: grid;
-		grid-template-columns: auto auto 1fr auto auto;
+		grid-template-columns: auto auto 1fr auto auto auto;
 		align-items: center;
 		gap: clamp(0.75rem, 2vw, 1.25rem);
 		padding: 0.875rem clamp(1rem, 4vw, 3.5rem);
@@ -88,6 +145,75 @@
 		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
 		border-bottom: var(--glass-border);
+	}
+
+	/* Always-on escape hatch. The result page has its own editorial
+	   "Start over." gesture; this is the in-quiz equivalent so users do
+	   not have to answer all 35 questions to reach a reset. Two-tap
+	   confirm prevents a single accidental click from erasing a
+	   half-finished session — the disabled state on zero answers keeps
+	   it from reading as a mystery affordance on the cover page. */
+	.chapter-head__reset {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.375rem;
+		padding: 0;
+		background: transparent;
+		color: var(--ink);
+		border: none;
+		border-bottom: 0.0625rem solid var(--ink-30);
+		border-radius: 0;
+		font-family: var(--font-display);
+		font-size: clamp(0.875rem, 1.4vw, 1rem);
+		line-height: 1.1;
+		letter-spacing: -0.015em;
+		cursor: pointer;
+		padding-bottom: 0.125rem;
+		transition:
+			border-color 0.2s ease,
+			color 0.2s ease,
+			gap 0.2s ease;
+	}
+
+	.chapter-head__reset-label {
+		font-style: italic;
+	}
+
+	.chapter-head__reset-glyph {
+		font-family: var(--font-sans);
+		font-size: 0.875rem;
+		font-style: normal;
+		color: var(--ink-70);
+		transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.chapter-head__reset:hover:not(:disabled) {
+		border-bottom-color: var(--accent, var(--ink));
+		gap: 0.5rem;
+	}
+
+	.chapter-head__reset:hover:not(:disabled) .chapter-head__reset-glyph {
+		transform: rotate(-180deg);
+		color: var(--accent, var(--ink));
+	}
+
+	.chapter-head__reset:focus-visible {
+		outline: 0.125rem solid var(--ink);
+		outline-offset: 0.25rem;
+	}
+
+	.chapter-head__reset:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	.chapter-head__reset--confirm {
+		border-bottom-color: var(--accent, var(--ink));
+		color: var(--accent-ink, var(--ink));
+	}
+
+	.chapter-head__reset--confirm .chapter-head__reset-glyph {
+		color: var(--accent, var(--ink));
 	}
 
 	.chapter-head--ghost {
@@ -207,7 +333,9 @@
 	}
 
 	/* Narrow screens: drop the description and the gradient rule. Keeps the
-	   numeral + title + a hairline progress count + theme toggle. */
+	   numeral + title + a hairline progress count + reset + theme toggle.
+	   Reset collapses to glyph-only — `aria-label` on the button keeps the
+	   accessible name intact for screen readers. */
 	@media (max-width: 47.5rem) {
 		.chapter-head__description {
 			display: none;
@@ -216,11 +344,19 @@
 			display: none;
 		}
 		.chapter-head {
-			grid-template-columns: auto 1fr auto auto;
+			grid-template-columns: auto 1fr auto auto auto;
 			gap: 0.875rem;
 		}
 		.chapter-head__progress-count {
 			display: none;
+		}
+		.chapter-head__reset-label {
+			display: none;
+		}
+		.chapter-head__reset {
+			border-bottom: none;
+			padding: 0.25rem;
+			gap: 0;
 		}
 	}
 </style>

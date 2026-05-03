@@ -556,3 +556,89 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		expect(storedStates?.every((state) => state === 'unset')).toBe(true);
 	});
 });
+
+test.describe('chapter banner — always-on reset', () => {
+	const resetSelector = '[data-testid="chapter-reset"]';
+
+	test('reset button is mounted in the banner and starts disabled with no answers', async ({
+		page
+	}) => {
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		// Scroll the banner into view (the cover hero ghosts it on first paint).
+		await scrollToElement(page, 'chapter-energy');
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeAttached();
+		await expect(resetButton).toBeDisabled();
+		await expect(resetButton).toHaveAttribute('aria-label', 'Reset all answers');
+	});
+
+	test('reset button enables the moment a single answer commits', async ({ page }) => {
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'chapter-energy');
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeDisabled();
+		await dispatchSliderCommit(page, 'e-01', 0.5);
+		await expect(resetButton).toBeEnabled();
+	});
+
+	test('two-tap confirm: first click swaps the label, does not clear; second click clears', async ({
+		page
+	}) => {
+		// Mid-quiz reset path: user has answered some but not all questions.
+		// The forward-progress lock means they cannot reach the result section,
+		// so this is the only way to bail out short of nuking the tab.
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'chapter-energy');
+		await dispatchSliderCommit(page, 'e-01', 0.5);
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
+
+		const resetButton = page.locator(resetSelector);
+		await resetButton.click();
+		await expect(resetButton).toHaveAttribute('data-confirm', 'true');
+		await expect(resetButton).toContainText(/confirm/i);
+		await expect(resetButton).toHaveAttribute('aria-label', 'Confirm reset — clears every answer');
+		// Confirm-pending state must NOT clear answers on its own.
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
+
+		await resetButton.click();
+		// State flips back to unset, sessionStorage is wiped, banner reverts.
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'unset');
+		await expect(resetButton).toHaveAttribute('data-confirm', 'false');
+		await expect(resetButton).toBeDisabled();
+		const storedStates = await page.evaluate(() => {
+			const raw = sessionStorage.getItem('multivert.answers.v1');
+			if (!raw) return null;
+			const parsed = JSON.parse(raw) as Record<string, { state: string; value: number | null }>;
+			return Object.values(parsed).map((entry) => entry.state);
+		});
+		expect(storedStates?.every((state) => state === 'unset')).toBe(true);
+	});
+
+	test('reset from the result section works through the same banner button', async ({ page }) => {
+		// The banner stays mounted on the result page (the active section just
+		// flips to "Result"), so the always-on reset must still work there
+		// even though the editorial result__retake also exists. The banner is
+		// `ghost`-hidden while the cover hero owns the viewport, so we must
+		// scroll past it before the button becomes clickable.
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('#result')).toBeAttached();
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'result');
+
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeVisible();
+		await expect(resetButton).toBeEnabled();
+
+		await resetButton.click();
+		await expect(resetButton).toHaveAttribute('data-confirm', 'true');
+		await resetButton.click();
+
+		await expect(page.locator('#result')).toHaveCount(0);
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await expect(page.locator('article#q-e-02')).toBeHidden();
+	});
+});

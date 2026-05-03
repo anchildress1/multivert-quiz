@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/svelte';
+import { cleanup, fireEvent, render } from '@testing-library/svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ChapterIntro from './ChapterIntro.svelte';
 
@@ -157,5 +157,109 @@ describe('ChapterIntro — progress contract', () => {
 		const bar = container.querySelector('[role="progressbar"]') as HTMLElement;
 		expect(bar.getAttribute('aria-valuemax')).toBe('0');
 		expect(bar.getAttribute('aria-valuenow')).toBe('0');
+	});
+});
+
+describe('ChapterIntro — reset affordance', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('does not render the reset button when no onreset handler is supplied', () => {
+		const { container } = render(ChapterIntro, { props: baseProps });
+		expect(container.querySelector('[data-testid="chapter-reset"]')).toBeNull();
+	});
+
+	it('renders the reset button (disabled) when onreset is supplied but nothing answered', () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 0, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		expect(button).not.toBeNull();
+		expect(button.disabled).toBe(true);
+		expect(button.getAttribute('aria-label')).toBe('Reset all answers');
+	});
+
+	it('enables the reset button as soon as one answer lands', () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 1, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		expect(button.disabled).toBe(false);
+	});
+
+	it('first click swaps to confirm state and does NOT invoke onreset yet', async () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 5, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		await fireEvent.click(button);
+		expect(onreset).not.toHaveBeenCalled();
+		expect(button.dataset.confirm).toBe('true');
+		expect(button.getAttribute('aria-label')).toBe('Confirm reset — clears every answer');
+		expect(button.textContent).toContain('Confirm?');
+	});
+
+	it('second click within the confirm window invokes onreset exactly once', async () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 5, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		await fireEvent.click(button);
+		await fireEvent.click(button);
+		expect(onreset).toHaveBeenCalledTimes(1);
+		expect(button.dataset.confirm).toBe('false');
+		expect(button.textContent).toContain('Reset');
+	});
+
+	it('confirm state auto-reverts after the timeout window without invoking onreset', async () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 5, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		await fireEvent.click(button);
+		expect(button.dataset.confirm).toBe('true');
+		vi.advanceTimersByTime(3500);
+		await Promise.resolve();
+		expect(button.dataset.confirm).toBe('false');
+		expect(onreset).not.toHaveBeenCalled();
+	});
+
+	it('a fresh first-click after timeout restarts the confirm window cleanly', async () => {
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 5, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		await fireEvent.click(button);
+		vi.advanceTimersByTime(3500);
+		await Promise.resolve();
+		await fireEvent.click(button);
+		expect(button.dataset.confirm).toBe('true');
+		expect(onreset).not.toHaveBeenCalled();
+		await fireEvent.click(button);
+		expect(onreset).toHaveBeenCalledTimes(1);
+	});
+
+	it('disabled button does not enter confirm state when clicked programmatically', async () => {
+		// jsdom honors the `disabled` attribute on form-control click events,
+		// so dispatching a click on a disabled button should be a no-op.
+		const onreset = vi.fn();
+		const { container } = render(ChapterIntro, {
+			props: { ...baseProps, answered: 0, onreset }
+		});
+		const button = container.querySelector('[data-testid="chapter-reset"]') as HTMLButtonElement;
+		await fireEvent.click(button);
+		expect(button.dataset.confirm).toBe('false');
+		expect(onreset).not.toHaveBeenCalled();
 	});
 });
