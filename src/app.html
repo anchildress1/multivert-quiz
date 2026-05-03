@@ -5,6 +5,70 @@
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="color-scheme" content="light dark" />
+		<title>Multivert — what vert are you?</title>
+		<meta
+			name="description"
+			content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—35 questions, one slider, a five-way breakdown at the end. Answers stay on your device."
+		/>
+		<!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity — `rel=canonical` is metadata, not a fetched subresource, so SRI does not apply. -->
+		<link rel="canonical" href="https://multivert-quiz.pages.dev" />
+		<meta name="robots" content="index, follow" />
+		<!-- Browser chrome (address bar tint, etc). Light/dark variants match
+		     the --paper token in src/app.css for visual continuity. -->
+		<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
+
+		<!-- OG / social share. Static because +page.ts disables SSR (the
+		     answers store is module-scoped reactive state); without these
+		     baked in, scrapers that don't run JS would see an empty head. -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://multivert-quiz.pages.dev" />
+		<meta property="og:title" content="Multivert — what vert are you?" />
+		<meta
+			property="og:description"
+			content="A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—35 questions, one slider, a five-way breakdown at the end."
+		/>
+		<meta property="og:site_name" content="Multivert" />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:image" content="https://multivert-quiz.pages.dev/og-image.png" />
+		<meta property="og:image:secure_url" content="https://multivert-quiz.pages.dev/og-image.png" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="Multivert — Which of the five verts are you?" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Multivert — what vert are you?" />
+		<meta
+			name="twitter:description"
+			content="A five-sided personality quiz. 35 questions, one slider, a five-way breakdown at the end."
+		/>
+		<meta name="twitter:image" content="https://multivert-quiz.pages.dev/og-image.png" />
+		<meta name="twitter:image:alt" content="Multivert — Which of the five verts are you?" />
+
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "Quiz",
+				"name": "Multivert — what vert are you?",
+				"description": "A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—35 questions, one slider, a five-way breakdown at the end.",
+				"url": "https://multivert-quiz.pages.dev",
+				"inLanguage": "en",
+				"isAccessibleForFree": true,
+				"numberOfQuestions": 35,
+				"about": {
+					"@type": "Thing",
+					"name": "Personality typology — five-vert model",
+					"description": "Introvert, extrovert, ambivert, omnivert, and otrovert as five distinct personality vectors."
+				},
+				"publisher": {
+					"@type": "Organization",
+					"name": "Multivert",
+					"url": "https://multivert-quiz.pages.dev"
+				}
+			}
+		</script>
+
 		<!-- Read the persisted theme override before first paint so users who
 		     chose a non-system theme do not see a one-frame flash of the
 		     system default. The reactive ThemeToggle component reads the

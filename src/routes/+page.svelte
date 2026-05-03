@@ -18,39 +18,10 @@
 	import Wordmark from '$lib/components/Wordmark.svelte';
 	import { descriptions } from '$lib/descriptions';
 	import { questions } from '$lib/questions';
-	import { OG_IMAGE_HEIGHT, OG_IMAGE_PATH, OG_IMAGE_WIDTH, SITE_NAME, SITE_URL } from '$lib/site';
 	import { createAnswersStore, QUESTIONS_BY_DIMENSION } from '$lib/state/answers.svelte';
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
-	const questionCount = questions.length;
-	const pageTitle = 'Multivert — what vert are you?';
-	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—${questionCount} questions, one slider, a five-way breakdown at the end.`;
-	const ogImage = `${SITE_URL}${OG_IMAGE_PATH}`;
-	const jsonLd = {
-		'@context': 'https://schema.org',
-		'@type': 'Quiz',
-		name: pageTitle,
-		description: pageDescription,
-		url: SITE_URL,
-		inLanguage: 'en',
-		isAccessibleForFree: true,
-		numberOfQuestions: questionCount,
-		about: {
-			'@type': 'Thing',
-			name: 'Personality typology — five-vert model',
-			description:
-				'Introvert, extrovert, ambivert, omnivert, and otrovert as five distinct personality vectors.'
-		},
-		publisher: {
-			'@type': 'Organization',
-			name: SITE_NAME,
-			url: SITE_URL
-		}
-	};
-	// Escape `<` so any future string field can never close the surrounding
-	// <script> tag, regardless of content.
-	const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</${'script'}>`;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
@@ -301,42 +272,6 @@
 		}, 450);
 	}
 </script>
-
-<svelte:head>
-	<title>{pageTitle}</title>
-	<meta name="description" content={`${pageDescription} Answers stay on your device.`} />
-	<link rel="canonical" href={SITE_URL} />
-	<meta name="robots" content="index, follow" />
-	<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
-	<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
-
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content={SITE_URL} />
-	<meta property="og:title" content={pageTitle} />
-	<meta property="og:description" content={pageDescription} />
-	<meta property="og:site_name" content={SITE_NAME} />
-	<meta property="og:locale" content="en_US" />
-	<meta property="og:image" content={ogImage} />
-	<meta property="og:image:secure_url" content={ogImage} />
-	<meta property="og:image:type" content="image/png" />
-	<meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} />
-	<meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} />
-	<meta property="og:image:alt" content="Multivert — Which of the five verts are you?" />
-
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={pageTitle} />
-	<meta
-		name="twitter:description"
-		content={`A five-sided personality quiz. ${questionCount} questions, one slider, a five-way breakdown at the end.`}
-	/>
-	<meta name="twitter:image" content={ogImage} />
-	<meta name="twitter:image:alt" content="Multivert — Which of the five verts are you?" />
-
-	<!-- JSON-LD: payload is built from typed constants and string-escaped
-	     against `<` so it can never close out of the script tag. Safe @html. -->
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html jsonLdScript}
-</svelte:head>
 
 <header class="hero">
 	<div class="hero__bar">
