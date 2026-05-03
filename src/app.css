@@ -80,12 +80,14 @@
 	--glass-border: 0.0625rem solid color-mix(in oklab, var(--ink) 8%, transparent);
 	--glass-shadow: 0 1rem 2.5rem -0.75rem color-mix(in oklab, var(--ink) 12%, transparent);
 
-	/* Sticky chapter banner height — referenced by `scroll-padding-top` so
-	   snapped questions sit below the banner instead of being hidden under
-	   it. The banner's own `min-height` matches this. The banner now also
-	   carries the progress strip and theme toggle, so it is the only sticky
-	   bar at the top of `<main>`. */
-	--chapter-head-h: 4.5rem;
+	/* Sticky chapter banner height — referenced by `scroll-padding-top`
+	   so snapped questions sit below the banner instead of being hidden
+	   under it. The banner's own `min-height` matches this; this value
+	   needs to be ≥ the banner's actual rendered height (numeral, title,
+	   description line, progress strip, theme toggle wrap onto more than
+	   one line of chrome on a desktop viewport, hence 5rem rather than
+	   the original 4.5rem). */
+	--chapter-head-h: 5rem;
 }
 
 /* ── Glassmorphism System ────────────────────────────────────────────────
@@ -158,15 +160,7 @@ html {
 	scroll-padding-top: var(--chapter-head-h, 4.5rem);
 }
 
-/* Sticky-footer flex layout: body owns the column. `<main>` flexes to fill
-   the remaining viewport so the page-footer sits at viewport-bottom on
-   short pages (hero before any chapter intersects, results that fit in
-   one screen) and at the natural document end on tall pages. `100dvh`
-   accounts for mobile address-bar collapse. */
 body {
-	display: flex;
-	flex-direction: column;
-	min-height: 100dvh;
 	background: var(--paper);
 	color: var(--ink);
 	font-family: var(--font-sans);
@@ -174,8 +168,15 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+/* Reserve a full viewport of scroll room past the hero so the sticky
+   chapter banner inside <main> can actually pin to viewport-top on the
+   first chapter. Without this, the forward-progress lock collapses the
+   document so far that maxScroll < hero.height — Begin's scrollIntoView
+   stops short and the banner is stranded beneath the bottom of the
+   hero. The min-height applies regardless of lock state; in unlocked
+   states the natural content already exceeds 100dvh. */
 main {
-	flex: 1;
+	min-height: 100dvh;
 }
 
 /* ── Forward-progress lock (declarative) ──────────────────────────────

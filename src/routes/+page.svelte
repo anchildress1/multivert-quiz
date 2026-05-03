@@ -22,8 +22,6 @@
 
 	const store = createAnswersStore();
 	const grouped = QUESTIONS_BY_DIMENSION;
-	const questionCount = questions.length;
-	const pageDescription = `A five-sided personality quiz. Introvert, extrovert, ambivert, omnivert, otrovert—${questionCount} questions, one slider, a five-way breakdown at the end.`;
 
 	let activeChapter = $state<Chapter | null>(null);
 	let resultActive = $state(false);
@@ -38,14 +36,18 @@
 		sheetArchetype = null;
 	}
 
-	/* The sticky banner at the top of `<main>` is gated on hero visibility:
-	   while the hero owns the viewport it would render at its natural
-	   position (just under the hero) which lands near viewport-bottom and
-	   reads as misplaced chrome. Skip until the hero is fully out of view.
-	   Result takes precedence when its section is intersecting; otherwise
-	   the last visited chapter wins. */
+	/* The sticky banner is always in the DOM so the chapter offsets are
+	   stable from page load. Without that, scrollIntoView from the
+	   landing-page Begin button computes its target before the banner
+	   exists, then the banner mounts mid-scroll, the chapter shifts down
+	   by banner-height, and the smooth-scroll lands one banner short —
+	   leaving a strip of hero visible above the pinned bar. The
+	   `chapter-head--ghost` class hides the bar visually while the hero
+	   owns the viewport (visibility, not display, so the layout
+	   reservation stays). Result takes precedence when its section is
+	   intersecting; otherwise the last visited chapter wins, and on
+	   first paint we fall back to the first chapter's content. */
 	const activeSection = $derived.by(() => {
-		if (heroVisible) return null;
 		if (resultActive && store.result) {
 			return {
 				numeral: 'V' as const,
@@ -54,15 +56,13 @@
 				description: 'Five independent fits—bars do not sum to 100.'
 			};
 		}
-		if (activeChapter) {
-			return {
-				numeral: activeChapter.numeral,
-				title: activeChapter.title,
-				archetype: activeChapter.archetype,
-				description: DIMENSION_META[activeChapter.dimension].description
-			};
-		}
-		return null;
+		const chapter = activeChapter ?? CHAPTERS[0]!;
+		return {
+			numeral: chapter.numeral,
+			title: chapter.title,
+			archetype: chapter.archetype,
+			description: DIMENSION_META[chapter.dimension].description
+		};
 	});
 
 	$effect(() => {
@@ -275,25 +275,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Multivert — what vert are you?</title>
-	<meta name="description" content={`${pageDescription} Answers stay on your device.`} />
-	<meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
-	<meta name="theme-color" content="#f8f7f4" media="(prefers-color-scheme: light)" />
-
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Multivert — what vert are you?" />
-	<meta property="og:description" content={pageDescription} />
-	<meta property="og:site_name" content="Multivert" />
-
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Multivert — what vert are you?" />
-	<meta
-		name="twitter:description"
-		content={`A five-sided personality quiz. ${questionCount} questions, one slider, a five-way breakdown at the end.`}
-	/>
-</svelte:head>
-
 <header class="hero">
 	<div class="hero__bar">
 		<Wordmark size={22} />
@@ -357,14 +338,13 @@
 </header>
 
 <main class="quiz">
-	{#if activeSection}
-		<ChapterIntro
-			id="active-chapter-head"
-			{...activeSection}
-			total={store.total}
-			answered={store.totalAnswered}
-		/>
-	{/if}
+	<ChapterIntro
+		id="active-chapter-head"
+		{...activeSection}
+		total={store.total}
+		answered={store.totalAnswered}
+		ghost={heroVisible}
+	/>
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
 		<section
@@ -492,7 +472,7 @@
 				</ol>
 			</section>
 
-			<footer class="result__colophon">
+			<section class="result__restart" aria-label="Start over">
 				<button class="result__retake" type="button" onclick={handleRetake}>
 					<em>Start over.</em>
 					<span class="result__retake-glyph" aria-hidden="true">↺</span>
@@ -500,7 +480,7 @@
 				<p class="result__retake-meta">
 					Clears your answers on this device and rolls the page back to the top.
 				</p>
-			</footer>
+			</section>
 		</section>
 	{/if}
 </main>
@@ -515,15 +495,8 @@
 <VertSheet archetype={sheetArchetype} onclose={closeSheet} />
 
 <style>
-	/* Cover-page sizing: fill the first viewport exactly. Anything less leaves
-	   a stranded paper band between the hero's natural bottom edge and the
-	   first chapter — that band reads as "forgotten content" because nothing
-	   anchors the bottom of the landing view. `100dvh` (not `100vh`) so mobile
-	   address-bar collapse doesn't pop the layout. The bar sits at the top
-	   naturally; the grid below claims `flex: 1` and centres its content
-	   block (`align-content: center`) so the headline lives in the optical
-	   middle of the viewport on tall displays instead of clinging to the
-	   top edge. */
+	/* Cover page fills the first viewport (100dvh, not 100vh, for mobile
+	   address-bar collapse). */
 	.hero {
 		background: var(--paper);
 		color: var(--ink);
@@ -1139,9 +1112,10 @@
 		}
 	}
 
-	/* Colophon — sits under the breakdown on the paper background. Hairline
-	   rule above, retake reads as the page's quiet "turn over" gesture. */
-	.result__colophon {
+	/* Restart action — sits under the breakdown on the paper background.
+	   Hairline rule above, retake reads as the page's quiet "turn over"
+	   gesture. */
+	.result__restart {
 		max-width: 75rem;
 		margin: 0 auto;
 		padding: 2rem clamp(1.25rem, 5vw, 4rem) clamp(3rem, 8vh, 6rem);

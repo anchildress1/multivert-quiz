@@ -8,3 +8,4 @@ test-results/
 pnpm-lock.yaml
 node_modules/
 .wrangler/
+CHANGELOG.md
