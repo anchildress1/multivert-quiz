@@ -344,6 +344,7 @@
 		total={store.total}
 		answered={store.totalAnswered}
 		ghost={heroVisible}
+		onreset={handleRetake}
 	/>
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}

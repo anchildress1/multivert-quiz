@@ -285,6 +285,159 @@ test.describe('landing + scroll quiz — navigation', () => {
 	});
 });
 
+test.describe('share + SEO surface', () => {
+	// PNG magic header (RFC 2083 §3.1). A truncated/corrupted asset still
+	// passing a content-type check is the silent-failure mode this guards.
+	const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+	const CANONICAL_URL = 'https://multivert-quiz.pages.dev/';
+
+	test('serves robots.txt with sitemap directive', async ({ request }) => {
+		const res = await request.get('/robots.txt');
+		expect(res.status()).toBe(200);
+		const body = await res.text();
+		expect(body).toMatch(/User-agent:\s*\*/i);
+		expect(body).toMatch(/Sitemap:\s+https:\/\/.+\/sitemap\.xml/);
+	});
+
+	test('serves a valid sitemap.xml pointing at the canonical URL', async ({ request }) => {
+		const res = await request.get('/sitemap.xml');
+		expect(res.status()).toBe(200);
+		const body = await res.text();
+		expect(body).toContain('<urlset');
+		expect(body).toContain(`<loc>${CANONICAL_URL}</loc>`);
+	});
+
+	test('serves the PWA manifest with required fields', async ({ request }) => {
+		const res = await request.get('/manifest.webmanifest');
+		expect(res.status()).toBe(200);
+		// Cloudflare Pages must serve `.webmanifest` as the right MIME or
+		// Chrome's install prompt silently falls back to a link bookmark.
+		expect(res.headers()['content-type']).toMatch(
+			/^application\/manifest\+json|^application\/json/
+		);
+		const manifest = (await res.json()) as {
+			name: string;
+			short_name: string;
+			start_url: string;
+			display: string;
+			icons: Array<{ src: string; sizes: string; type: string }>;
+		};
+		expect(manifest.name).toMatch(/Multivert/i);
+		expect(manifest.short_name).toBe('Multivert');
+		expect(manifest.start_url).toBe('/');
+		// `standalone` is what triggers the Android Chrome "Install app"
+		// banner; `browser` would degrade to a normal tab bookmark.
+		expect(manifest.display).toBe('standalone');
+		expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
+		const sizes = manifest.icons.map((icon) => icon.sizes);
+		// 192x192 + 512x512 are the documented Chrome install-prompt minimums.
+		expect(sizes).toEqual(expect.arrayContaining(['192x192', '512x512']));
+	});
+
+	test('every icon declared in the manifest actually resolves', async ({ request }) => {
+		// Drift guard: the manifest can list icons that don't exist (typo,
+		// removed file, wrong path). Iterate the declarations rather than
+		// asserting hardcoded paths so the test fails on any mismatch.
+		const res = await request.get('/manifest.webmanifest');
+		const manifest = (await res.json()) as {
+			icons: Array<{ src: string; type: string }>;
+		};
+		for (const icon of manifest.icons) {
+			const iconRes = await request.get(icon.src);
+			expect(iconRes.status(), `manifest icon ${icon.src} should resolve`).toBe(200);
+			const contentType = iconRes.headers()['content-type'] ?? '';
+			expect(
+				contentType.startsWith(icon.type),
+				`manifest icon ${icon.src} should be served as ${icon.type} (got ${contentType})`
+			).toBe(true);
+		}
+	});
+
+	test('apple-touch-icon and PWA icons are valid PNGs of the expected size', async ({
+		request
+	}) => {
+		// Pair a content-type check with a magic-byte check so a 12-byte HTML
+		// 404 served as image/png cannot pass. Each icon also has a minimum
+		// byte floor — a 0-byte placeholder would otherwise ship green.
+		const expected: Array<{ path: string; minBytes: number }> = [
+			{ path: '/apple-touch-icon.png', minBytes: 500 },
+			{ path: '/icon-192.png', minBytes: 1_000 },
+			{ path: '/icon-512.png', minBytes: 5_000 }
+		];
+		for (const { path, minBytes } of expected) {
+			const res = await request.get(path);
+			expect(res.status(), `${path} should resolve`).toBe(200);
+			expect(res.headers()['content-type']).toMatch(/^image\/png/);
+			const buf = Buffer.from(await res.body());
+			expect(buf.byteLength, `${path} should not be empty`).toBeGreaterThan(minBytes);
+			expect(buf.subarray(0, 8).equals(PNG_MAGIC), `${path} should start with PNG magic`).toBe(
+				true
+			);
+		}
+	});
+
+	test('OG image is a valid PNG within the WhatsApp share ceiling', async ({ request }) => {
+		// Lower bound catches a pipeline that "compressed" the asset to nothing;
+		// upper bound catches regression past WhatsApp's ~300KB unfurl ceiling
+		// (Meta's documented OG image cap — exceeding it silently strips the
+		// preview thumbnail across WhatsApp/iMessage/Slack on slow links).
+		const res = await request.get('/og-image.png');
+		expect(res.status()).toBe(200);
+		expect(res.headers()['content-type']).toMatch(/^image\/png/);
+		const buf = Buffer.from(await res.body());
+		expect(buf.byteLength).toBeGreaterThan(50_000);
+		expect(buf.byteLength).toBeLessThan(300_000);
+		expect(buf.subarray(0, 8).equals(PNG_MAGIC)).toBe(true);
+	});
+
+	test('document head wires the full share + PWA tag set', async ({ page }) => {
+		await page.goto('/');
+		// Apple/PWA hooks
+		await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+			'href',
+			/apple-touch-icon\.png$/
+		);
+		await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+			'href',
+			/manifest\.webmanifest$/
+		);
+		await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+			'content',
+			'Multivert'
+		);
+		await expect(page.locator('meta[name="application-name"]')).toHaveAttribute(
+			'content',
+			'Multivert'
+		);
+		// Canonical + OG/Twitter share contract — declared dimensions must
+		// match the actual asset (1200x630) or LinkedIn/Slack crop the preview.
+		await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', CANONICAL_URL);
+		await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', CANONICAL_URL);
+		await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+			'content',
+			/og-image\.png$/
+		);
+		await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute(
+			'content',
+			'1200'
+		);
+		await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute(
+			'content',
+			'630'
+		);
+		await expect(page.locator('meta[property="og:image:type"]')).toHaveAttribute(
+			'content',
+			'image/png'
+		);
+		await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+			'content',
+			'summary_large_image'
+		);
+		// JSON-LD presence (deep-checked elsewhere if/when search consoles complain).
+		await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+	});
+});
+
 test.describe('landing + scroll quiz — answer interaction', () => {
 	test('committing a slider answer advances the answered count', async ({ page }) => {
 		await page.goto('/');
@@ -401,5 +554,91 @@ test.describe('landing + scroll quiz — answer interaction', () => {
 		});
 		expect(storedStates).not.toBeNull();
 		expect(storedStates?.every((state) => state === 'unset')).toBe(true);
+	});
+});
+
+test.describe('chapter banner — always-on reset', () => {
+	const resetSelector = '[data-testid="chapter-reset"]';
+
+	test('reset button is mounted in the banner and starts disabled with no answers', async ({
+		page
+	}) => {
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		// Scroll the banner into view (the cover hero ghosts it on first paint).
+		await scrollToElement(page, 'chapter-energy');
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeAttached();
+		await expect(resetButton).toBeDisabled();
+		await expect(resetButton).toHaveAttribute('aria-label', 'Reset all answers');
+	});
+
+	test('reset button enables the moment a single answer commits', async ({ page }) => {
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'chapter-energy');
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeDisabled();
+		await dispatchSliderCommit(page, 'e-01', 0.5);
+		await expect(resetButton).toBeEnabled();
+	});
+
+	test('two-tap confirm: first click swaps the label, does not clear; second click clears', async ({
+		page
+	}) => {
+		// Mid-quiz reset path: user has answered some but not all questions.
+		// The forward-progress lock means they cannot reach the result section,
+		// so this is the only way to bail out short of nuking the tab.
+		await page.goto('/');
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'chapter-energy');
+		await dispatchSliderCommit(page, 'e-01', 0.5);
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
+
+		const resetButton = page.locator(resetSelector);
+		await resetButton.click();
+		await expect(resetButton).toHaveAttribute('data-confirm', 'true');
+		await expect(resetButton).toContainText(/confirm/i);
+		await expect(resetButton).toHaveAttribute('aria-label', 'Confirm reset — clears every answer');
+		// Confirm-pending state must NOT clear answers on its own.
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'answered');
+
+		await resetButton.click();
+		// State flips back to unset, sessionStorage is wiped, banner reverts.
+		await expect(page.locator('article#q-e-01')).toHaveAttribute('data-state', 'unset');
+		await expect(resetButton).toHaveAttribute('data-confirm', 'false');
+		await expect(resetButton).toBeDisabled();
+		const storedStates = await page.evaluate(() => {
+			const raw = sessionStorage.getItem('multivert.answers.v1');
+			if (!raw) return null;
+			const parsed = JSON.parse(raw) as Record<string, { state: string; value: number | null }>;
+			return Object.values(parsed).map((entry) => entry.state);
+		});
+		expect(storedStates?.every((state) => state === 'unset')).toBe(true);
+	});
+
+	test('reset from the result section works through the same banner button', async ({ page }) => {
+		// The banner stays mounted on the result page (the active section just
+		// flips to "Result"), so the always-on reset must still work there
+		// even though the editorial result__retake also exists. The banner is
+		// `ghost`-hidden while the cover hero owns the viewport, so we must
+		// scroll past it before the button becomes clickable.
+		await seedAllAnswered(page);
+		await page.goto('/');
+		await expect(page.locator('#result')).toBeAttached();
+		await waitForNudgeArmed(page);
+		await scrollToElement(page, 'result');
+
+		const resetButton = page.locator(resetSelector);
+		await expect(resetButton).toBeVisible();
+		await expect(resetButton).toBeEnabled();
+
+		await resetButton.click();
+		await expect(resetButton).toHaveAttribute('data-confirm', 'true');
+		await resetButton.click();
+
+		await expect(page.locator('#result')).toHaveCount(0);
+		await expect(page.locator('article#q-e-01')).toBeVisible();
+		await expect(page.locator('article#q-e-02')).toBeHidden();
 	});
 });
