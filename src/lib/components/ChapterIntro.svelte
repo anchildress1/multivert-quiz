@@ -10,9 +10,22 @@
 		description: string;
 		total: number;
 		answered: number;
+		/* When the hero owns the viewport, render the banner invisibly so
+		   it still occupies layout space (keeping the chapter offsets
+		   stable for scrollIntoView) but reads as absent. */
+		ghost?: boolean;
 	}
 
-	const { id, numeral, title, archetype, description, total, answered }: Props = $props();
+	const {
+		id,
+		numeral,
+		title,
+		archetype,
+		description,
+		total,
+		answered,
+		ghost = false
+	}: Props = $props();
 
 	const safeTotal = $derived(Math.max(0, total));
 	const safeAnswered = $derived(Math.max(0, Math.min(safeTotal, answered)));
@@ -21,7 +34,10 @@
 
 <header
 	class="chapter-head"
+	class:chapter-head--ghost={ghost}
 	data-archetype={archetype}
+	aria-hidden={ghost}
+	inert={ghost}
 	style:--accent="var(--vert-{archetype}-mid)"
 	style:--accent-ink="var(--vert-{archetype}-ink)"
 >
@@ -72,6 +88,10 @@
 		backdrop-filter: var(--glass-filter);
 		-webkit-backdrop-filter: var(--glass-filter);
 		border-bottom: var(--glass-border);
+	}
+
+	.chapter-head--ghost {
+		visibility: hidden;
 	}
 
 	.chapter-head__numeral {

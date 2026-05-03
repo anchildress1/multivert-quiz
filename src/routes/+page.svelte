@@ -36,14 +36,18 @@
 		sheetArchetype = null;
 	}
 
-	/* The sticky banner at the top of `<main>` is gated on hero visibility:
-	   while the hero owns the viewport it would render at its natural
-	   position (just under the hero) which lands near viewport-bottom and
-	   reads as misplaced chrome. Skip until the hero is fully out of view.
-	   Result takes precedence when its section is intersecting; otherwise
-	   the last visited chapter wins. */
+	/* The sticky banner is always in the DOM so the chapter offsets are
+	   stable from page load. Without that, scrollIntoView from the
+	   landing-page Begin button computes its target before the banner
+	   exists, then the banner mounts mid-scroll, the chapter shifts down
+	   by banner-height, and the smooth-scroll lands one banner short —
+	   leaving a strip of hero visible above the pinned bar. The
+	   `chapter-head--ghost` class hides the bar visually while the hero
+	   owns the viewport (visibility, not display, so the layout
+	   reservation stays). Result takes precedence when its section is
+	   intersecting; otherwise the last visited chapter wins, and on
+	   first paint we fall back to the first chapter's content. */
 	const activeSection = $derived.by(() => {
-		if (heroVisible) return null;
 		if (resultActive && store.result) {
 			return {
 				numeral: 'V' as const,
@@ -52,15 +56,13 @@
 				description: 'Five independent fits—bars do not sum to 100.'
 			};
 		}
-		if (activeChapter) {
-			return {
-				numeral: activeChapter.numeral,
-				title: activeChapter.title,
-				archetype: activeChapter.archetype,
-				description: DIMENSION_META[activeChapter.dimension].description
-			};
-		}
-		return null;
+		const chapter = activeChapter ?? CHAPTERS[0]!;
+		return {
+			numeral: chapter.numeral,
+			title: chapter.title,
+			archetype: chapter.archetype,
+			description: DIMENSION_META[chapter.dimension].description
+		};
 	});
 
 	$effect(() => {
@@ -336,14 +338,13 @@
 </header>
 
 <main class="quiz">
-	{#if activeSection}
-		<ChapterIntro
-			id="active-chapter-head"
-			{...activeSection}
-			total={store.total}
-			answered={store.totalAnswered}
-		/>
-	{/if}
+	<ChapterIntro
+		id="active-chapter-head"
+		{...activeSection}
+		total={store.total}
+		answered={store.totalAnswered}
+		ghost={heroVisible}
+	/>
 
 	{#each CHAPTERS as chapter, ci (chapter.id)}
 		<section

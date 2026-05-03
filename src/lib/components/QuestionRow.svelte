@@ -101,7 +101,12 @@
 		min-height: calc(80dvh - var(--chapter-head-h, 72px));
 		scroll-snap-align: start;
 		scroll-snap-stop: always;
-		scroll-margin-top: var(--chapter-head-h, 72px);
+		/* No scroll-margin-top here — the html-level `scroll-padding-top`
+		   already reserves space for the sticky chapter banner. Adding
+		   scroll-margin on the row would double-count, push the snap
+		   target so far down that scroll can never reach the pin point
+		   for the banner, and leave a strip of hero visible on first
+		   scroll. */
 		background: transparent;
 	}
 
