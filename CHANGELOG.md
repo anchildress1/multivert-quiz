@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/anchildress1/multivert-quiz/compare/v1.1.1...v1.1.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* **deploy:** catch CF "already exists" code 8000002 on bootstrap ([#16](https://github.com/anchildress1/multivert-quiz/issues/16)) ([bc3bc16](https://github.com/anchildress1/multivert-quiz/commit/bc3bc16f33dfb855d0a7dc8329a11abc77031c0d))
+
 ## [1.1.1](https://github.com/anchildress1/multivert-quiz/compare/v1.1.0...v1.1.1) (2026-05-03)
 
 
