@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://repository-images.githubusercontent.com/1221223126/51bb1bb1-e7f1-42db-a168-b68c1140ff16" alt="Social banner for Multivert" />
+<img src="https://repository-images.githubusercontent.com/1221223126/8b637d78-cf17-4d56-bb3a-94d1ff908de5" alt="Social banner for Multivert" />
 
 # Multivert
 
