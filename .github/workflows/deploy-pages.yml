@@ -50,32 +50,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Self-bootstrap so first-time deploys (and forks) do not 404 with
-      # `Project not found [code: 8000007]`. Try-create then catch the
-      # known "already exists" code 8000002 — verified against wrangler
-      # 4.85 stderr ("A project with this name already exists. [code:
-      # 8000002]"). The previous `wrangler pages project list --json | jq`
-      # approach silently misclassified existing projects as missing in
-      # some cases, then the create step hard-failed on the conflict.
-      # Anything that isn't 8000002 propagates so real failures (auth,
-      # network, rate limit) still surface loudly.
-      - name: Ensure Cloudflare Pages project exists
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          set -uo pipefail
-          if pnpm exec wrangler pages project create "$CLOUDFLARE_PROJECT_NAME" \
-              --production-branch=main 2>&1 | tee /tmp/cf-create.log; then
-            echo "Created Cloudflare Pages project '$CLOUDFLARE_PROJECT_NAME'"
-          elif grep -qE "code:[[:space:]]*8000002|already exists" /tmp/cf-create.log; then
-            echo "Cloudflare Pages project '$CLOUDFLARE_PROJECT_NAME' already exists — continuing"
-          else
-            echo "::error::Failed to ensure Cloudflare Pages project exists"
-            cat /tmp/cf-create.log
-            exit 1
-          fi
-
+      # No `gitHubToken` here on purpose. With one, wrangler-action
+      # auto-creates parallel `production` / `preview` GitHub Deployment
+      # records on top of the `deploy` environment this job already
+      # writes to — yielding two deployment entries per release and a
+      # stale `preview` env that lingers from any non-prod branch run.
+      # The `deployment-url` step output is set from wrangler's command
+      # response, not the GH Deployments API, so the smoke step below
+      # still works without it.
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
@@ -83,7 +65,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy .svelte-kit/cloudflare --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --branch=main
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       # An empty `deployment-url` means wrangler-action did not produce its
       # documented output even though it exited zero — that is itself a
