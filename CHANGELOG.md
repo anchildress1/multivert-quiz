@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/anchildress1/multivert/compare/v1.2.0...v1.2.1) (2026-05-04)
+
+
+### Bug Fixes
+
+* **deploy:** drop self-bootstrap + wrangler-action gitHubToken ([#21](https://github.com/anchildress1/multivert/issues/21)) ([2ef3fab](https://github.com/anchildress1/multivert/commit/2ef3fab8243ce9a533e2fe5fd13d5978c3cdfabd))
+
 ## [1.2.0](https://github.com/anchildress1/multivert/compare/v1.1.2...v1.2.0) (2026-05-04)
 
 
