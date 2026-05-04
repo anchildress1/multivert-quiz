@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/anchildress1/multivert/compare/v1.1.2...v1.2.0) (2026-05-04)
+
+
+### Features
+
+* **landing:** hero copy + share-surface housekeeping ([#19](https://github.com/anchildress1/multivert/issues/19)) ([0ae0aa5](https://github.com/anchildress1/multivert/commit/0ae0aa5a72851aee1d83a79e1a52c839b5b2d132))
+
 ## [1.1.2](https://github.com/anchildress1/multivert-quiz/compare/v1.1.1...v1.1.2) (2026-05-03)
 
 

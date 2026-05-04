@@ -1,7 +1,7 @@
 {
   "name": "multivert",
   "private": true,
-  "version": "1.1.2",
+  "version": "1.2.0",
   "type": "module",
   "description": "Multivert personality quiz — five types, multi-axis scoring, deployed on Cloudflare Pages.",
   "license": "SEE LICENSE IN LICENSE",
