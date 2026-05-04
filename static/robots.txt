@@ -55,4 +55,4 @@ Disallow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://multivert-quiz.pages.dev/sitemap.xml
+Sitemap: https://multivert.pages.dev/sitemap.xml

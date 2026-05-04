@@ -289,7 +289,7 @@ test.describe('share + SEO surface', () => {
 	// PNG magic header (RFC 2083 §3.1). A truncated/corrupted asset still
 	// passing a content-type check is the silent-failure mode this guards.
 	const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-	const CANONICAL_URL = 'https://multivert-quiz.pages.dev/';
+	const CANONICAL_URL = 'https://multivert.pages.dev/';
 
 	test('serves robots.txt with sitemap directive', async ({ request }) => {
 		const res = await request.get('/robots.txt');
