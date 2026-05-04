@@ -1,7 +1,7 @@
 <div align="center">
-<img src="https://repository-images.githubusercontent.com/1221223126/51bb1bb1-e7f1-42db-a168-b68c1140ff16" alt="Social banner for Multivert" />
+<img src="https://repository-images.githubusercontent.com/1221223126/8b637d78-cf17-4d56-bb3a-94d1ff908de5" alt="Social banner for Multivert" />
 
-# Multivert Quiz
+# Multivert
 
 <!-- Badges here -->
 </div>
@@ -142,4 +142,4 @@ paid SaaS, rebranded resale) requires prior written permission.
 - GitHub: [@anchildress1](https://github.com/anchildress1)
 - Site: [anchildress1.dev](https://anchildress1.dev)
 
-This quiz is a portfolio piece, not a product. If it broke, [open an issue](https://github.com/anchildress1/multivert-quiz/issues). If you want to talk about the architecture, the GHA wiring, or why the otherness axis is unipolar, reach out — those are the interesting parts.
+This quiz is a portfolio piece, not a product. If it broke, [open an issue](https://github.com/anchildress1/multivert/issues). If you want to talk about the architecture, the GHA wiring, or why the otherness axis is unipolar, reach out — those are the interesting parts.

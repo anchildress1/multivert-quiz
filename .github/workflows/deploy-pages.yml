@@ -20,7 +20,7 @@ concurrency:
 env:
   PNPM_VERSION: '10.33.1'
   NODE_VERSION: '24'
-  CLOUDFLARE_PROJECT_NAME: multivert-quiz
+  CLOUDFLARE_PROJECT_NAME: multivert
 
 jobs:
   deploy:
