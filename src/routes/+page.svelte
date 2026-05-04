@@ -301,11 +301,10 @@
 			</h1>
 
 			<p class="hero__lede">
-				Most quizzes only know two: introvert, extrovert. There are three more—<em
-					data-vert="ambivert">ambivert</em
-				>, <em data-vert="omnivert">omnivert</em>, and
-				<em data-vert="otrovert">otrovert</em>, popularized by psychiatrist Rami Kaminski in 2025.
-				{questions.length} statements, one quiet slider, a five-way breakdown at the end.
+				Five verts, not two. Introvert, extrovert, <em data-vert="ambivert">ambivert</em>,
+				<em data-vert="omnivert">omnivert</em>, <em data-vert="otrovert">otrovert</em>. Each scored
+				on its own scale—the bars don't sum to 100. {questions.length} statements, one quiet slider, a
+				five-way breakdown at the end.
 			</p>
 
 			<div class="hero__cta-row">
