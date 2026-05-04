@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One-page quiz. The sitemap is here for crawlers that demand the ritual,
+  not because anything moves. No <changefreq>: it's a lie, and Google
+  ignored it anyway. No <priority>: with one URL, priority is theatre.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://multivert.pages.dev/</loc>
-		<changefreq>monthly</changefreq>
-		<priority>1.0</priority>
 	</url>
 </urlset>

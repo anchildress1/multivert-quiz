@@ -1,0 +1,47 @@
+name: Semgrep
+
+# Runs Semgrep's full scan suite (code + supply chain) and uploads
+# results to the Semgrep AppSec Platform. Without this workflow the
+# dashboard sits frozen on whatever the last manual scan saw — even
+# after the lockfile gets updated, findings stay open until something
+# triggers a fresh scan. The schedule keeps it ticking; push/PR keeps
+# it honest as code lands.
+#
+# Requires `SEMGREP_APP_TOKEN` in the repo secrets (provision via the
+# Semgrep dashboard → Settings → Tokens, scope: agent).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Mondays at 06:17 UTC — early enough to land before the work day,
+    # offset off the hour to dodge the 12:00 / 18:00 GHA stampede.
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: semgrep-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      # Pinned to the major version so security-rule updates flow in
+      # without the workflow itself drifting. Image ships semgrep + the
+      # Pro engine binary needed for supply-chain reachability analysis.
+      image: returntocorp/semgrep
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Semgrep CI (code + supply chain)
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: semgrep ci --supply-chain

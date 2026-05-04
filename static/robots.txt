@@ -1,3 +1,57 @@
+# Search engines and live-retrieval bots: by all means, index away.
+#
+# AI training crawlers — the ones that scrape to STORE in a training
+# corpus, not the ones that READ to answer a single user query — get a
+# hard pass. This is a portfolio piece, not your training data.
+#
+# The distinction matters: bots that fetch on a user's behalf to cite or
+# summarize are doing the same job as a search engine. Bots that hoover
+# the page into an opaque corpus to never pay for it again are not. The
+# blocklist below is the second category, drawn from each vendor's
+# public training-opt-out user agent. Honor system applies — try to live
+# up to it.
+
+# --- Training-only crawlers (STORE) ---
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: omgilibot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+# --- Everyone else (search, live retrieval, user-initiated fetches) ---
 User-agent: *
 Allow: /
 
